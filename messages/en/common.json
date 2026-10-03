@@ -88,6 +88,7 @@
     "wrongPassword": "Current password is incorrect"
   },
   "pagination": {
+    "label": "Pagination",
     "showing": "{from}–{to} of {total}",
     "previous": "Previous page",
     "next": "Next page"

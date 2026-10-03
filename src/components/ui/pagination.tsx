@@ -33,7 +33,7 @@ export async function Pagination({
 
   const btn = "grid h-9 min-w-9 place-items-center rounded-xl px-2 text-sm font-bold transition";
   return (
-    <nav className="flex flex-col items-center justify-between gap-3 pt-4 sm:flex-row" aria-label="Pagination">
+    <nav className="flex flex-col items-center justify-between gap-3 pt-4 sm:flex-row" aria-label={t("pagination.label")}>
       <p className="text-sm text-muted">{t("pagination.showing", { from, to, total })}</p>
       <div className="flex items-center gap-1">
         <Link aria-label={t("pagination.previous")} href={href(Math.max(1, page - 1))} className={cn(btn, "text-ink-2 hover:bg-surface-2", page === 1 && "pointer-events-none opacity-40")}>
