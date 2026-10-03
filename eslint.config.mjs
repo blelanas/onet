@@ -4,7 +4,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
 
 export default tseslint.config(
-  { ignores: ["**/node_modules/**", "**/dist/**", "legacy/**", ".claude/**", "**/public/demo/**", "packages/shared/messages/**", "**/*.d.ts"] },
+  { ignores: ["**/node_modules/**", "**/dist/**", ".claude/**", "**/public/demo/**", "packages/shared/messages/**", "**/*.d.ts"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
