@@ -1,1 +1,400 @@
-{}
+{
+  "meta": {
+    "home": {
+      "title": "ONET Teboulba — Grow, play and learn together",
+      "description": "Activities, trips, songs, workshops and events for the children and youth of Teboulba."
+    },
+    "about": {
+      "title": "About us",
+      "description": "Our mission, our values and our age groups in Teboulba."
+    },
+    "activities": {
+      "title": "Activities",
+      "description": "Sports, music, science, theatre, arts… all our weekly activities."
+    },
+    "events": {
+      "title": "Events",
+      "description": "Celebrations, contests, shows and workshops open to families."
+    },
+    "trips": {
+      "title": "Trips & camps",
+      "description": "Excursions, cultural visits and nature camps for kids and teens."
+    },
+    "news": {
+      "title": "News",
+      "description": "The latest news from ONET Teboulba."
+    },
+    "gallery": {
+      "title": "Gallery",
+      "description": "Our best moments in pictures."
+    },
+    "songs": {
+      "title": "Songs",
+      "description": "Listen and sing along with the ONET Teboulba choir."
+    },
+    "conferences": {
+      "title": "Talks",
+      "description": "Talks and meetups for parents, youth and educators."
+    },
+    "contact": {
+      "title": "Contact",
+      "description": "A question? Write to us or visit us at the Children's House."
+    },
+    "join": {
+      "title": "Join us",
+      "description": "Sign your child up to ONET Teboulba in a few minutes."
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "activities": "Activities",
+    "events": "Events",
+    "trips": "Trips",
+    "news": "News",
+    "gallery": "Gallery",
+    "songs": "Songs",
+    "conferences": "Talks",
+    "contact": "Contact",
+    "join": "Join us",
+    "login": "Sign in",
+    "mySpace": "My space",
+    "more": "More",
+    "main": "Main navigation",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "skip": "Skip to content",
+    "breadcrumb": "Breadcrumb",
+    "menuTitle": "Explore",
+    "menuHint": "Everything happening at ONET Teboulba"
+  },
+  "hero": {
+    "eyebrow": "Tunisian National Children's Organisation",
+    "title": "Grow, play and learn",
+    "highlight": "together in Teboulba",
+    "subtitle": "Activities, trips, songs, workshops and big celebrations: a safe, joyful place where every child and teen belongs.",
+    "ctaJoin": "Join us",
+    "ctaDiscover": "Discover activities",
+    "ages": "Ages 4 to 17",
+    "since": "Since {year}",
+    "tiles": {
+      "sport": "Sports",
+      "music": "Music",
+      "science": "Science",
+      "art": "Arts",
+      "trips": "Trips",
+      "fun": "Parties"
+    },
+    "kidsCount": "{count} kids enrolled"
+  },
+  "pillars": {
+    "title": "Here, every child can…",
+    "learn": {
+      "title": "Learn",
+      "text": "Science, reading, robotics, children's rights: learning by having fun."
+    },
+    "play": {
+      "title": "Play",
+      "text": "Big games, sports and team challenges to move and laugh together."
+    },
+    "create": {
+      "title": "Create",
+      "text": "Singing, theatre, painting, drums: everyone expresses their talent."
+    },
+    "belong": {
+      "title": "Belong",
+      "text": "Friends, trained monitors and a big family in Teboulba."
+    }
+  },
+  "stats": {
+    "title": "ONET Teboulba in numbers",
+    "children": "kids & teens",
+    "monitors": "committed monitors",
+    "activities": "weekly activities",
+    "events": "events",
+    "trips": "trips & camps",
+    "songs": "songs to listen to"
+  },
+  "home": {
+    "events": {
+      "title": "Upcoming events",
+      "subtitle": "Celebrations, contests and shows for the whole family."
+    },
+    "trips": {
+      "title": "Upcoming trips",
+      "subtitle": "Travel, discover Tunisia and share adventures."
+    },
+    "activities": {
+      "title": "Our activities",
+      "subtitle": "Every week, clubs for all ages and tastes."
+    },
+    "songs": {
+      "title": "Sing with us",
+      "subtitle": "Our choir's repertoire, to enjoy as a family.",
+      "allSongs": "All songs",
+      "featured": "Featured"
+    },
+    "news": {
+      "title": "Latest news",
+      "subtitle": "What's happening at ONET Teboulba right now."
+    },
+    "gallery": {
+      "title": "Memories in pictures",
+      "subtitle": "Smiles, discoveries and great shared moments."
+    },
+    "cta": {
+      "title": "Ready for the ONET adventure?",
+      "text": "Sign your child up in minutes — we'll call you back to complete the membership.",
+      "join": "Sign my child up",
+      "contact": "Ask a question"
+    }
+  },
+  "common": {
+    "seeAll": "See all",
+    "free": "Free",
+    "ages": "Ages {min}–{max}",
+    "agesFrom": "From age {min}",
+    "allAges": "All ages",
+    "weekly": "Every {day} · {time}",
+    "duration": "{count} min",
+    "full": "Full",
+    "past": "Past",
+    "upcoming": "Upcoming",
+    "pastTab": "Past",
+    "readMore": "Read more",
+    "details": "View details",
+    "back": "Back",
+    "searchEvents": "Search events…",
+    "searchTrips": "Search a destination…",
+    "searchActivities": "Search activities…",
+    "searchNews": "Search articles…",
+    "searchSongs": "Title, author, lyrics…",
+    "allCategories": "All",
+    "anyAge": "Any age",
+    "ageOption": "{age} years old",
+    "results": "{count, plural, =0 {No results} one {# result} other {# results}}",
+    "emptyTitle": "Nothing yet",
+    "emptyFiltered": "Try another category or keyword.",
+    "emptyUpcomingEvents": "No upcoming events right now. Check back soon!",
+    "emptyUpcomingTrips": "No trips scheduled yet. Check back soon!",
+    "resetFilters": "Reset filters",
+    "published": "Published {date}"
+  },
+  "reg": {
+    "title": "Registration",
+    "cta": "Register",
+    "loginHint": "Sign in to your family space to register your child.",
+    "memberHint": "Register your child from your space in one click.",
+    "notMember": "Not a member yet?",
+    "joinLink": "Request membership",
+    "closedEvent": "Registration is closed for this event.",
+    "closedTrip": "Registration is closed for this trip.",
+    "fullText": "All places have been booked.",
+    "pastText": "This event is over — thanks to everyone who took part!",
+    "pastTripText": "This trip is over — thanks to everyone who took part!",
+    "cancelledTrip": "This trip has been cancelled.",
+    "placesTaken": "{taken} / {capacity} places booked",
+    "deadline": "Register by {date}",
+    "price": "Fee"
+  },
+  "details": {
+    "when": "When",
+    "where": "Where",
+    "organizer": "Organiser",
+    "about": "About",
+    "photos": "Photos",
+    "otherEvents": "Other upcoming events",
+    "otherTrips": "Other upcoming trips",
+    "departure": "Departure",
+    "return": "Return",
+    "meetingPoint": "Meeting point",
+    "destination": "Destination",
+    "program": "Programme",
+    "documents": "Required documents",
+    "ages": "Ages",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "allEvents": "All events",
+    "allTrips": "All trips",
+    "allNews": "All news",
+    "moreNews": "Read next"
+  },
+  "newsCategory": {
+    "NEWS": "News",
+    "EVENT": "Event",
+    "ANNOUNCEMENT": "Announcement",
+    "STORY": "Story",
+    "OTHER": "Other"
+  },
+  "album": {
+    "GENERAL": "General",
+    "EVENTS": "Events",
+    "TRIPS": "Trips",
+    "ACTIVITIES": "Activities"
+  },
+  "gallery": {
+    "open": "Enlarge photo: {caption}",
+    "dialog": "Photo viewer",
+    "prev": "Previous photo",
+    "next": "Next photo",
+    "close": "Close",
+    "counter": "{index} of {total}",
+    "untitled": "ONET Teboulba photo",
+    "hint": "Use arrow keys or swipe to navigate",
+    "photos": "{count, plural, one {# photo} other {# photos}}"
+  },
+  "songs": {
+    "nowPlaying": "Now playing",
+    "tracklist": "Track list",
+    "lyrics": "Lyrics",
+    "showLyrics": "Show lyrics",
+    "hideLyrics": "Hide lyrics",
+    "select": "Play “{title}”",
+    "by": "by {author}",
+    "noAudio": "No recording for this song — sing it with the lyrics!",
+    "language": {
+      "ar": "Arabic",
+      "fr": "French",
+      "en": "English"
+    },
+    "ageGroup": "Age: {age}"
+  },
+  "conferences": {
+    "upcoming": "Upcoming talks",
+    "past": "Past talks",
+    "speaker": "Speaker",
+    "listen": "Listen to the recording",
+    "watch": "Watch the video",
+    "noRecording": "No recording available.",
+    "emptyUpcoming": "No talks scheduled right now.",
+    "free": "Free entry"
+  },
+  "about": {
+    "eyebrow": "Who are we?",
+    "title": "A home for childhood in Teboulba",
+    "lead": "ONET Teboulba is the local branch of the Tunisian National Children's Organisation. Volunteers, monitors and families support children and youth so they grow up happy, curious and responsible.",
+    "missionTitle": "Our mission",
+    "mission": "To give every child, whatever their background, a safe space to learn, play, discover, take part and belong to a community.",
+    "valuesTitle": "Our values",
+    "values": {
+      "safety": {
+        "title": "Safety & care",
+        "text": "Monitors trained in first aid and youth work, a reassuring setting for families."
+      },
+      "rights": {
+        "title": "Children's rights",
+        "text": "Every child is listened to, respected and encouraged to speak up."
+      },
+      "inclusion": {
+        "title": "Open to all",
+        "text": "Accessible activities, fair fees and a place for everyone."
+      },
+      "joy": {
+        "title": "Joy & creativity",
+        "text": "We learn best by having fun: games, songs, arts and big adventures."
+      }
+    },
+    "groupsTitle": "Our groups",
+    "groupsSubtitle": "Children are welcomed by age group, with dedicated monitors.",
+    "historyTitle": "Our story",
+    "history": "Since {year}, the Teboulba Children's House has welcomed generations of kids. What began as a few Saturday clubs became a place where we sing, create, travel and grow together.",
+    "yearsLabel": "years of history",
+    "schedule": "Meetings"
+  },
+  "contact": {
+    "title": "Let's talk!",
+    "subtitle": "A question about an activity, a trip or membership? We reply within 48 hours.",
+    "infoTitle": "Our details",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Email",
+    "hours": "Opening hours",
+    "hoursValue": "Wed 3–7 pm · Sat 9 am–1 pm",
+    "follow": "Follow us",
+    "formTitle": "Send a message",
+    "name": "Your name",
+    "emailField": "Your email",
+    "subject": "Subject",
+    "subjectPh": "E.g. theatre club registration",
+    "message": "Your message",
+    "messageHint": "At least 10 characters.",
+    "send": "Send message",
+    "sent": "Message sent!",
+    "successTitle": "Thanks, your message arrived!",
+    "successText": "Our team will get back to you by email very soon.",
+    "another": "Send another message",
+    "privacy": "Your details are only used to reply to you.",
+    "mapLabel": "Teboulba, Monastir governorate"
+  },
+  "join": {
+    "eyebrow": "Membership",
+    "title": "Sign your child up",
+    "subtitle": "Fill in this form: a team member will call you back to complete the registration and answer your questions.",
+    "steps": {
+      "one": {
+        "title": "You fill in the form",
+        "text": "2 minutes, no account needed."
+      },
+      "two": {
+        "title": "We call you back",
+        "text": "To choose the group and activities."
+      },
+      "three": {
+        "title": "Welcome to the family!",
+        "text": "Your family space is activated."
+      }
+    },
+    "parentSection": "Parent / guardian",
+    "childSection": "The child",
+    "parentName": "Full name",
+    "email": "Email",
+    "phone": "Phone",
+    "phoneHint": "We'll call you on this number.",
+    "childName": "Child's full name",
+    "childDob": "Date of birth",
+    "message": "Interests, questions…",
+    "messagePh": "E.g. she loves singing and would like to join the choir.",
+    "consent": "I agree to be contacted by ONET Teboulba about this request.",
+    "submit": "Send request",
+    "sent": "Request sent!",
+    "successTitle": "Welcome aboard!",
+    "successText": "Your request is saved. We'll call you in the coming days to complete the membership.",
+    "successNext": "Meanwhile, discover our activities",
+    "another": "Sign up another child",
+    "already": "Already a member?",
+    "why": "Why join us?",
+    "perks": {
+      "a": "Weekly clubs led by trained monitors",
+      "b": "Trips, camps and big parties all year round",
+      "c": "A family space to follow attendance, registrations and payments",
+      "d": "A fair annual membership fee"
+    }
+  },
+  "form": {
+    "honeypot": "Leave this field empty",
+    "required": "Required fields"
+  },
+  "notify": {
+    "joinTitle": "New membership request: {name}",
+    "joinBody": "A family wants to join ONET Teboulba.",
+    "joinBodyChild": "For the child: {child}"
+  },
+  "footer": {
+    "tagline": "Learn, play, discover, take part and belong — serving Teboulba's children since {year}.",
+    "discover": "Discover",
+    "participate": "Get involved",
+    "contact": "Find us",
+    "rights": "© {year} {name}. All rights reserved.",
+    "made": "Made with ♥ in Teboulba",
+    "social": "Social media"
+  },
+  "notFound": {
+    "code": "404",
+    "title": "Oops, this page got lost on a trip!",
+    "text": "It doesn't exist or has moved. Head back home or explore our activities.",
+    "home": "Back to home"
+  },
+  "error": {
+    "title": "Oops, a small technical hiccup",
+    "text": "We couldn't load this page. Please try again in a moment."
+  }
+}
