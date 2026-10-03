@@ -1,1 +1,109 @@
-{}
+{
+  "title": "Activities",
+  "description": "Weekly clubs and workshops: sports, singing, science, arts and outdoors.",
+  "new": "New activity",
+  "edit": "Edit activity",
+  "searchPlaceholder": "Search an activity…",
+  "ages": "Ages {min}–{max}",
+  "agesFrom": "Ages {min}+",
+  "public": "On the website",
+  "private": "Internal",
+  "deleteTitle": "Delete this activity?",
+  "deleteText": "Enrollments and reports will be deleted. Past attendance stays in the children's history.",
+  "filters": {
+    "allStatuses": "All statuses",
+    "allGroups": "All groups",
+    "everything": "All",
+    "mine": "My activities",
+    "allCategories": "All categories"
+  },
+  "card": {
+    "youLead": "You lead"
+  },
+  "empty": {
+    "title": "No activities yet",
+    "description": "Create the first activity of the catalogue."
+  },
+  "personal": {
+    "heroBadge": "This season's programme",
+    "heroBadgeKid": "Let's go!",
+    "heroTitle": "Our activities",
+    "heroTitleParent": "Your children's activities",
+    "heroTitleKid": "Hi {name}, ready for some fun?",
+    "heroText": "Discover the clubs and workshops offered by ONET Teboulba.",
+    "heroTextParent": "{count, plural, =0 {No ongoing activities right now.} one {# ongoing activity this season.} other {# ongoing activities this season.}}",
+    "heroTextKid": "{count, plural, =0 {Pick an activity you like!} one {You have # activity this season. Have fun!} other {You have # activities this season. Have fun!}}",
+    "mine": "My activities",
+    "mineParent": "For my children",
+    "mineKid": "My activities",
+    "enrolled": "Enrolled",
+    "discoverMore": "More activities to discover",
+    "discover": "Full catalogue",
+    "discoverKid": "Discover more activities"
+  },
+  "form": {
+    "general": "The activity",
+    "ageMin": "Minimum age",
+    "ageMax": "Maximum age",
+    "duration": "Duration (minutes)",
+    "materials": "Materials to bring",
+    "materialsHint": "Visible to families.",
+    "schedule": "Schedule",
+    "dayOfWeek": "Day (weekly)",
+    "noRecurrence": "No weekly session",
+    "startTime": "Start time",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "scheduleText": "Displayed schedule",
+    "scheduleHint": "Optional — e.g. “Every other Saturday”.",
+    "organisation": "Organisation",
+    "noGroup": "Open to all groups",
+    "event": "Linked event",
+    "noEvent": "None",
+    "coverHint": "Without an image, a colorful cover is generated automatically."
+  },
+  "tabs": {
+    "overview": "Overview",
+    "participants": "Participants",
+    "attendance": "Attendance",
+    "reports": "Reports"
+  },
+  "detail": {
+    "about": "About",
+    "noDescription": "No description yet.",
+    "materials": "What to bring",
+    "practical": "Practical info",
+    "when": "When",
+    "every": "Every {day}",
+    "duration": "Duration",
+    "period": "Period",
+    "event": "Event",
+    "places": "Places",
+    "contact": "Send a message",
+    "next": "Next sessions"
+  },
+  "participants": {
+    "title": "Participants · {count}/{capacity}",
+    "mine": "Enrolled from my family",
+    "enroll": "Enroll a child",
+    "enrollTitle": "Enroll a child in the activity",
+    "enrolled": "Child enrolled",
+    "unenrollTitle": "Unenroll this child?",
+    "unenrollText": "{name} will no longer take part in this activity.",
+    "empty": "No participants yet",
+    "emptyMine": "Nobody from your family is enrolled"
+  },
+  "attendance": {
+    "title": "Session attendance",
+    "take": "Take attendance",
+    "empty": "No attendance recorded for this activity"
+  },
+  "reports": {
+    "title": "Session reports",
+    "empty": "No reports yet",
+    "date": "Session date",
+    "summary": "Report",
+    "placeholder": "What was done, atmosphere, follow-ups…",
+    "add": "Add report"
+  }
+}

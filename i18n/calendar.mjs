@@ -1,0 +1,35 @@
+import { T } from "./_lib.mjs";
+
+export default {
+  title: T("Calendrier", "الرزنامة", "Calendar"),
+  description: T("Activités, réunions de groupe, événements, sorties et dates importantes au même endroit.", "الأنشطة ولقاءات المجموعات والتظاهرات والرحلات والتواريخ المهمة في مكان واحد.", "Activities, group meetings, events, trips and key dates in one place."),
+  descriptionMine: T("Votre agenda : les groupes, activités et sorties qui vous concernent.", "أجندتك: المجموعات والأنشطة والرحلات التي تهمّك.", "Your agenda: the groups, activities and trips that concern you."),
+  previous: T("Période précédente", "الفترة السابقة", "Previous period"),
+  next: T("Période suivante", "الفترة التالية", "Next period"),
+  today: T("Aujourd'hui", "اليوم", "Today"),
+  scope: { label: T("Portée", "النطاق", "Scope"), mine: T("Mon agenda", "أجندتي", "My agenda"), all: T("Tout", "الكل", "Everything") },
+  views: { label: T("Affichage", "طريقة العرض", "View"), month: T("Mois", "شهر", "Month"), week: T("Semaine", "أسبوع", "Week"), agenda: T("Liste", "قائمة", "List") },
+  kinds: {
+    activity: T("Activités", "الأنشطة", "Activities"),
+    group: T("Réunions de groupe", "لقاءات المجموعات", "Group meetings"),
+    event: T("Événements", "التظاهرات", "Events"),
+    trip: T("Sorties", "الرحلات", "Trips"),
+    conference: T("Conférences", "المحاضرات", "Conferences"),
+    entry: T("Réunions & dates", "اجتماعات ومواعيد", "Meetings & dates"),
+  },
+  allGroups: T("Tous les groupes", "كل المجموعات", "All groups"),
+  more: T("+{count} de plus", "+{count} أخرى", "+{count} more"),
+  free: T("Libre", "فارغ", "Free"),
+  emptyPeriod: T("Rien de prévu sur cette période.", "لا شيء مبرمج في هذه الفترة.", "Nothing planned for this period."),
+  nothingToday: T("Rien de prévu aujourd'hui.", "لا شيء مبرمج اليوم.", "Nothing planned today."),
+  entry: {
+    new: T("Nouvelle entrée", "موعد جديد", "New entry"),
+    edit: T("Modifier l'entrée", "تعديل الموعد", "Edit entry"),
+    type: T("Type", "النوع", "Type"),
+    audience: T("Visible par", "مرئي لـ", "Visible to"),
+    allDay: T("Toute la journée", "طوال اليوم", "All day"),
+    start: T("Début", "البداية", "Start"),
+    end: T("Fin", "النهاية", "End"),
+    deleteTitle: T("Supprimer cette entrée ?", "حذف هذا الموعد؟", "Delete this entry?"),
+  },
+};
