@@ -328,7 +328,9 @@ async function main() {
     for (const c of pool.slice(0, act.capacity)) await db.activityParticipant.create({ data: { activityId: act.id, memberId: c.id } });
   }
 
-  // Assign choir kids to choir via participation only (group membership stays age-based)
+  // A few dedicated choir kids have the choir as their main group.
+  const demoKidIds = new Set(families[0].children.map((c) => c.id));
+  for (const c of choir.filter((c) => !demoKidIds.has(c.id)).slice(0, 8)) await db.member.update({ where: { id: c.id }, data: { groupId: groups[4].id } });
 
   // ── Attendance: last 8 weekly sessions per group ──
   console.log("→ attendance");

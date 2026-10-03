@@ -151,11 +151,17 @@ function parseCsv(text: string): string[][] {
   for (let i = 0; i < text.length; i++) {
     const c = text[i];
     if (quoted) {
-      if (c === '"' && text[i + 1] === '"') (field += '"'), i++;
+      if (c === '"' && text[i + 1] === '"') {
+        field += '"';
+        i++;
+      }
       else if (c === '"') quoted = false;
       else field += c;
     } else if (c === '"') quoted = true;
-    else if (c === sep) cur.push(field), (field = "");
+    else if (c === sep) {
+      cur.push(field);
+      field = "";
+    }
     else if (c === "\n" || c === "\r") {
       if (c === "\r" && text[i + 1] === "\n") i++;
       cur.push(field);
@@ -196,7 +202,8 @@ export async function importMembers(fd: FormData) {
         errors.push(n + 2);
         continue;
       }
-      const { parentIds: _p, monitorGroupIds: _g, id: _i, ...d } = parsed.data;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { parentIds, monitorGroupIds, id, ...d } = parsed.data;
       await db.member.create({ data: { ...d, membershipNumber: await nextMembershipNumber() } });
       created++;
     }

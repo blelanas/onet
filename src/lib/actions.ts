@@ -47,10 +47,12 @@ export function formToObject(fd: FormData): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [k, v] of fd.entries()) {
     if (k.startsWith("$ACTION")) continue;
-    const val = typeof v === "string" ? v : v;
+    const val = v;
     if (k.endsWith("[]")) {
       const key = k.slice(0, -2);
-      (out[key] as unknown[] | undefined) ? (out[key] as unknown[]).push(val) : (out[key] = [val]);
+      const list = (out[key] as unknown[] | undefined) ?? [];
+      list.push(val);
+      out[key] = list;
     } else out[k] = val === "on" ? true : val;
   }
   return out;
