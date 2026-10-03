@@ -18,6 +18,8 @@ const EXT: Record<string, string> = {
   "audio/mp3": "mp3",
   "audio/ogg": "ogg",
   "audio/wav": "wav",
+  "audio/x-wav": "wav",
+  "audio/wave": "wav",
   "audio/x-m4a": "m4a",
   "audio/mp4": "m4a",
   "video/mp4": "mp4",

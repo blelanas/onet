@@ -100,7 +100,7 @@ export const UPLOAD_ALLOWED_MIME: Record<string, string[]> = {
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "application/msword",
   ],
-  audio: ["audio/mpeg", "audio/mp3", "audio/ogg", "audio/wav", "audio/x-m4a", "audio/mp4"],
+  audio: ["audio/mpeg", "audio/mp3", "audio/ogg", "audio/wav", "audio/x-wav", "audio/wave", "audio/x-m4a", "audio/mp4"],
   video: ["video/mp4", "video/webm"],
 };
 
