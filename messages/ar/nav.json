@@ -1,0 +1,59 @@
+{
+  "sections": {
+    "main": "الرئيسية",
+    "people": "الأشخاص",
+    "activities": "الأنشطة",
+    "events": "التظاهرات والرحلات",
+    "content": "المحتوى",
+    "finance": "المالية",
+    "communication": "التواصل",
+    "admin": "الإدارة"
+  },
+  "items": {
+    "dashboard": "لوحة القيادة",
+    "myChildren": "أطفالي",
+    "achievements": "شاراتي",
+    "members": "الأعضاء",
+    "children": "الأطفال",
+    "parents": "الأولياء",
+    "monitors": "المنشطون",
+    "groups": "المجموعات",
+    "joinRequests": "طلبات الانخراط",
+    "activities": "الأنشطة",
+    "attendance": "الحضور",
+    "calendar": "الرزنامة",
+    "events": "التظاهرات",
+    "trips": "الرحلات",
+    "registrations": "التسجيلات",
+    "songs": "الأناشيد",
+    "games": "الألعاب",
+    "conferences": "المحاضرات",
+    "resources": "الموارد",
+    "invoices": "الفواتير",
+    "payments": "المدفوعات",
+    "expenses": "المصاريف",
+    "financeReports": "التقرير المالي",
+    "announcements": "الإعلانات",
+    "messages": "الرسائل",
+    "notifications": "الإشعارات",
+    "documents": "الوثائق",
+    "reports": "التقارير",
+    "settings": "الإعدادات",
+    "profile": "ملفي الشخصي",
+    "logout": "تسجيل الخروج",
+    "publicSite": "الموقع العام",
+    "more": "المزيد"
+  },
+  "search": {
+    "placeholder": "ابحث عن طفل، تظاهرة، نشيد…"
+  },
+  "language": "اللغة",
+  "aria": {
+    "main": "التنقل الرئيسي",
+    "menu": "القائمة",
+    "openMenu": "فتح القائمة",
+    "closeMenu": "إغلاق القائمة",
+    "tabs": "تنقل سريع",
+    "userMenu": "قائمة المستخدم"
+  }
+}

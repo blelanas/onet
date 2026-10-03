@@ -1,0 +1,59 @@
+{
+  "sections": {
+    "main": "Principal",
+    "people": "Personnes",
+    "activities": "Activités",
+    "events": "Événements & sorties",
+    "content": "Contenus",
+    "finance": "Finances",
+    "communication": "Communication",
+    "admin": "Administration"
+  },
+  "items": {
+    "dashboard": "Tableau de bord",
+    "myChildren": "Mes enfants",
+    "achievements": "Mes badges",
+    "members": "Membres",
+    "children": "Enfants",
+    "parents": "Parents",
+    "monitors": "Moniteurs",
+    "groups": "Groupes",
+    "joinRequests": "Demandes d'adhésion",
+    "activities": "Activités",
+    "attendance": "Présences",
+    "calendar": "Calendrier",
+    "events": "Événements",
+    "trips": "Sorties",
+    "registrations": "Inscriptions",
+    "songs": "Chansons",
+    "games": "Jeux",
+    "conferences": "Conférences",
+    "resources": "Ressources",
+    "invoices": "Factures",
+    "payments": "Paiements",
+    "expenses": "Dépenses",
+    "financeReports": "Bilan financier",
+    "announcements": "Annonces",
+    "messages": "Messages",
+    "notifications": "Notifications",
+    "documents": "Documents",
+    "reports": "Rapports",
+    "settings": "Paramètres",
+    "profile": "Mon profil",
+    "logout": "Se déconnecter",
+    "publicSite": "Site public",
+    "more": "Plus"
+  },
+  "search": {
+    "placeholder": "Rechercher un enfant, un événement, une chanson…"
+  },
+  "language": "Langue",
+  "aria": {
+    "main": "Navigation principale",
+    "menu": "Menu",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "tabs": "Navigation rapide",
+    "userMenu": "Menu utilisateur"
+  }
+}

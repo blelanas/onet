@@ -1,0 +1,205 @@
+@import "tailwindcss";
+
+/*
+ * ONET Teboulba design tokens.
+ * Brand palette derived from the ONET identity: Tunisian red as the anchor colour, with the
+ * sun-yellow / sky-blue / leaf-green / grape accents of a children's organisation.
+ * To re-tune from the official logo, only edit the --brand-* / accent values below.
+ */
+:root {
+  --brand-50: #fff1f1;
+  --brand-100: #ffdfe0;
+  --brand-200: #ffc4c6;
+  --brand-300: #ff9a9e;
+  --brand-400: #fb5e66;
+  --brand-500: #f02d38;
+  --brand-600: #e30613;
+  --brand-700: #b8040f;
+  --brand-800: #980a13;
+  --brand-900: #7d0f16;
+
+  --sun: #ffb400;
+  --sun-soft: #fff4d6;
+  --sky: #1e9bd7;
+  --sky-soft: #e0f3fc;
+  --leaf: #2bb673;
+  --leaf-soft: #defaec;
+  --grape: #7c4dff;
+  --grape-soft: #ede6ff;
+  --coral: #ff6b4a;
+  --coral-soft: #ffe8e2;
+  --teal: #00a3a3;
+  --teal-soft: #d9f5f5;
+
+  --canvas: #fff9f4;
+  --surface: #ffffff;
+  --surface-2: #fdf4ee;
+  --ink: #221b33;
+  --ink-2: #4a4360;
+  --muted: #7a7390;
+  --line: #f0e6df;
+  --ring: #e30613;
+}
+
+@theme inline {
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand: var(--brand-600);
+
+  --color-sun: var(--sun);
+  --color-sun-soft: var(--sun-soft);
+  --color-sky: var(--sky);
+  --color-sky-soft: var(--sky-soft);
+  --color-leaf: var(--leaf);
+  --color-leaf-soft: var(--leaf-soft);
+  --color-grape: var(--grape);
+  --color-grape-soft: var(--grape-soft);
+  --color-coral: var(--coral);
+  --color-coral-soft: var(--coral-soft);
+  --color-teal: var(--teal);
+  --color-teal-soft: var(--teal-soft);
+
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+
+  --font-sans: var(--font-body), var(--font-arabic), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-heading), var(--font-heading-ar), var(--font-body), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.75rem;
+
+  --shadow-soft: 0 1px 2px rgb(34 27 51 / 0.04), 0 4px 16px -4px rgb(34 27 51 / 0.08);
+  --shadow-lift: 0 2px 4px rgb(34 27 51 / 0.05), 0 16px 32px -12px rgb(34 27 51 / 0.18);
+  --shadow-brand: 0 10px 24px -10px rgb(227 6 19 / 0.55);
+
+  --animate-fade-up: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-pop: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Arabic: prefer the Arabic faces first, and loosen line-height. */
+  html[dir="rtl"] body {
+    font-family: var(--font-arabic), var(--font-body), ui-sans-serif, system-ui, sans-serif;
+    line-height: 1.7;
+  }
+  html[dir="rtl"] .font-display {
+    font-family: var(--font-heading-ar), var(--font-arabic), var(--font-heading), sans-serif;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+  html[dir="rtl"] h1, html[dir="rtl"] h2, html[dir="rtl"] h3, html[dir="rtl"] h4 {
+    font-family: var(--font-heading-ar), var(--font-arabic), sans-serif;
+    letter-spacing: 0;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  ::selection {
+    background: var(--brand-100);
+    color: var(--brand-900);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-soft);
+  }
+  .card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+  }
+  .skeleton {
+    background: linear-gradient(90deg, #f6ede7 25%, #fbf5f1 37%, #f6ede7 63%);
+    background-size: 400% 100%;
+    animation: var(--animate-shimmer);
+    border-radius: 0.75rem;
+  }
+  /* Signature ONET background: soft confetti dots. */
+  .bg-confetti {
+    background-image:
+      radial-gradient(circle at 12% 18%, rgb(255 180 0 / 0.18) 0 6px, transparent 7px),
+      radial-gradient(circle at 82% 12%, rgb(30 155 215 / 0.16) 0 5px, transparent 6px),
+      radial-gradient(circle at 70% 78%, rgb(43 182 115 / 0.16) 0 7px, transparent 8px),
+      radial-gradient(circle at 26% 84%, rgb(124 77 255 / 0.14) 0 5px, transparent 6px),
+      radial-gradient(circle at 50% 40%, rgb(227 6 19 / 0.08) 0 4px, transparent 5px);
+    background-size: 220px 220px;
+  }
+  .text-gradient-brand {
+    background: linear-gradient(90deg, var(--brand-600), var(--coral) 45%, var(--sun));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Flip directional icons (arrows/chevrons) in RTL. */
+html[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
