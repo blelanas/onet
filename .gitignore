@@ -47,3 +47,5 @@ prisma/*.db-journal
 public/uploads/
 public/demo/
 .screenshots/
+prisma/test.db*
+.claude/worktrees/

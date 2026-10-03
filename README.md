@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ONET Teboulba — plateforme de l'enfance
 
-## Getting Started
+Plateforme web complète (site public + ERP) pour le comité local de Teboulba de l'**Organisation Nationale de l'Enfance Tunisienne**.
+Membres, familles, groupes, activités, présences, calendrier, événements, sorties, contenus (chansons, jeux, conférences, ressources),
+finances, communication, documents, rapports et administration — en **français, arabe (RTL) et anglais**.
 
-First, run the development server:
+> « Un lieu où les enfants apprennent, jouent, découvrent, participent et appartiennent. »
+
+## Démarrage rapide
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env
+npm install
+npm run setup        # crée la base SQLite + données de démonstration (+ audio/visuels générés)
+npm run dev          # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Comptes de démonstration — mot de passe **`Onet2026!`** (boutons de pré-remplissage sur `/login`) :
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Profil | E-mail |
+|---|---|
+| Super administrateur | admin@onet-teboulba.tn |
+| Administrateur | gestion@onet-teboulba.tn |
+| Comptable | comptable@onet-teboulba.tn |
+| Moniteur | moniteur@onet-teboulba.tn |
+| Parent (3 enfants) | parent@onet-teboulba.tn |
+| Enfant | enfant@onet-teboulba.tn |
+| Membre | membre@onet-teboulba.tn |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+| Commande | Rôle |
+|---|---|
+| `npm run dev` / `build` / `start` | Next.js |
+| `npm run setup` / `db:reset` | Schéma + données de démo (le seed vide puis recharge la base) |
+| `npm run i18n` | Génère `messages/{fr,ar,en}/*.json` depuis les sources trilingues `i18n/*.mjs` |
+| `npm run typecheck` / `lint` / `test` | Vérifications (tests unitaires + intégration sur une base isolée) |
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Next.js 15 (App Router, server components + server actions) · TypeScript strict · Prisma (SQLite en dev, PostgreSQL en prod) ·
+Tailwind CSS v4 · next-intl · zod · Recharts. Détails, conventions, modèle de sécurité et routes : **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **RBAC** en base (rôles, permissions, matrice éditable) + **isolation des données** (un parent ne voit que ses enfants, un moniteur ses groupes, un enfant lui-même) vérifiées côté serveur sur chaque page et action.
+- **Sessions** opaques (jeton aléatoire, seul le hash SHA-256 est stocké), mots de passe bcrypt, limitation des tentatives de connexion, journal d'audit.
+- **Fichiers** : upload validé (type MIME, taille, signature binaire).
+- **Paiements** : abstraction `PaymentProvider` (fournisseur « mock » en démo) prête pour Konnect / Flouci / ClicToPay.
+- **Notifications** : canal in-app + adaptateurs e-mail / SMS / push à brancher.
 
-## Deploy on Vercel
+## Identité visuelle
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Le logo est dans `public/brand/onet-mark.svg` (et `src/app/icon.svg` pour le favicon). **Remplacez ces fichiers par le logo officiel** ;
+la palette (rouge ONET + jaune soleil, bleu ciel, vert feuille, violet, corail) se règle dans `src/app/globals.css` (variables `--brand-*`).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Production
+
+1. `DATABASE_URL` vers PostgreSQL et `provider = "postgresql"` dans `prisma/schema.prisma`, puis `npx prisma migrate deploy`.
+2. Stockage des fichiers : remplacer `src/lib/uploads.ts` par un stockage objet (S3, etc.) si plusieurs instances.
+3. Remplacer la limitation de connexion en mémoire (`src/actions/auth.ts`) par Redis en multi-instances.
+4. Brancher un fournisseur de paiement (`src/lib/services/payments.ts`) et des canaux de notification (`src/lib/services/notifications.ts`).

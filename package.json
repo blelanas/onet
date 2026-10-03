@@ -10,9 +10,10 @@
     "typecheck": "tsc --noEmit",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "db:reset": "prisma db push --force-reset && tsx prisma/seed.ts",
+    "db:reset": "prisma db push && tsx prisma/seed.ts",
     "setup": "prisma db push && tsx prisma/seed.ts",
-    "i18n": "node i18n/build.mjs"
+    "i18n": "node i18n/build.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -42,7 +43,8 @@
     "eslint-config-next": "15.5.27",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
