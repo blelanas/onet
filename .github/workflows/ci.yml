@@ -112,7 +112,7 @@ jobs:
             curl -sf -o /dev/null http://localhost:4000/health && curl -sf -o /dev/null http://localhost:4173/ && exit 0
             sleep 1
           done
-          echo "::error::Apps did not start"; tail -50 /tmp/api.log /tmp/web.log; exit 1
+          echo "::error::Apps did not start"; tail -n 50 /tmp/api.log /tmp/web.log; exit 1
 
       - name: Wait for Chromium
         run: |
@@ -128,4 +128,4 @@ jobs:
 
       - name: App logs
         if: failure()
-        run: tail -200 /tmp/api.log /tmp/web.log || true
+        run: tail -n 200 /tmp/api.log /tmp/web.log || true
