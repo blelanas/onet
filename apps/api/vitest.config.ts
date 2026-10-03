@@ -6,7 +6,8 @@ export default defineConfig({
     environment: "node",
     include: ["tests/**/*.test.ts"],
     globalSetup: ["tests/global-setup.ts"],
-    env: { DATABASE_URL: "file:./prisma/test.db", NODE_ENV: "test" },
+    // A non-Tunisian zone, so tests catch code that relies on the host time zone.
+    env: { DATABASE_URL: "file:./prisma/test.db", NODE_ENV: "test", TZ: "America/Los_Angeles" },
     testTimeout: 20000,
     fileParallelism: false,
   },

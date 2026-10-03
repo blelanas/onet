@@ -6,7 +6,13 @@
 export function normalizeDay(input?: Date | string | null): Date {
   if (typeof input === "string") {
     const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(input);
-    if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    if (m) {
+      // setFullYear: the Date constructor maps years 0–99 to 1900–1999.
+      const d = new Date(2000, 0, 1);
+      d.setFullYear(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
     const d = new Date(input);
     if (!Number.isNaN(d.getTime())) return normalizeDay(d);
     return normalizeDay(new Date());
@@ -26,7 +32,7 @@ export function parseDayParam(v: unknown): Date | null {
 
 export function dayKey(d: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  return `${String(d.getFullYear()).padStart(4, "0")}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 export function addDaysLocal(d: Date, n: number) {

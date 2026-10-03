@@ -16,11 +16,22 @@ describe("form dates (Africa/Tunis wall time)", () => {
     expect(parseFormDate("2026-10-03T14:00:00Z").toISOString()).toBe("2026-10-03T14:00:00.000Z");
     expect(parseFormDate("2026-10-03").toISOString()).toBe("2026-10-03T00:00:00.000Z");
     expect(Number.isNaN(parseFormDate("2026-13-03T10:00").getTime())).toBe(true);
+    expect(Number.isNaN(parseFormDate("2026-02-30T10:00").getTime())).toBe(true);
+    expect(Number.isNaN(parseFormDate("2025-02-29").getTime())).toBe(true);
+    expect(parseFormDate("2024-02-29T10:00").toISOString()).toBe("2024-02-29T09:00:00.000Z");
+  });
+
+  it("does not depend on the host time zone", () => {
+    // vitest.config.ts runs the suite under a non-Tunisian TZ, so host-local parsing would differ.
+    expect(process.env.TZ).toBe("America/Los_Angeles");
+    expect(new Date(2026, 9, 3, 14, 0).getTimezoneOffset()).not.toBe(-60);
+    expect(parseFormDate("2026-10-03T14:00").getTime()).not.toBe(new Date("2026-10-03T14:00").getTime());
   });
 
   it("round-trips with toDateTimeInput", () => {
     expect(toDateTimeInput(new Date("2026-10-03T13:00:00Z"))).toBe("2026-10-03T14:00");
     expect(toDateTimeInput(parseFormDate("2026-12-31T23:45"))).toBe("2026-12-31T23:45");
+    expect(toDateTimeInput(parseFormDate("2026-07-01T00:30:15"))).toBe("2026-07-01T00:30:15");
     expect(zonedTimeToDate(2026, 3, 1, 23, 59, 59, 999).toISOString()).toBe("2026-03-01T22:59:59.999Z");
   });
 });

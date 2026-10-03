@@ -3,7 +3,7 @@ import { z } from "zod";
 import { db } from "@api/lib/db";
 import { getCurrentUser } from "@api/lib/auth/session";
 import { AuthError } from "@api/lib/auth/guards";
-import { formToObject, runAction, zs } from "@api/lib/actions";
+import { ActionError, formToObject, runAction, zs } from "@api/lib/actions";
 import { audit } from "@api/lib/audit";
 import { DOCUMENT_CATEGORIES, DOCUMENT_ENTITY_TYPES } from "@api/lib/constants";
 import { canAccessEntityDocs } from "./access";
@@ -24,8 +24,13 @@ export async function addDocument(fd: FormData | Record<string, unknown>) {
     const user = await getCurrentUser();
     if (!user) throw new AuthError("UNAUTHENTICATED");
     if (!(await canAccessEntityDocs(user, d.entityType, d.entityId ?? null, "write"))) throw new AuthError("FORBIDDEN");
-    const doc = await db.document.create({
-      data: { name: d.name, url: d.url, mimeType: d.mimeType, sizeBytes: d.sizeBytes, category: d.category, entityType: d.entityType, entityId: d.entityId ?? null, uploadedById: user.id },
+    const fileId = d.url.slice("/api/files/".length);
+    const doc = await db.$transaction(async (tx) => {
+      // The upload may have been discarded meanwhile (same transaction as the create, so no race with discardUpload).
+      if (!(await tx.storedFile.findUnique({ where: { id: fileId }, select: { id: true } }))) throw new ActionError("errors.notFound");
+      return tx.document.create({
+        data: { name: d.name, url: d.url, mimeType: d.mimeType, sizeBytes: d.sizeBytes, category: d.category, entityType: d.entityType, entityId: d.entityId ?? null, uploadedById: user.id },
+      });
     });
     await audit(user.id, "upload", "Document", doc.id, { entityType: d.entityType, entityId: d.entityId });
     if (d.revalidate?.startsWith("/dashboard")) revalidatePath(d.revalidate);

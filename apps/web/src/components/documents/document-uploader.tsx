@@ -14,12 +14,31 @@ export function DocumentUploader({ entityType, entityId, revalidate, onDone }: {
   const [key, setKey] = useState(0);
   // Uploaded but not yet saved as a document: discarded when replaced or when the uploader closes.
   const unsaved = useRef<string | null>(null);
-  useEffect(
-    () => () => {
-      if (unsaved.current) void discardUpload(unsaved.current);
-    },
-    [],
-  );
+  // Mirrors ActionForm's pending state: while addDocument is in flight the upload must not be discarded.
+  const saving = useRef(false);
+  const closed = useRef(false);
+  useEffect(() => {
+    closed.current = false;
+    return () => {
+      closed.current = true;
+      if (unsaved.current && !saving.current) void discardUpload(unsaved.current);
+    };
+  }, []);
+  const save = async (fd: FormData) => {
+    saving.current = true;
+    try {
+      const res = await addDocument(fd);
+      if (res.ok) unsaved.current = null;
+      return res;
+    } finally {
+      saving.current = false;
+      // Closed while saving and the save didn't go through: discard now.
+      if (closed.current && unsaved.current) {
+        void discardUpload(unsaved.current);
+        unsaved.current = null;
+      }
+    }
+  };
   const onUploaded = (f: UploadedFile) => {
     if (unsaved.current && unsaved.current !== f.url) void discardUpload(unsaved.current);
     unsaved.current = f.url;
@@ -28,7 +47,7 @@ export function DocumentUploader({ entityType, entityId, revalidate, onDone }: {
   return (
     <ActionForm
       key={key}
-      action={addDocument}
+      action={save}
       successMessage="toast.created"
       onSuccess={() => {
         unsaved.current = null;

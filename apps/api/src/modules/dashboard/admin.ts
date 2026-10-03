@@ -45,7 +45,7 @@ export async function adminDashboard(user: CurrentUser) {
     db.joinRequest.count({ where: { status: "PENDING" } }),
     db.eventRegistration.count({ where: { status: "PENDING" } }),
     db.tripRegistration.count({ where: { status: "PENDING" } }),
-    finance ? db.payment.aggregate({ _sum: { amount: true }, where: { status: "COMPLETED", paidAt: { gte: monthStart } } }) : null,
+    finance ? db.payment.aggregate({ _sum: { amount: true }, where: { status: "COMPLETED", paidAt: { gte: monthStart, lte: now } } }) : null,
     finance ? outstanding({}) : null,
     db.group.findMany({ where: { isActive: true }, orderBy: { name: "asc" }, select: { id: true, name: true, color: true, _count: { select: { children: true } } } }),
     finance ? revenueExpenseTrend(6) : null,

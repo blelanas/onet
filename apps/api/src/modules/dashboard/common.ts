@@ -148,18 +148,23 @@ export function latestNotifications(userId: string, take = 5) {
 }
 export type NotificationRow = Awaited<ReturnType<typeof latestNotifications>>[number];
 
-/** Six-month revenue (completed payments) vs expenses, oldest month first. */
+/**
+ * Six-month revenue (completed payments) vs expenses, oldest month first.
+ * The current month is bounded at now (like the month-to-date KPIs) so future-dated rows don't leak in.
+ */
 export async function revenueExpenseTrend(months = 6) {
   const now = new Date();
   const ranges = Array.from({ length: months }, (_, i) => {
     const start = new Date(now.getFullYear(), now.getMonth() - (months - 1 - i), 1);
-    return { start, end: new Date(start.getFullYear(), start.getMonth() + 1, 1) };
+    const end = new Date(start.getFullYear(), start.getMonth() + 1, 1);
+    const range: Prisma.DateTimeFilter = end > now ? { gte: start, lte: now } : { gte: start, lt: end };
+    return { start, range };
   });
   const rows = await Promise.all(
-    ranges.map(async ({ start, end }) => {
+    ranges.map(async ({ start, range }) => {
       const [rev, exp] = await Promise.all([
-        db.payment.aggregate({ _sum: { amount: true }, where: { status: "COMPLETED", paidAt: { gte: start, lt: end } } }),
-        db.expense.aggregate({ _sum: { amount: true }, where: { date: { gte: start, lt: end } } }),
+        db.payment.aggregate({ _sum: { amount: true }, where: { status: "COMPLETED", paidAt: range } }),
+        db.expense.aggregate({ _sum: { amount: true }, where: { date: range } }),
       ]);
       return { month: start, revenue: rev._sum.amount ?? 0, expenses: exp._sum.amount ?? 0 };
     }),

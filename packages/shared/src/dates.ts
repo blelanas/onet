@@ -76,6 +76,12 @@ export function zonedTimeToDate(year: number, month: number, day: number, hour =
   return new Date(t);
 }
 
+/** Is (year, 1-based month, day) a real calendar date (e.g. rejects 2024-02-30, 2025-02-29)? */
+export function isValidCalendarDate(year: number, month: number, day: number) {
+  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day) || month < 1 || month > 12 || day < 1) return false;
+  return day <= new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
 /**
  * Parses a form date value. "YYYY-MM-DDTHH:mm[:ss]" without an offset (what
  * <input type="datetime-local"> sends) is read as wall time in APP_TIME_ZONE, whatever the
@@ -83,20 +89,25 @@ export function zonedTimeToDate(year: number, month: number, day: number, hour =
  */
 export function parseFormDate(v: string, timeZone = APP_TIME_ZONE): Date {
   const m = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?$/.exec(v.trim());
-  if (!m) return new Date(v);
+  if (!m) {
+    // `Date` rolls invalid days over (2024-02-31 → March 2): reject them instead.
+    const dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v.trim());
+    if (dm && !isValidCalendarDate(Number(dm[1]), Number(dm[2]), Number(dm[3]))) return new Date(NaN);
+    return new Date(v);
+  }
   const [, y, mo, d, h, mi, s, ms] = m;
-  if (Number(mo) < 1 || Number(mo) > 12 || Number(d) < 1 || Number(d) > 31 || Number(h) > 23 || Number(mi) > 59 || Number(s ?? 0) > 59) return new Date(NaN);
+  if (!isValidCalendarDate(Number(y), Number(mo), Number(d)) || Number(h) > 23 || Number(mi) > 59 || Number(s ?? 0) > 59) return new Date(NaN);
   return zonedTimeToDate(Number(y), Number(mo), Number(d), Number(h), Number(mi), Number(s ?? 0), Number((ms ?? "0").padEnd(3, "0")), timeZone);
 }
 
-/** "2026-10-03T14:00" (wall time in APP_TIME_ZONE) for <input type="datetime-local">; inverse of `parseFormDate`. */
+/** "2026-10-03T14:00" (or "…T14:00:15" when seconds are set; wall time in APP_TIME_ZONE) for <input type="datetime-local">; inverse of `parseFormDate`. */
 export function toDateTimeInput(d?: Date | string | null, timeZone = APP_TIME_ZONE) {
   if (!d) return "";
   const x = new Date(d);
   if (Number.isNaN(x.getTime())) return "";
   const p = zonedParts(x, timeZone);
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${p.year}-${pad(p.month)}-${pad(p.day)}T${pad(p.hour)}:${pad(p.minute)}`;
+  return `${p.year}-${pad(p.month)}-${pad(p.day)}T${pad(p.hour)}:${pad(p.minute)}${p.second ? `:${pad(p.second)}` : ""}`;
 }
 
 export function relativeTime(d: Date | string, locale = "fr") {

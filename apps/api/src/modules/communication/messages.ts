@@ -60,7 +60,13 @@ export async function openConversation(user: CurrentUser, id: string) {
   const messages = conv.messages.reverse();
   const now = new Date();
   // Read up to the newest message actually returned, so one arriving meanwhile stays unread.
-  const readUpTo = messages.at(-1)?.createdAt ?? now;
+  let readUpTo = messages.at(-1)?.createdAt ?? now;
+  if (messages.length) {
+    // Timestamps are stored with millisecond precision: if a message we didn't return shares the
+    // newest timestamp, stop 1 ms short so the strict `createdAt > lastReadAt` checks keep it unread.
+    const tie = await db.message.count({ where: { conversationId: id, createdAt: readUpTo, id: { notIn: messages.map((m) => m.id) } } });
+    if (tie > 0) readUpTo = new Date(readUpTo.getTime() - 1);
+  }
   await Promise.all([
     db.conversationParticipant.update({ where: { conversationId_userId: { conversationId: id, userId: user.id } }, data: { lastReadAt: readUpTo } }),
     db.notification.updateMany({ where: { userId: user.id, type: "MESSAGE", readAt: null, link: `/dashboard/messages?c=${id}` }, data: { readAt: now } }),

@@ -28,8 +28,17 @@ for (const f of files) {
     await tx.execute({ sql: `INSERT INTO "_migrations" (name, appliedAt) VALUES (?, ?)`, args: [f, new Date().toISOString()] });
     await tx.commit();
   } catch (e) {
-    if (!tx.closed) await tx.rollback().catch(() => {});
-    console.error(`✗ ${f} failed, rolled back`);
+    let outcome = "transaction already closed, no explicit rollback ran";
+    if (!tx.closed) {
+      try {
+        await tx.rollback();
+        outcome = "rolled back";
+      } catch (rbErr) {
+        outcome = "rollback FAILED";
+        console.error(`✗ ${f}: rollback failed`, rbErr);
+      }
+    }
+    console.error(`✗ ${f} failed (${outcome})`);
     client.close();
     throw e;
   } finally {

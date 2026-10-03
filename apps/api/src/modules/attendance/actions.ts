@@ -51,6 +51,7 @@ export async function saveAttendance(input: z.input<typeof schema>) {
     );
 
     const newlyAbsent = d.entries.filter((e) => e.status === "ABSENT" && before[e.memberId]?.status !== "ABSENT");
+    let notified = 0;
     if (newlyAbsent.length) {
       const ctxName =
         ctx.kind === "group"
@@ -71,13 +72,16 @@ export async function saveAttendance(input: z.input<typeof schema>) {
           }),
         ),
       );
-      for (const r of sent) if (r.status === "rejected") console.error("[attendance] absence notification failed", r.reason);
+      for (const r of sent) {
+        if (r.status === "fulfilled") notified++;
+        else console.error("[attendance] absence notification failed", r.reason);
+      }
     }
 
     const counts = Object.fromEntries(ATTENDANCE_STATUSES.map((s) => [s, d.entries.filter((e) => e.status === s).length]));
-    await audit(user.id, "record", "Attendance", d.contextKey, { date: d.date, ...counts, notified: newlyAbsent.length });
+    await audit(user.id, "record", "Attendance", d.contextKey, { date: d.date, ...counts, notified });
     revalidatePath("/dashboard/attendance");
     revalidatePath(ctx.kind === "group" ? `/dashboard/groups/${ctx.id}` : `/dashboard/activities/${ctx.id}`);
-    return { saved: d.entries.length, notified: newlyAbsent.length };
+    return { saved: d.entries.length, notified };
   });
 }

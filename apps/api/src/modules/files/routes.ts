@@ -1,4 +1,5 @@
 import { Router, type Request } from "express";
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { db } from "@api/lib/db";
 import { AuthError } from "@api/lib/auth/guards";
@@ -82,23 +83,23 @@ filesRouter.get("/files/:id", async (req, res, next) => {
 });
 
 /** Is this uploaded file URL still used by any record (every column that stores an upload URL, plus settings JSON)? */
-async function isFileReferenced(url: string) {
+async function isFileReferenced(url: string, tx: Prisma.TransactionClient = db) {
   const eq = { equals: url };
   const counts = await Promise.all([
-    db.document.count({ where: { url: eq } }),
-    db.user.count({ where: { avatarUrl: eq } }),
-    db.member.count({ where: { photoUrl: eq } }),
-    db.activity.count({ where: { coverUrl: eq } }),
-    db.event.count({ where: { coverUrl: eq } }),
-    db.trip.count({ where: { coverUrl: eq } }),
-    db.song.count({ where: { OR: [{ audioUrl: eq }, { coverUrl: eq }] } }),
-    db.game.count({ where: { OR: [{ imageUrl: eq }, { videoUrl: eq }] } }),
-    db.conference.count({ where: { OR: [{ coverUrl: eq }, { mediaUrl: eq }] } }),
-    db.resource.count({ where: { url: eq } }),
-    db.newsPost.count({ where: { coverUrl: eq } }),
-    db.galleryItem.count({ where: { imageUrl: eq } }),
-    db.expense.count({ where: { attachmentUrl: eq } }),
-    db.setting.count({ where: { value: { contains: url } } }),
+    tx.document.count({ where: { url: eq } }),
+    tx.user.count({ where: { avatarUrl: eq } }),
+    tx.member.count({ where: { photoUrl: eq } }),
+    tx.activity.count({ where: { coverUrl: eq } }),
+    tx.event.count({ where: { coverUrl: eq } }),
+    tx.trip.count({ where: { coverUrl: eq } }),
+    tx.song.count({ where: { OR: [{ audioUrl: eq }, { coverUrl: eq }] } }),
+    tx.game.count({ where: { OR: [{ imageUrl: eq }, { videoUrl: eq }] } }),
+    tx.conference.count({ where: { OR: [{ coverUrl: eq }, { mediaUrl: eq }] } }),
+    tx.resource.count({ where: { url: eq } }),
+    tx.newsPost.count({ where: { coverUrl: eq } }),
+    tx.galleryItem.count({ where: { imageUrl: eq } }),
+    tx.expense.count({ where: { attachmentUrl: eq } }),
+    tx.setting.count({ where: { value: { contains: url } } }),
   ]);
   return counts.some((n) => n > 0);
 }
@@ -113,8 +114,13 @@ async function discardUpload(id: string) {
     if (!user) throw new AuthError("UNAUTHENTICATED");
     const file = await db.storedFile.findUnique({ where: { id: fileId }, select: { uploadedById: true, createdAt: true } });
     if (!file || file.uploadedById !== user.id) throw new AuthError("NOT_FOUND");
-    if (Date.now() - file.createdAt.getTime() > 24 * 3600_000 || (await isFileReferenced(`/api/files/${fileId}`))) throw new AuthError("FORBIDDEN");
-    await db.storedFile.delete({ where: { id: fileId } });
+    if (Date.now() - file.createdAt.getTime() > 24 * 3600_000) throw new AuthError("FORBIDDEN");
+    // Check-and-delete in one transaction so a concurrent addDocument can't attach the file in between
+    // (addDocument re-checks inside its own transaction that the file still exists).
+    await db.$transaction(async (tx) => {
+      if (await isFileReferenced(`/api/files/${fileId}`, tx)) throw new AuthError("FORBIDDEN");
+      await tx.storedFile.delete({ where: { id: fileId } });
+    });
   });
 }
 

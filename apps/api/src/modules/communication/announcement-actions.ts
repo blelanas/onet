@@ -7,12 +7,15 @@ import { audit } from "@api/lib/audit";
 import { ANNOUNCEMENT_PRIORITIES, AUDIENCES } from "@api/lib/constants";
 import { notifyUsers } from "@api/lib/services/notifications";
 import { audienceUserIds } from "./audience";
-import { zonedTimeToDate } from "@onet/shared";
+import { isValidCalendarDate, zonedTimeToDate } from "@onet/shared";
 
 /** A date-only expiry ("YYYY-MM-DD") means "until the end of that day" in Tunisian time. */
 const expiresAt = z.preprocess((v) => {
   const m = typeof v === "string" ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(v.trim()) : null;
-  return m && Number(m[2]) >= 1 && Number(m[2]) <= 12 && Number(m[3]) >= 1 && Number(m[3]) <= 31 ? zonedTimeToDate(Number(m[1]), Number(m[2]), Number(m[3]), 23, 59, 59, 999) : v;
+  if (!m) return v;
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  // Calendar-invalid days (2024-02-31) are rejected rather than rolled over.
+  return isValidCalendarDate(y, mo, d) ? zonedTimeToDate(y, mo, d, 23, 59, 59, 999) : new Date(NaN);
 }, zs.optDate);
 
 const schema = z.object({

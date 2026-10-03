@@ -4,6 +4,7 @@ import type { CurrentUser } from "@api/lib/auth/session";
 import { can } from "@api/lib/auth/guards";
 import { myChildren } from "@api/lib/auth/scope";
 import { startOfDay } from "@api/lib/dates";
+import { paidAmount } from "@onet/shared";
 import { ACTIVE_STATUSES, eligibility, type IneligibleReason, type RegKind, type RegTarget } from "./service";
 
 /** Users who may see internal (non public) events/trips and participant lists. */
@@ -209,9 +210,13 @@ export async function registrationTotals(user: CurrentUser, f: RegFilters) {
     count({ status: "PENDING" }),
     count({ status: "WAITLIST" }),
     count(live, unpaidInvoice),
-    owners.length ? db.invoice.aggregate({ where: { status: { in: UNPAID_INVOICE_STATUSES }, OR: owners }, _sum: { amount: true } }) : null,
+    owners.length
+      ? db.invoice.findMany({ where: { status: { in: UNPAID_INVOICE_STATUSES }, OR: owners }, select: { amount: true, payments: { select: { amount: true, status: true } } } })
+      : [],
   ]);
-  return { total, kpi: { active, pending, waitlist, unpaid, unpaidAmount: unpaidSum?._sum.amount ?? 0 } };
+  // Remaining balance (amount − completed payments), not the face value of partially paid invoices.
+  const unpaidAmount = unpaidSum.reduce((s, inv) => s + Math.max(0, inv.amount - paidAmount(inv)), 0);
+  return { total, kpi: { active, pending, waitlist, unpaid, unpaidAmount } };
 }
 export type RegistrationRow = Awaited<ReturnType<typeof listRegistrations>>[number];
 
