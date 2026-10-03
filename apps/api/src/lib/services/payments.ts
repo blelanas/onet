@@ -25,6 +25,9 @@ const mockProvider: PaymentProvider = {
 
 const PROVIDERS: Record<string, PaymentProvider> = { mock: mockProvider };
 
+/** Throws for unknown keys: a typo must never silently select the auto-success mock. */
 export function getPaymentProvider(key = process.env.PAYMENT_PROVIDER ?? "mock"): PaymentProvider {
-  return PROVIDERS[key] ?? mockProvider;
+  const provider = PROVIDERS[key];
+  if (!provider) throw new Error(`Unknown payment provider "${key}"`);
+  return provider;
 }

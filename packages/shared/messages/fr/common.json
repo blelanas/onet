@@ -95,6 +95,7 @@
     "next": "Page suivante"
   },
   "upload": {
+    "pending": "Patientez, le fichier est en cours d'envoi…",
     "drop": "Glissez un fichier ici",
     "browse": "Parcourir",
     "replace": "Remplacer",

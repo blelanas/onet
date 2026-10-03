@@ -32,9 +32,10 @@ const memberSchema = z.object({
   monitorGroupIds: z.array(z.string()).optional(),
 });
 
+/** Next number from the NUMERIC maximum (text ordering would stall after ONT-9999 → ONT-10000). */
 async function nextMembershipNumber() {
-  const last = await db.member.findFirst({ where: { membershipNumber: { startsWith: "ONT-" } }, orderBy: { membershipNumber: "desc" }, select: { membershipNumber: true } });
-  const n = last ? Number(last.membershipNumber.slice(4)) + 1 : 1;
+  const rows = await db.$queryRaw<{ n: bigint | number | null }[]>`SELECT MAX(CAST(SUBSTR(membershipNumber, 5) AS INTEGER)) AS n FROM "Member" WHERE membershipNumber LIKE 'ONT-%'`;
+  const n = Number(rows[0]?.n ?? 0) + 1;
   return `ONT-${String(n).padStart(4, "0")}`;
 }
 
@@ -76,6 +77,11 @@ export async function saveMember(fd: FormData | Record<string, unknown>) {
         await tx.groupMonitor.deleteMany({ where: { memberId: m.id, groupId: { notIn: gids } } });
         for (const gid of gids) await tx.groupMonitor.upsert({ where: { groupId_memberId: { groupId: gid, memberId: m.id } }, create: { groupId: gid, memberId: m.id }, update: {} });
       }
+      // A type change must drop the links that granted data access under the previous type
+      // (visibleMemberIds relies on guardianships and group monitoring).
+      if (fields.type !== "CHILD") await tx.guardianship.deleteMany({ where: { childId: m.id } });
+      if (fields.type !== "MONITOR") await tx.groupMonitor.deleteMany({ where: { memberId: m.id } });
+      if (fields.type === "CHILD") await tx.guardianship.deleteMany({ where: { parentId: m.id } });
       return m;
     });
     await audit(user.id, id ? "update" : "create", "Member", member.id, { name: `${member.firstName} ${member.lastName}` });
@@ -124,7 +130,8 @@ export async function createMemberAccount(fd: FormData | Record<string, unknown>
   return runAction(accountSchema, formToObject(fd), async ({ memberId, email, password, role }) => {
     const user = await requirePermission("users.manage");
     if (!isStrongPassword(password)) throw new ActionError("errors.weakPassword");
-    if (role === "admin" && !user.permissions.has("roles.manage")) throw new ActionError("errors.forbidden");
+    // Roles carrying administrative or financial powers can only be granted by role managers.
+    if ((role === "admin" || role === "accountant") && !user.permissions.has("roles.manage")) throw new ActionError("errors.forbidden");
     const member = await db.member.findUnique({ where: { id: memberId } });
     if (!member) throw new ActionError("errors.notFound");
     if (member.userId) throw new ActionError("errors.alreadyRegistered");

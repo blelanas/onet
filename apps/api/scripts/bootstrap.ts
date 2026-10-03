@@ -29,6 +29,7 @@ async function main() {
 
   const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
   const password = process.env.ADMIN_PASSWORD;
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error(`ADMIN_EMAIL "${email}" is not a valid e-mail address`);
   if (email && password) {
     if (password.length < 10) throw new Error("ADMIN_PASSWORD must be at least 10 characters");
     const existing = await db.user.findUnique({ where: { email } });
@@ -41,6 +42,9 @@ async function main() {
       console.log(`✓ super administrator ${email} created`);
     }
   }
+  // A database without any active super administrator is not usable: fail loudly.
+  const admins = await db.user.count({ where: { isActive: true, roles: { some: { role: { key: "super_admin" } } } } });
+  if (!admins) throw new Error("No super administrator exists — set ADMIN_EMAIL and ADMIN_PASSWORD and run again");
   if (!(await db.setting.findUnique({ where: { key: "organization.profile" } }))) {
     await db.setting.create({
       data: { key: "organization.profile", value: JSON.stringify({ name: "ONET Teboulba", fullName: "Organisation Nationale de l'Enfance Tunisienne — Comité local de Teboulba", fullNameAr: "المنظمة التونسية للطفولة — الهيئة المحلية بطبلبة" }) },

@@ -56,6 +56,8 @@ export function Upload({
     <div className={cn("space-y-1.5", className)}>
       {label && <span className="block text-sm font-bold text-ink-2">{label}</span>}
       <input type="hidden" name={name} value={url} />
+      {/* Lets ActionForm block submission until the upload has finished. */}
+      {busy && <input type="hidden" data-uploading="true" />}
       <div
         onDragOver={(e) => {
           e.preventDefault();

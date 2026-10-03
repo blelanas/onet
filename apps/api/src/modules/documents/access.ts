@@ -24,7 +24,8 @@ export async function canAccessEntityDocs(user: CurrentUser, entityType: string,
     return true;
   }
   if (entityType === "INVOICE" && entityId) {
-    if (user.permissions.has("finance.read")) return true;
+    // Reading invoices needs finance.read; attaching files to them needs finance.manage.
+    if (user.permissions.has(mode === "write" ? "finance.manage" : "finance.read")) return true;
     const inv = await db.invoice.findUnique({ where: { id: entityId }, select: { payerId: true } });
     return mode === "read" && !!inv && inv.payerId === user.memberId;
   }

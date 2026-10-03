@@ -10,8 +10,9 @@ export class AuthError extends Error {
   }
 }
 
+/** `can(user)` with no permission is always false: an empty list must never authorize. */
 export function can(user: CurrentUser | null, ...perms: Permission[]) {
-  return !!user && perms.every((p) => user.permissions.has(p));
+  return !!user && perms.length > 0 && perms.every((p) => user.permissions.has(p));
 }
 
 export function canAny(user: CurrentUser | null, ...perms: Permission[]) {

@@ -41,6 +41,7 @@ export default {
   },
   pagination: { label: T("Pagination", "ترقيم الصفحات", "Pagination"), showing: T("{from}–{to} sur {total}", "{from}–{to} من {total}", "{from}–{to} of {total}"), previous: T("Page précédente", "الصفحة السابقة", "Previous page"), next: T("Page suivante", "الصفحة التالية", "Next page") },
   upload: {
+    pending: T("Patientez, le fichier est en cours d'envoi…", "يرجى الانتظار، جارٍ رفع الملف…", "Please wait, the file is still uploading…"),
     drop: T("Glissez un fichier ici", "اسحب ملفًا إلى هنا", "Drop a file here"), browse: T("Parcourir", "تصفّح", "Browse"), replace: T("Remplacer", "استبدال", "Replace"),
     hint: { image: T("JPG, PNG ou WebP — 10 Mo max", "JPG أو PNG أو WebP — 10 ميغابايت كحد أقصى", "JPG, PNG or WebP — 10 MB max"), document: T("PDF, JPG, PNG, DOCX — 10 Mo max", "PDF، JPG، PNG، DOCX — 10 ميغابايت", "PDF, JPG, PNG, DOCX — 10 MB max"), audio: T("MP3, OGG, WAV, M4A — 10 Mo max", "MP3، OGG، WAV، M4A — 10 ميغابايت", "MP3, OGG, WAV, M4A — 10 MB max"), video: T("MP4 ou WebM — 10 Mo max", "MP4 أو WebM — 10 ميغابايت", "MP4 or WebM — 10 MB max") },
   },

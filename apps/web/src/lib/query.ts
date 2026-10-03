@@ -19,7 +19,9 @@ export function useApi<T>(path: string | null, params?: Params, opts?: { enabled
     queryKey: [path, params ?? {}],
     queryFn: () => apiGet<T>(path!, params),
     enabled: !!path && (opts?.enabled ?? true),
-    placeholderData: keepPreviousData,
+    // Keep the previous data only while filters/pagination of the SAME endpoint change; a
+    // different resource (e.g. another /members/:id) must never show the previous one.
+    placeholderData: (prev, prevQuery) => (prevQuery?.queryKey[0] === path ? keepPreviousData(prev) : undefined),
     refetchInterval: opts?.refetchInterval,
   });
 }

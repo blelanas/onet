@@ -1,4 +1,5 @@
 import { useTranslations } from "use-intl";
+import { queryClient } from "@/lib/query";
 import { useRouter } from "@/lib/router";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -36,6 +37,11 @@ export function ActionForm<T>({ action, successMessage = "toast.saved", redirect
         onSubmit={(e) => {
           e.preventDefault();
           const form = e.currentTarget;
+          // Don't submit while a file is still uploading (its URL isn't in the form yet).
+          if (form.querySelector('[data-uploading="true"]')) {
+            toast.info(t("upload.pending"));
+            return;
+          }
           const fd = new FormData(form);
           start(async () => {
             const res = await action(fd);
@@ -44,7 +50,11 @@ export function ActionForm<T>({ action, successMessage = "toast.saved", redirect
               toast.success(tr(res.message ?? successMessage));
               onSuccess?.(res.data);
               if (resetOnSuccess) form.reset();
-              if (redirectTo) router.push(typeof redirectTo === "function" ? redirectTo(res.data) : redirectTo);
+              if (redirectTo) {
+                // Mark every cached query stale so the destination page refetches fresh data.
+                void queryClient.invalidateQueries({ refetchType: "none" });
+                router.push(typeof redirectTo === "function" ? redirectTo(res.data) : redirectTo);
+              }
               else router.refresh();
             } else {
               setErrors(res.fieldErrors ?? {});

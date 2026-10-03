@@ -109,9 +109,9 @@ router.get(
   }),
 );
 
-/** Options for selects in forms (parents, monitors, groups). */
+/** Form-only options (all members of the given types) — staff who manage members only. */
 export async function memberOptionsPage(req: Request) {
-  await requirePermission("members.read");
+  await requirePermission("members.manage");
   const types = qs(req, "types")?.split(",").filter(Boolean);
   return { members: await memberOptions(types), groups: await groupOptions() };
 }
@@ -123,7 +123,7 @@ export async function memberProfilePage(req: Request) {
   const id = param(req, "id");
   const member = await getMemberProfile(user, id);
   const [attendance, invoices, parentOptions] = await Promise.all([
-    memberAttendance(id, 60),
+    can(user, "attendance.read") ? memberAttendance(id, 60) : Promise.resolve([]),
     memberInvoices(user, id),
     can(user, "members.manage") && member.type === "CHILD"
       ? memberOptions(["PARENT", "MEMBER", "STAFF", "MONITOR"])

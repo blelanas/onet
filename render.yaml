@@ -7,7 +7,8 @@ services:
     plan: free
     region: frankfurt
     branch: main
-    buildCommand: npm ci --no-audit --no-fund && npm run i18n && npm run build -w @onet/api
+    # --include=dev: the build needs prisma/esbuild/tsx (NODE_ENV=production would skip them).
+    buildCommand: npm ci --include=dev --no-audit --no-fund && npm run i18n && npm run build -w @onet/api
     # Pending SQL migrations are applied on every start (idempotent).
     startCommand: npm run db:migrate -w @onet/api && npm start -w @onet/api
     healthCheckPath: /health

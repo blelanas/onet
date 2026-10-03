@@ -1,5 +1,6 @@
 import { useTranslations } from "use-intl";
 import { useState, useTransition } from "react";
+import { queryClient } from "@/lib/query";
 import { useRouter } from "@/lib/router";
 import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
@@ -75,7 +76,10 @@ export function ConfirmButton({
                   if (res.ok) {
                     toast.success(tr(res.message ?? successMessage));
                     setOpen(false);
-                    if (redirectTo) router.push(redirectTo);
+                    if (redirectTo) {
+                      void queryClient.invalidateQueries({ refetchType: "none" });
+                      router.push(redirectTo);
+                    }
                     else router.refresh();
                   } else toast.error(tr(res.error));
                 })

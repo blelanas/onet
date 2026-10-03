@@ -95,6 +95,7 @@
     "next": "Next page"
   },
   "upload": {
+    "pending": "Please wait, the file is still uploading…",
     "drop": "Drop a file here",
     "browse": "Browse",
     "replace": "Replace",

@@ -27,7 +27,7 @@ export function LinkParentForm({ childId, parents }: { childId: string; parents:
 export function AccountForm({ memberId, defaultEmail, defaultRole, canAdmin }: { memberId: string; defaultEmail: string; defaultRole: string; canAdmin: boolean }) {
   const t = useTranslations("people.profile");
   const tc = useTranslations("common");
-  const roles = ["parent", "kid", "member", "monitor", "accountant", ...(canAdmin ? ["admin"] : [])];
+  const roles = ["parent", "kid", "member", "monitor", ...(canAdmin ? ["accountant", "admin"] : [])];
   return (
     <ActionForm action={createMemberAccount} className="space-y-3">
       {(pending) => (

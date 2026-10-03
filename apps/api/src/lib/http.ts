@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response, Router } from "express";
 import superjson from "superjson";
 import { AuthError } from "@api/lib/auth/guards";
 import { ActionError, type ActionResult } from "@api/lib/actions";
+import { BodyTooLargeError } from "@api/lib/uploads";
 
 const STATUS = { UNAUTHENTICATED: 401, FORBIDDEN: 403, NOT_FOUND: 404 } as const;
 
@@ -49,6 +50,7 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
     return sendData(res, { ok: false, error: key }, STATUS[err.code]);
   }
   if (err instanceof ActionError) return sendData(res, { ok: false, error: err.message }, 400);
+  if (err instanceof BodyTooLargeError) return sendData(res, { ok: false, error: "errors.uploadSize" }, 413);
   if (err && typeof err === "object" && "type" in err && (err as { type: string }).type === "entity.too.large") return sendData(res, { ok: false, error: "errors.uploadSize" }, 413);
   console.error("[api] unexpected error", err);
   sendData(res, { ok: false, error: "errors.unexpected" }, 500);

@@ -19,6 +19,8 @@ function sniff(buf: Buffer, mime: string): boolean {
 }
 
 export class UploadError extends Error {}
+/** Request body above the upload limit (rejected while streaming). */
+export class BodyTooLargeError extends Error {}
 
 /** Validates and stores a file in the database; returns its public, unguessable URL. */
 export async function saveUpload(file: File, kind: UploadKind, uploadedById: string | null) {

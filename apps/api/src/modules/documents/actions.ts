@@ -39,9 +39,14 @@ export async function deleteDocument(id: string) {
     if (!user) throw new AuthError("UNAUTHENTICATED");
     const doc = await db.document.findUnique({ where: { id: docId } });
     if (!doc) throw new AuthError("NOT_FOUND");
-    const own = doc.uploadedById === user.id;
+    // Uploaders may delete their own documents only while they still have write access to
+    // the entity (e.g. a former guardian loses it with the guardianship).
+    const own = doc.uploadedById === user.id && (await canAccessEntityDocs(user, doc.entityType, doc.entityId, "write"));
     if (!user.permissions.has("documents.manage") && !own) throw new AuthError("FORBIDDEN");
     await db.document.delete({ where: { id: docId } });
+    // Also erase the stored binary (personal data such as medical forms must not linger).
+    const fileId = doc.url.startsWith("/api/files/") ? doc.url.slice("/api/files/".length) : null;
+    if (fileId && (await db.document.count({ where: { url: doc.url } })) === 0) await db.storedFile.deleteMany({ where: { id: fileId } });
     await audit(user.id, "delete", "Document", docId, { name: doc.name });
     revalidatePath("/dashboard", "layout");
   });

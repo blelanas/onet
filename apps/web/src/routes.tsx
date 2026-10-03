@@ -1,7 +1,8 @@
-import { lazy } from "react";
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate, type RouteObject } from "react-router";
 import { RequireAuth } from "@/components/states/guards";
 import { NotFound } from "@/components/states/page-state";
+import { PageSkeleton } from "@/components/ui/skeleton";
 import { routes as home } from "@/pages/home/routes";
 import { routes as people } from "@/pages/people/routes";
 import { routes as groups } from "@/pages/groups/routes";
@@ -47,7 +48,9 @@ export const router = createBrowserRouter([
     path: "/dashboard",
     element: (
       <RequireAuth>
-        <DashboardLayoutLazy />
+        <Suspense fallback={<div className="p-6"><PageSkeleton /></div>}>
+          <DashboardLayoutLazy />
+        </Suspense>
       </RequireAuth>
     ),
     children: dashboardChildren,

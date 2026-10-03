@@ -9,7 +9,8 @@ export const env = {
   NODE_ENV: process.env.NODE_ENV ?? "development",
   PORT: Number(process.env.PORT ?? 4000),
   /** "file:./dev.db" locally, "libsql://<db>.turso.io" in production. */
-  DATABASE_URL: required("DATABASE_URL", "file:./prisma/dev.db"),
+  // The local SQLite fallback is for development/tests only: production must point at Turso.
+  DATABASE_URL: required("DATABASE_URL", process.env.NODE_ENV === "production" ? undefined : "file:./prisma/dev.db"),
   DATABASE_AUTH_TOKEN: process.env.DATABASE_AUTH_TOKEN,
   /**
    * Comma-separated list of allowed web origins (Firebase Hosting URLs, localhost).
