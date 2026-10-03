@@ -16,8 +16,6 @@ permissions:
 
 env:
   NODE_VERSION: 22
-  DATABASE_URL: file:./ci.db
-  NEXT_TELEMETRY_DISABLED: 1
 
 jobs:
   # ── Fast static checks (~1 min) ───────────────────────────────────────────
@@ -32,17 +30,17 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - name: Prisma schema is valid
-        run: npx prisma validate
       - name: Translations are built and complete (fr / ar / en)
         run: |
           npm run i18n
-          if [ -n "$(git status --porcelain -- messages)" ]; then
-            git status --short -- messages
-            echo "::error::messages/*.json are out of date or missing — run 'npm run i18n' and commit the result"
+          if [ -n "$(git status --porcelain -- packages/shared/messages)" ]; then
+            git status --short -- packages/shared/messages
+            echo "::error::packages/shared/messages is out of date or missing files — run 'npm run i18n' and commit the result"
             exit 1
           fi
-      - name: Type check
+      - name: Database migrations match the Prisma schema
+        run: npm run db:check -w @onet/api
+      - name: Type check (API + web)
         run: npm run typecheck
       - name: Lint
         run: npm run lint -- --max-warnings=0
@@ -51,7 +49,7 @@ jobs:
           npm audit --omit=dev --audit-level=critical
           npm audit --omit=dev --audit-level=high > /dev/null || echo "::warning::npm audit reports high-severity advisories in production dependencies (see 'npm audit')"
 
-  # ── Unit + integration tests on a freshly seeded SQLite DB (~1 min) ───────
+  # ── API unit + integration tests on a freshly migrated & seeded DB (~1 min) ──
   test:
     name: Unit & integration tests
     runs-on: ubuntu-latest
@@ -65,11 +63,14 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm test
 
-  # ── Production build + browser smoke test of every role (~4 min) ─────────
+  # ── Production builds + browser smoke test of every role (~4 min) ─────────
   e2e:
     name: Build & end-to-end smoke test
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      DATABASE_URL: file:./prisma/ci.db
+      VITE_API_URL: http://localhost:4000
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -78,13 +79,6 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
 
-      - name: Cache Next.js build cache
-        uses: actions/cache@v4
-        with:
-          path: .next/cache
-          key: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'messages/**', 'next.config.ts', 'tailwind.config.*', 'postcss.config.*') }}
-          restore-keys: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
-
       - name: Cache Playwright browsers
         id: pw-cache
         uses: actions/cache@v4
@@ -92,7 +86,7 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
-      # Install the browser while the app builds.
+      # Install the browser while the apps build.
       - name: Install Chromium (background)
         run: |
           if [ "${{ steps.pw-cache.outputs.cache-hit }}" = "true" ]; then cmd="install-deps chromium"; else cmd="install --with-deps chromium"; fi
@@ -102,7 +96,7 @@ jobs:
       - name: Database + demo data
         run: npm run setup
 
-      - name: Production build
+      - name: Production builds (API + web)
         run: |
           # Fail fast if the background browser install has already failed.
           if [ -f /tmp/pw-install.exit ] && [ "$(cat /tmp/pw-install.exit)" != "0" ]; then
@@ -110,11 +104,15 @@ jobs:
           fi
           npm run build
 
-      - name: Start the app
+      - name: Start API + web
         run: |
-          npm start -- -p 3000 > /tmp/app.log 2>&1 &
-          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:3000/login && exit 0; sleep 1; done
-          echo "::error::App did not start" && cat /tmp/app.log && exit 1
+          (cd apps/api && PORT=4000 CORS_ORIGINS=http://localhost:4173 NODE_ENV=production node dist/index.js > /tmp/api.log 2>&1 &)
+          (cd apps/web && npx vite preview --port 4173 --strictPort > /tmp/web.log 2>&1 &)
+          for i in $(seq 1 60); do
+            curl -sf -o /dev/null http://localhost:4000/health && curl -sf -o /dev/null http://localhost:4173/ && exit 0
+            sleep 1
+          done
+          echo "::error::Apps did not start"; tail -50 /tmp/api.log /tmp/web.log; exit 1
 
       - name: Wait for Chromium
         run: |
@@ -126,8 +124,8 @@ jobs:
       - name: Smoke test (public site + permissions for all 7 roles)
         run: npm run test:e2e
         env:
-          BASE_URL: http://localhost:3000
+          BASE_URL: http://localhost:4173
 
       - name: App logs
         if: failure()
-        run: tail -200 /tmp/app.log || true
+        run: tail -200 /tmp/api.log /tmp/web.log || true

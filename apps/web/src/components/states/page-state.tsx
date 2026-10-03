@@ -8,7 +8,7 @@ import { PageSkeleton } from "@/components/ui/skeleton";
 export function Forbidden() {
   const t = useTranslations("common");
   return (
-    <div className="card">
+    <div className="card" data-testid="forbidden">
       <EmptyState icon={<ShieldAlert className="size-5" />} title={t("states.forbiddenTitle")} description={t("states.forbiddenDescription")} action={<LinkButton href="/dashboard">{t("actions.backToDashboard")}</LinkButton>} />
     </div>
   );
@@ -17,7 +17,7 @@ export function Forbidden() {
 export function NotFound({ home = "/dashboard" }: { home?: string }) {
   const t = useTranslations("common");
   return (
-    <div className="card">
+    <div className="card" data-testid="not-found">
       <EmptyState title={t("states.notFoundTitle")} description={t("states.notFoundDescription")} action={<LinkButton href={home}>{t("actions.backToDashboard")}</LinkButton>} />
     </div>
   );
@@ -26,7 +26,7 @@ export function NotFound({ home = "/dashboard" }: { home?: string }) {
 export function ErrorState({ onRetry }: { onRetry?: () => void }) {
   const t = useTranslations("common");
   return (
-    <div className="card">
+    <div className="card" data-testid="error-state">
       <EmptyState
         title={t("states.errorTitle")}
         description={t("states.errorDescription")}

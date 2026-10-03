@@ -14,7 +14,8 @@
     "typecheck": "npm run typecheck -w @onet/api && npm run typecheck -w @onet/web",
     "lint": "eslint",
     "test": "npm test -w @onet/api",
-    "test:e2e": "node tests/e2e/smoke.mjs"
+    "test:e2e": "node tests/e2e/smoke.mjs",
+    "postinstall": "prisma generate --schema apps/api/prisma/schema.prisma"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

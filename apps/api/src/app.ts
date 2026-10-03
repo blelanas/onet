@@ -8,6 +8,16 @@ import { authRouter } from "@api/modules/auth/routes";
 import { filesRouter } from "@api/modules/files/routes";
 import { registerModules } from "@api/modules";
 
+/** Origin allow-list with `*` wildcards (Firebase preview channels get random suffixes). */
+function originAllowed(origin: string) {
+  return env.CORS_ORIGINS.some((pattern) => {
+    if (pattern === origin) return true;
+    if (!pattern.includes("*")) return false;
+    const re = new RegExp(`^${pattern.split("*").map((s) => s.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join("[a-z0-9-]*")}$`);
+    return re.test(origin);
+  });
+}
+
 export function createApp() {
   const app = express();
   app.disable("x-powered-by");
@@ -15,7 +25,7 @@ export function createApp() {
   app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } })); // files are embedded by the web app
   app.use(
     cors({
-      origin: (origin, cb) => cb(null, !origin || env.CORS_ORIGINS.includes(origin) || env.CORS_ORIGINS.includes("*")),
+      origin: (origin, cb) => cb(null, !origin || originAllowed(origin)),
       allowedHeaders: ["Content-Type", "Authorization", "X-Locale"],
       exposedHeaders: ["Content-Disposition"],
       maxAge: 86400,

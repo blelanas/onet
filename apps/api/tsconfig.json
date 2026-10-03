@@ -13,5 +13,5 @@
     "types": ["node"],
     "paths": { "@api/*": ["./src/*"] }
   },
-  "include": ["src", "prisma", "tests"]
+  "include": ["src", "prisma", "tests", "scripts"]
 }

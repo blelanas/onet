@@ -1,0 +1,27 @@
+# Render Blueprint — the ONET API on the free plan (Render dashboard → New → Blueprint → this repo).
+# Secrets marked `sync: false` are entered once in the Render dashboard.
+services:
+  - type: web
+    name: onet-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: main
+    buildCommand: npm ci --no-audit --no-fund && npm run i18n && npm run build -w @onet/api
+    # Pending SQL migrations are applied on every start (idempotent).
+    startCommand: npm run db:migrate -w @onet/api && npm start -w @onet/api
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false # libsql://<database>-<org>.turso.io
+      - key: DATABASE_AUTH_TOKEN
+        sync: false # turso db tokens create <database>
+      - key: CORS_ORIGINS
+        sync: false # https://<project>.web.app,https://<project>.firebaseapp.com,https://<project>--pr*.web.app
+      - key: PAYMENT_PROVIDER
+        value: mock

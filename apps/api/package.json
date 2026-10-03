@@ -12,7 +12,9 @@
     "db:migrate": "node scripts/migrate.mjs",
     "db:seed": "tsx prisma/seed.ts",
     "db:setup": "prisma generate && node scripts/migrate.mjs && tsx prisma/seed.ts",
-    "db:diff": "prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script"
+    "db:diff": "prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script",
+    "db:bootstrap": "tsx scripts/bootstrap.ts",
+    "db:check": "node scripts/check-migrations.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",
