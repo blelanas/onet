@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 // Demo data for ONET Teboulba. All people, phones and e-mails are fictitious.
 // Run: npm run db:seed   (resets the database content)
 import { PrismaClient } from "@prisma/client";
@@ -618,7 +617,6 @@ async function main() {
   // ── Communication ──
   console.log("→ communication");
   const parentUser = (await db.user.findUnique({ where: { email: "parent@onet-teboulba.tn" } }))!;
-  const kidUser = (await db.user.findUnique({ where: { email: "enfant@onet-teboulba.tn" } }))!;
   const annDefs = [
     { title: "Inscriptions ouvertes : sortie à Kairouan", body: "Les inscriptions pour la sortie culturelle à Kairouan sont ouvertes jusqu'à la date limite. Places limitées !", audience: "PARENTS", priority: "IMPORTANT", isPinned: true, d: -3 },
     { title: "Répétition générale de la chorale", body: "Répétition générale vendredi à 16h à la salle de musique. Merci d'être à l'heure.", audience: "GROUP", groupId: groups[4].id, priority: "NORMAL", d: -1 },

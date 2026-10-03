@@ -1,0 +1,125 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# A new push to the same PR cancels the run that is still in progress.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: 22
+  DATABASE_URL: file:./ci.db
+  NEXT_TELEMETRY_DISABLED: 1
+
+jobs:
+  # ── Fast static checks (~1 min) ───────────────────────────────────────────
+  quality:
+    name: Lint, types & i18n
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Prisma schema is valid
+        run: npx prisma validate
+      - name: Translations are built and complete (fr / ar / en)
+        run: |
+          npm run i18n
+          git diff --exit-code -- messages || (echo "::error::messages/*.json are out of date — run 'npm run i18n' and commit the result" && exit 1)
+      - name: Type check
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint -- --max-warnings=0
+      - name: Security audit (blocks on critical)
+        run: |
+          npm audit --omit=dev --audit-level=critical
+          npm audit --omit=dev --audit-level=high > /dev/null || echo "::warning::npm audit reports high-severity advisories in production dependencies (see 'npm audit')"
+
+  # ── Unit + integration tests on a freshly seeded SQLite DB (~1 min) ───────
+  test:
+    name: Unit & integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+
+  # ── Production build + browser smoke test of every role (~4 min) ─────────
+  e2e:
+    name: Build & end-to-end smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'messages/**', 'next.config.ts', 'tailwind.config.*', 'postcss.config.*') }}
+          restore-keys: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      # Install the browser while the app builds.
+      - name: Install Chromium (background)
+        run: |
+          if [ "${{ steps.pw-cache.outputs.cache-hit }}" = "true" ]; then
+            (npx playwright install-deps chromium > /tmp/pw-install.log 2>&1; echo $? > /tmp/pw-install.exit) &
+          else
+            (npx playwright install --with-deps chromium > /tmp/pw-install.log 2>&1; echo $? > /tmp/pw-install.exit) &
+          fi
+
+      - name: Database + demo data
+        run: npm run setup
+
+      - name: Production build
+        run: npm run build
+
+      - name: Start the app
+        run: |
+          npm start -- -p 3000 > /tmp/app.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:3000/login && exit 0; sleep 1; done
+          echo "::error::App did not start" && cat /tmp/app.log && exit 1
+
+      - name: Wait for Chromium
+        run: |
+          while [ ! -f /tmp/pw-install.exit ]; do sleep 1; done
+          cat /tmp/pw-install.log | tail -5
+          exit "$(cat /tmp/pw-install.exit)"
+
+      - name: Smoke test (public site + permissions for all 7 roles)
+        run: npm run test:e2e
+        env:
+          BASE_URL: http://localhost:3000
+
+      - name: App logs
+        if: failure()
+        run: tail -200 /tmp/app.log || true

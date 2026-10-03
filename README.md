@@ -36,6 +36,18 @@ Comptes de démonstration — mot de passe **`Onet2026!`** (boutons de pré-remp
 | `npm run i18n` | Génère `messages/{fr,ar,en}/*.json` depuis les sources trilingues `i18n/*.mjs` |
 | `npm run typecheck` / `lint` / `test` | Vérifications (tests unitaires + intégration sur une base isolée) |
 
+## Intégration continue
+
+Chaque pull request lance `.github/workflows/ci.yml` (3 jobs en parallèle, ~5 min, les exécutions obsolètes sont annulées) :
+
+| Job | Vérifie |
+|---|---|
+| Lint, types & i18n | schéma Prisma, traductions générées à jour, `tsc`, ESLint sans avertissement, `npm audit` (bloquant si critique) |
+| Unit & integration tests | `npm test` sur une base SQLite fraîchement peuplée |
+| Build & end-to-end smoke test | build de production + `npm run test:e2e` : site public et permissions des 7 rôles dans Chromium |
+
+Dependabot propose chaque semaine les mises à jour npm et GitHub Actions (groupées).
+
 ## Architecture
 
 Next.js 15 (App Router, server components + server actions) · TypeScript strict · Prisma (SQLite en dev, PostgreSQL en prod) ·
