@@ -1,1 +1,27 @@
-{}
+{
+  "title": "البحث",
+  "description": "ابحث عن طفل أو عائلة أو مجموعة أو نشاط أو رحلة أو نشيد.",
+  "placeholder": "ابحث في كامل المنصة…",
+  "submit": "بحث",
+  "results": "{count} نتيجة لـ«{q}»",
+  "hintTitle": "عمّ تبحث؟",
+  "hint": "اكتب حرفين على الأقل: اسم، رقم انخراط، مكان، عنوان…",
+  "suggestions": "جرّب:",
+  "emptyTitle": "لا توجد نتائج لـ«{q}»",
+  "emptyHint": "تحقق من الكتابة أو جرّب كلمة أقصر.",
+  "all": "الكل",
+  "seeAll": "عرض {count} نتيجة",
+  "showingFirst": "{shown} من {count}",
+  "sections": {
+    "members": "الأشخاص",
+    "groups": "المجموعات",
+    "activities": "الأنشطة",
+    "events": "التظاهرات",
+    "trips": "الرحلات",
+    "songs": "الأناشيد",
+    "games": "الألعاب",
+    "conferences": "المحاضرات",
+    "resources": "الموارد",
+    "invoices": "الفواتير"
+  }
+}
