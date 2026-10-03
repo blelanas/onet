@@ -1,1 +1,123 @@
-{}
+{
+  "announcements": {
+    "title": "Announcements",
+    "description": "Important news from the branch.",
+    "kidTitle": "Club news",
+    "kidSubtitle": "Everything happening at ONET, just for you!",
+    "new": "New announcement",
+    "edit": "Edit announcement",
+    "pinned": "Pinned",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "expired": "Expired",
+    "expiresOn": "Until {date}",
+    "by": "by {name}",
+    "forAudience": "For: {audience}",
+    "readMore": "Read more",
+    "count": "{count, plural, =0 {No announcements} one {# announcement} other {# announcements}}",
+    "deleteConfirm": "Delete this announcement? It will disappear for everyone.",
+    "empty": {
+      "title": "No announcements yet",
+      "description": "Announcements published by the team will appear here.",
+      "kid": "No news today… come back soon!"
+    },
+    "filters": {
+      "allPriorities": "All priorities",
+      "allAudiences": "All audiences",
+      "current": "Current",
+      "expired": "Expired"
+    },
+    "form": {
+      "title": "Title",
+      "body": "Message",
+      "audience": "Audience",
+      "group": "Group",
+      "groupHint": "The group's children, their parents and its monitors will see it.",
+      "priority": "Priority",
+      "pin": "Pin to the top of the feed",
+      "expiresAt": "Expires on",
+      "expiresHint": "Leave empty for a permanent announcement.",
+      "notify": "Notify the audience",
+      "notifyHint": "Each targeted person receives a notification.",
+      "publish": "Publish"
+    }
+  },
+  "messages": {
+    "title": "Messages",
+    "description": "Talk with the team, monitors and families.",
+    "new": "New message",
+    "conversations": "Conversations",
+    "search": "Search conversations…",
+    "you": "You",
+    "youSaid": "You: {text}",
+    "back": "Conversations",
+    "noMessagesYet": "No messages yet",
+    "unread": "{count, plural, one {# unread} other {# unread}}",
+    "seen": "Seen",
+    "placeholder": "Write a message…",
+    "enterHint": "Enter to send · Shift+Enter for a new line",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "liveHint": "Live updates",
+    "empty": {
+      "title": "No conversations",
+      "description": "Start a conversation with a monitor, a parent or the team."
+    },
+    "pick": {
+      "title": "Select a conversation",
+      "description": "Or start a new one with one of your contacts."
+    },
+    "compose": {
+      "title": "New conversation",
+      "to": "Recipient",
+      "choose": "Choose a recipient",
+      "change": "Change",
+      "searchContacts": "Search a contact…",
+      "subject": "Subject",
+      "subjectHint": "Optional — a subject opens a new dedicated thread.",
+      "message": "Message",
+      "noContacts": "No contacts available",
+      "noMatch": "No matching contact",
+      "rules": "You only see people you may contact: the team and, depending on your role, your children's monitors or the parents in your groups.",
+      "notAllowed": "You cannot message this person."
+    },
+    "kinds": {
+      "STAFF": "Team",
+      "MONITOR": "Monitors",
+      "PARENT": "Parents",
+      "OTHER": "Others"
+    },
+    "via": "Via: {names}"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "description": "Reminders, confirmations and news for you.",
+    "all": "All",
+    "unreadTab": "Unread",
+    "unreadCount": "{count, plural, =0 {All caught up} one {# unread} other {# unread}}",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "markRead": "Mark as read",
+    "markUnread": "Mark as unread",
+    "allTypes": "All types",
+    "empty": {
+      "title": "No notifications",
+      "description": "You'll be notified here about important news.",
+      "unread": "Nice, you're all caught up!"
+    },
+    "channelsLink": "Delivery channels",
+    "broadcast": {
+      "button": "Broadcast",
+      "title": "Broadcast a notification",
+      "description": "Sent to every active account of the selected roles.",
+      "titleField": "Title",
+      "body": "Message",
+      "link": "Internal link",
+      "linkHint": "E.g. /dashboard/events — optional",
+      "roles": "Recipients",
+      "users": "{count, plural, one {# account} other {# accounts}}",
+      "send": "Send",
+      "sent": "Notification sent"
+    }
+  }
+}
