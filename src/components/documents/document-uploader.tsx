@@ -8,7 +8,7 @@ import { Input, Select } from "@/components/ui/input";
 import { Upload, type UploadedFile } from "@/components/ui/upload";
 import { DOCUMENT_CATEGORIES } from "@/lib/constants";
 
-export function DocumentUploader({ entityType, entityId, revalidate }: { entityType: string; entityId?: string; revalidate?: string }) {
+export function DocumentUploader({ entityType, entityId, revalidate, onDone }: { entityType: string; entityId?: string; revalidate?: string; onDone?: () => void }) {
   const t = useTranslations("documents");
   const tc = useTranslations("common");
   const [file, setFile] = useState<UploadedFile | null>(null);
@@ -21,6 +21,7 @@ export function DocumentUploader({ entityType, entityId, revalidate }: { entityT
       onSuccess={() => {
         setFile(null);
         setKey((k) => k + 1);
+        onDone?.();
       }}
       className="rounded-2xl border border-line bg-surface-2/40 p-4"
     >

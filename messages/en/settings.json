@@ -1,1 +1,270 @@
-{}
+{
+  "title": "Settings",
+  "description": "Platform configuration and administration.",
+  "nav": {
+    "label": "Settings sections",
+    "organization": "Organization",
+    "users": "Users",
+    "roles": "Roles & permissions",
+    "notifications": "Notifications",
+    "payments": "Payments",
+    "categories": "Categories & types",
+    "audit": "Audit log",
+    "contact": "Contact messages"
+  },
+  "navHints": {
+    "organization": "Identity, contact, social",
+    "users": "Accounts and access",
+    "roles": "Who can do what",
+    "notifications": "Delivery channels",
+    "payments": "Methods, bank, fee",
+    "categories": "Colors and labels",
+    "audit": "Action history",
+    "contact": "Public website form"
+  },
+  "organization": {
+    "identity": "Identity",
+    "contact": "Contact details",
+    "social": "Social & web",
+    "logo": "Logo",
+    "name": "Short name",
+    "fullName": "Full name (French)",
+    "fullNameAr": "Full name (Arabic)",
+    "foundedYear": "Founded in",
+    "email": "Contact email",
+    "phone": "Phone",
+    "address": "Address",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "youtube": "YouTube",
+    "website": "Website",
+    "logoNote": "The official logo shown everywhere is /brand/onet-mark.svg: replace it in the repository to change the visual identity. You can also upload a version (PNG/JPG) here, used for documents and sharing.",
+    "currentMark": "Current official mark",
+    "uploadLogo": "Uploaded logo (optional)"
+  },
+  "users": {
+    "title": "Users",
+    "new": "New user",
+    "edit": "Edit roles",
+    "resetPassword": "Reset password",
+    "resetHint": "The user will be signed out of all devices.",
+    "newPassword": "New password",
+    "initialPassword": "Initial password",
+    "passwordHint": "8+ chars, a letter and a digit. Share it securely.",
+    "generate": "Generate",
+    "name": "Full name",
+    "roles": "Roles",
+    "rolesHint": "Only roles.manage holders can grant the Super admin and Administrator roles.",
+    "lockedRole": "Reserved to role managers",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "deactivateConfirm": "The account will no longer be able to sign in and its sessions will be closed.",
+    "active": "Active",
+    "inactive": "Disabled",
+    "allRoles": "All roles",
+    "allStatuses": "All statuses",
+    "lastLogin": "Last sign-in",
+    "never": "Never",
+    "you": "You",
+    "linkedMember": "Member record",
+    "count": "{count, plural, =0 {No users} one {# user} other {# users}}",
+    "empty": "No matching user.",
+    "columns": {
+      "user": "User",
+      "roles": "Roles",
+      "status": "Status",
+      "lastLogin": "Last sign-in",
+      "actions": "Actions"
+    }
+  },
+  "roles": {
+    "title": "Roles & permissions",
+    "intro": "Tick a box to grant a permission to a role. Changes apply immediately and are recorded in the audit log.",
+    "new": "New role",
+    "key": "Key",
+    "keyHint": "Lowercase, digits and _ (e.g. volunteer)",
+    "name": "Name",
+    "color": "Color",
+    "description": "Description",
+    "copyFrom": "Copy permissions from",
+    "none": "None (empty)",
+    "system": "System",
+    "custom": "Custom",
+    "users": "{count, plural, =0 {no accounts} one {# account} other {# accounts}}",
+    "permissions": "{count, plural, one {# permission} other {# permissions}}",
+    "locked": "The Super admin role always has every permission.",
+    "deleteRole": "Delete role",
+    "deleteHint": "Only custom roles without users can be deleted.",
+    "permission": "Permission",
+    "pickRole": "Role to configure",
+    "granted": "Granted"
+  },
+  "modules": {
+    "dashboard": "Dashboard",
+    "users": "Users & access",
+    "people": "People",
+    "groups": "Groups",
+    "activities": "Activities",
+    "attendance": "Attendance",
+    "calendar": "Calendar",
+    "events": "Events",
+    "trips": "Trips",
+    "content": "Content",
+    "finance": "Finance",
+    "reports": "Reports",
+    "communication": "Communication",
+    "documents": "Documents",
+    "tasks": "Tasks",
+    "settings": "Settings"
+  },
+  "perms": {
+    "dashboard": {
+      "view": "View the dashboard"
+    },
+    "users": {
+      "read": "View users",
+      "manage": "Manage user accounts"
+    },
+    "roles": {
+      "manage": "Manage roles and permissions"
+    },
+    "members": {
+      "read": "View members (own scope)",
+      "read_all": "View all members",
+      "manage": "Create and edit members",
+      "export": "Export members"
+    },
+    "groups": {
+      "read": "View groups",
+      "manage": "Manage groups"
+    },
+    "activities": {
+      "read": "View activities",
+      "manage": "Manage activities"
+    },
+    "attendance": {
+      "read": "View attendance (scope)",
+      "manage": "Take attendance"
+    },
+    "calendar": {
+      "read": "View calendar",
+      "manage": "Manage calendar"
+    },
+    "events": {
+      "read": "View events",
+      "manage": "Manage events",
+      "register": "Register for events"
+    },
+    "trips": {
+      "read": "View trips",
+      "manage": "Manage trips",
+      "register": "Register for trips"
+    },
+    "registrations": {
+      "manage": "Manage all registrations"
+    },
+    "content": {
+      "read": "View content",
+      "manage": "Manage content"
+    },
+    "finance": {
+      "read": "View finance",
+      "manage": "Manage finance"
+    },
+    "invoices": {
+      "pay": "Pay own invoices"
+    },
+    "reports": {
+      "read": "View reports"
+    },
+    "announcements": {
+      "read": "Read announcements",
+      "manage": "Publish announcements"
+    },
+    "messages": {
+      "use": "Use messaging"
+    },
+    "notifications": {
+      "manage": "Broadcast notifications"
+    },
+    "documents": {
+      "read": "View documents (scope)",
+      "manage": "Manage all documents"
+    },
+    "tasks": {
+      "manage": "Manage tasks"
+    },
+    "settings": {
+      "manage": "Edit settings"
+    },
+    "audit": {
+      "read": "Read the audit log"
+    }
+  },
+  "notifications": {
+    "title": "Notification channels",
+    "intro": "Choose which channels notifications are sent through. In-app notifications are always on.",
+    "always": "Always on",
+    "providerNote": "Providers (SMTP, SMS, push) plug in later: until then these channels are logged server-side without real delivery.",
+    "descriptions": {
+      "IN_APP": "Bell and Notifications page in the platform.",
+      "EMAIL": "An email is sent to the account address.",
+      "SMS": "A text message is sent to the account phone.",
+      "PUSH": "Push notification on mobile and browser."
+    },
+    "pending": "Provider to configure"
+  },
+  "payments": {
+    "title": "Payments",
+    "methods": "Accepted payment methods",
+    "methodsHint": "Offered to families and when recording payments.",
+    "bank": "Bank details",
+    "bankHint": "Shown on invoices for transfers.",
+    "bankName": "Bank",
+    "holder": "Account holder",
+    "rib": "RIB",
+    "iban": "IBAN",
+    "fee": "Default yearly membership fee",
+    "feeHint": "In dinars (TND). Used for new memberships."
+  },
+  "categories": {
+    "title": "Categories & types",
+    "intro": "These lists are defined in code (src/lib/constants.ts) to keep statistics consistent. Labels are translated automatically; to add one, contact the tech team.",
+    "activities": "Activities",
+    "events": "Events",
+    "trips": "Trips",
+    "expenses": "Expenses",
+    "readOnly": "Read-only"
+  },
+  "audit": {
+    "title": "Audit log",
+    "intro": "Every sensitive operation: creations, deletions, payments, exports, permission changes.",
+    "allUsers": "All users",
+    "allActions": "All actions",
+    "allEntities": "All objects",
+    "search": "ID or detail…",
+    "system": "System",
+    "details": "Details",
+    "noDetails": "No details",
+    "empty": "No matching entry.",
+    "columns": {
+      "when": "When",
+      "who": "User",
+      "action": "Action",
+      "entity": "Object"
+    }
+  },
+  "contact": {
+    "title": "Contact messages",
+    "intro": "Messages sent from the public website's contact form.",
+    "all": "All",
+    "unread": "Unread",
+    "read": "Read",
+    "markRead": "Mark as read",
+    "markUnread": "Mark as unread",
+    "reply": "Reply",
+    "noSubject": "(no subject)",
+    "empty": "No messages yet.",
+    "deleteConfirm": "Delete this message permanently?"
+  }
+}

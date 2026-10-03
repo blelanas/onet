@@ -10,5 +10,19 @@
   "empty": {
     "title": "Aucun document",
     "entity": "Les documents ajoutés apparaîtront ici."
+  },
+  "library": {
+    "subtitle": "Tous les documents auxquels vous avez accès, au même endroit.",
+    "upload": "Ajouter un document",
+    "uploadTitle": "Nouveau document général",
+    "uploadHint": "Règlement intérieur, formulaires vierges, comptes rendus… visibles par tous les comptes ayant accès aux documents.",
+    "allEntities": "Tout",
+    "allCategories": "Toutes catégories",
+    "count": "{count, plural, =0 {Aucun document} one {# document} other {# documents}}",
+    "emptyFiltered": "Aucun document ne correspond à ces filtres.",
+    "emptyHint": "Les documents rattachés aux membres, sorties, événements et factures apparaîtront ici.",
+    "general": "Document général",
+    "open": "Ouvrir la fiche",
+    "deleteConfirm": "Supprimer ce document ? Le fichier ne sera plus accessible."
   }
 }
