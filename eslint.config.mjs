@@ -11,8 +11,8 @@ const compat = new FlatCompat({
 
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
-  // Translation sources export one anonymous message tree per namespace by design.
-  { files: ["i18n/**/*.mjs"], rules: { "import/no-anonymous-default-export": "off" } },
+  // Translation sources export one anonymous message tree (object literal) per namespace by design.
+  { files: ["i18n/**/*.mjs"], rules: { "import/no-anonymous-default-export": ["error", { allowObject: true }] } },
   {
     ignores: [
       "node_modules/**",

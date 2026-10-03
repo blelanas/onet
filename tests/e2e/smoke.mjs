@@ -96,6 +96,7 @@ try {
     for (const p of deny) {
       const r = await visit(page, p);
       if (r.url !== "/dashboard/forbidden") fail(`${email} ${p} should be forbidden (ended on ${r.url})`);
+      else if (r.errors.length) fail(`${email} ${p} → page error: ${r.errors[0]}`);
     }
     await ctx.close();
   }

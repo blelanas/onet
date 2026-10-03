@@ -46,7 +46,7 @@ Chaque pull request lance `.github/workflows/ci.yml` (3 jobs en parallèle, ~5 m
 | Unit & integration tests | `npm test` sur une base SQLite fraîchement peuplée |
 | Build & end-to-end smoke test | build de production + `npm run test:e2e` : site public et permissions des 7 rôles dans Chromium |
 
-Dependabot propose chaque semaine les mises à jour npm et GitHub Actions (groupées).
+Dependabot propose chaque semaine les mises à jour npm (mineures et correctives regroupées, majeures séparément) et les mises à jour GitHub Actions (regroupées).
 
 ## Architecture
 

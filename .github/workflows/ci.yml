@@ -37,7 +37,11 @@ jobs:
       - name: Translations are built and complete (fr / ar / en)
         run: |
           npm run i18n
-          git diff --exit-code -- messages || (echo "::error::messages/*.json are out of date — run 'npm run i18n' and commit the result" && exit 1)
+          if [ -n "$(git status --porcelain -- messages)" ]; then
+            git status --short -- messages
+            echo "::error::messages/*.json are out of date or missing — run 'npm run i18n' and commit the result"
+            exit 1
+          fi
       - name: Type check
         run: npm run typecheck
       - name: Lint
@@ -91,17 +95,20 @@ jobs:
       # Install the browser while the app builds.
       - name: Install Chromium (background)
         run: |
-          if [ "${{ steps.pw-cache.outputs.cache-hit }}" = "true" ]; then
-            (npx playwright install-deps chromium > /tmp/pw-install.log 2>&1; echo $? > /tmp/pw-install.exit) &
-          else
-            (npx playwright install --with-deps chromium > /tmp/pw-install.log 2>&1; echo $? > /tmp/pw-install.exit) &
-          fi
+          if [ "${{ steps.pw-cache.outputs.cache-hit }}" = "true" ]; then cmd="install-deps chromium"; else cmd="install --with-deps chromium"; fi
+          # errexit off so the exit marker is always written, even when the installer fails.
+          ( set +e; npx playwright $cmd > /tmp/pw-install.log 2>&1; echo $? > /tmp/pw-install.exit ) &
 
       - name: Database + demo data
         run: npm run setup
 
       - name: Production build
-        run: npm run build
+        run: |
+          # Fail fast if the background browser install has already failed.
+          if [ -f /tmp/pw-install.exit ] && [ "$(cat /tmp/pw-install.exit)" != "0" ]; then
+            tail -30 /tmp/pw-install.log; echo "::error::Playwright browser install failed"; exit 1
+          fi
+          npm run build
 
       - name: Start the app
         run: |
@@ -112,8 +119,9 @@ jobs:
       - name: Wait for Chromium
         run: |
           while [ ! -f /tmp/pw-install.exit ]; do sleep 1; done
-          cat /tmp/pw-install.log | tail -5
-          exit "$(cat /tmp/pw-install.exit)"
+          code="$(cat /tmp/pw-install.exit)"
+          if [ "$code" != "0" ]; then tail -30 /tmp/pw-install.log; echo "::error::Playwright browser install failed"; fi
+          exit "$code"
 
       - name: Smoke test (public site + permissions for all 7 roles)
         run: npm run test:e2e
