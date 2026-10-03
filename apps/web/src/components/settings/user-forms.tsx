@@ -11,7 +11,7 @@ import { ROLE_KEYS } from "@onet/shared";
 import { cn } from "@/lib/utils";
 
 export type RoleOption = { key: string; name: string; color: string };
-const PRIVILEGED = ["super_admin", "admin"];
+const PRIVILEGED = ["super_admin", "admin", "accountant"];
 
 export function useRoleLabel() {
   const tc = useTranslations("common");

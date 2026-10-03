@@ -49,7 +49,7 @@ function UsersSettings({ data, sp }: { data: Data; sp: Record<string, string | u
   const me = { id: data.meId };
   const roleOptions = roles;
   const roleLabel = (r: { key: string; name: string }) => ((ROLE_KEYS as readonly string[]).includes(r.key) ? tc(`roles.${r.key}`) : r.name);
-  const manageable = (u: Row) => canPrivileged || !u.roles.some((r) => ["super_admin", "admin"].includes(r.role.key));
+  const manageable = (u: Row) => canPrivileged || !u.roles.some((r) => ["super_admin", "admin", "accountant"].includes(r.role.key));
 
   const actions = (u: Row) => {
     const isSelf = u.id === me.id;
