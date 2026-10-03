@@ -1,9 +1,10 @@
-import { Router } from "express";
+import { Router, type Request } from "express";
 import { db } from "@api/lib/db";
-import { AuthError, requireUser } from "@api/lib/auth/guards";
+import { AuthError, requirePermission, requireUser } from "@api/lib/auth/guards";
 import { mutation, param, qs, query } from "@api/lib/http";
 import { canAccessEntityDocs } from "./access";
 import { addDocument, deleteDocument } from "./actions";
+import { listDocuments } from "./queries";
 
 /** documents module routes (mounted under /api). */
 export const router = Router();
@@ -23,6 +24,26 @@ router.get(
     return { docs, canWrite, canManage: user.permissions.has("documents.manage"), userId: user.id };
   }),
 );
+
+/** Document library (scoped like canAccessEntityDocs): filters ?q, ?type (entity type), ?category, ?page. */
+export async function documentsLibraryPage(req: Request) {
+  const user = await requirePermission("documents.read");
+  const pageSize = 18;
+  const page = Math.max(1, Number(qs(req, "page")) || 1);
+  const filters = { q: qs(req, "q"), entityType: qs(req, "type"), category: qs(req, "category") };
+  const { rows, total, countsByType } = await listDocuments(user, { ...filters, skip: (page - 1) * pageSize, take: pageSize });
+  return {
+    rows,
+    total,
+    countsByType,
+    page,
+    pageSize,
+    filtered: !!(filters.q || filters.entityType || filters.category),
+    canManage: user.permissions.has("documents.manage"),
+    userId: user.id,
+  };
+}
+router.get("/documents", query(documentsLibraryPage));
 
 router.post("/documents", mutation((req) => addDocument(req.body)));
 router.delete("/documents/:id", mutation((req) => deleteDocument(param(req, "id"))));
