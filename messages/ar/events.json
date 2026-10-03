@@ -1,1 +1,205 @@
-{}
+{
+  "titles": {
+    "events": "الأحداث",
+    "new": "حدث جديد",
+    "edit": "تعديل الحدث",
+    "registrations": "التسجيلات",
+    "myRegistrations": "تسجيلاتي"
+  },
+  "descriptions": {
+    "events": "احتفالات وعروض ومسابقات وورشات: سجّل أطفالك ببضع نقرات.",
+    "registrations": "كل التسجيلات في الأحداث والرحلات مع متابعة الدفع.",
+    "myRegistrations": "تسجيلات عائلتك: الحالة والدفع والإلغاء."
+  },
+  "actions": {
+    "new": "إنشاء حدث",
+    "confirm": "تأكيد",
+    "waitlist": "قائمة الانتظار",
+    "cancelRegistration": "إلغاء التسجيل"
+  },
+  "tabs": {
+    "upcoming": "القادمة",
+    "past": "السابقة",
+    "drafts": "المسودات"
+  },
+  "searchPlaceholder": "ابحث عن حدث أو مكان…",
+  "empty": {
+    "upcoming": "لا توجد أحداث قادمة حاليًا",
+    "past": "لا توجد أحداث سابقة",
+    "drafts": "لا توجد مسودات",
+    "hint": "عُد قريبًا، مفاجآت جميلة في الطريق!"
+  },
+  "card": {
+    "internal": "داخلي",
+    "registered": "مسجَّل: {names}"
+  },
+  "detail": {
+    "tabs": {
+      "overview": "نظرة عامة",
+      "participants": "المشاركون",
+      "checkin": "تسجيل الحضور"
+    },
+    "deleteTitle": "حذف هذا الحدث؟",
+    "deleteText": "ستُحذف التسجيلات وتُلغى الفواتير غير المدفوعة. غير ممكن إذا تم استلام دفعات.",
+    "about": "حول الحدث",
+    "practical": "معلومات عملية",
+    "when": "التاريخ",
+    "noDeadline": "إلى غاية يوم الحدث",
+    "payment": "الدفع",
+    "paymentRequired": "مسبقًا عبر الإنترنت",
+    "paymentOnSite": "في عين المكان أو لاحقًا",
+    "activities": "أنشطة مرتبطة",
+    "deadlineOn": "التسجيل إلى غاية {date}"
+  },
+  "form": {
+    "general": "الحدث",
+    "statusHint": "«مسودة» لا تظهر للعائلات.",
+    "when": "التاريخ والمكان",
+    "startAt": "البداية",
+    "endAt": "النهاية",
+    "organizer": "المنظِّم",
+    "registration": "التسجيل والتعريفة",
+    "deadlineHint": "اتركه فارغًا لقبول التسجيل حتى البداية.",
+    "priceTnd": "السعر لكل مشارك (دينار)",
+    "priceHint": "0 = مجاني. تُنشأ فاتورة آليًا عند التسجيل.",
+    "requiresPayment": "الدفع شرط للتأكيد",
+    "requiresPaymentHint": "وإلا يُؤكَّد التسجيل فورًا ويُدفع لاحقًا.",
+    "publicHint": "أزل التحديد لحدث داخلي (الفريق، المنشطون)."
+  },
+  "kid": {
+    "title": "هل يعجبك؟",
+    "text": "تحدّث مع والديك: هما من يستطيعان تسجيلك!"
+  },
+  "panel": {
+    "title": "تسجيل عائلتي",
+    "pricePer": "{price} لكل مشارك",
+    "closedHint": "التسجيل لم يعد مفتوحًا لهذا الحدث.",
+    "me": "أنا",
+    "willWaitlist": "قائمة الانتظار",
+    "waitlistHint": "سنعلمك فور توفّر مكان.",
+    "total": "{count, plural, =0 {اختر مشاركًا أو أكثر} one {المجموع لمشارك واحد} two {المجموع لمشاركَين} other {المجموع لـ# مشاركين}}",
+    "register": "{count, plural, =0 {تسجيل} one {تسجيل مشارك واحد} two {تسجيل مشاركَين} other {تسجيل # مشاركين}}",
+    "joinWaitlist": "الانضمام إلى قائمة الانتظار",
+    "invoiceHint": "ستُنشأ فاتورة يمكنك دفعها عبر الإنترنت مباشرة بعد ذلك."
+  },
+  "eligibility": {
+    "closed": "التسجيل مغلق",
+    "deadline": "انتهى أجل التسجيل",
+    "tooYoung": "صغير جدًا على هذا النشاط",
+    "tooOld": "أكبر من الفئة العمرية",
+    "registered": "مسجّل مسبقًا"
+  },
+  "errors": {
+    "closed": "التسجيل مغلق",
+    "deadline": "انتهى أجل التسجيل",
+    "tooYoung": "هذا الطفل صغير جدًا على هذه الرحلة",
+    "tooOld": "هذا الطفل يتجاوز الفئة العمرية المحددة",
+    "registered": "مسجّل مسبقًا",
+    "consent": "الترخيص الأبوي إجباري"
+  },
+  "cancel": {
+    "title": "إلغاء التسجيل؟",
+    "text": "سيُحرَّر المكان وتُلغى الفاتورة غير المدفوعة.",
+    "paidText": "سيُحرَّر المكان، وستتولى المحاسبة استرجاع المبلغ المدفوع.",
+    "staffText": "سيُحرَّر المكان وتُلغى الفاتورة غير المدفوعة ويتم إعلام العائلة. وسيُرقّى أول المنتظرين.",
+    "confirm": "نعم، إلغاء",
+    "refund": "أُلغي التسجيل — تم إعلام المحاسبة لاسترجاع المبلغ"
+  },
+  "register": {
+    "success": "{count, plural, one {تم التسجيل!} other {تم تسجيل # مشاركين!}}",
+    "waitlisted": "العدد مكتمل: وُضع التسجيل في قائمة الانتظار",
+    "partial": "تم تسجيل {ok}، ورُفض {failed}"
+  },
+  "bulk": {
+    "selectAll": "تحديد الكل",
+    "selected": "{count} محدد",
+    "action": "إجراء جماعي",
+    "done": "{count, plural, =0 {لم يتم تعديل أي تسجيل} other {تم تحديث # تسجيلات}}"
+  },
+  "participants": {
+    "member": "المشارك",
+    "payment": "الدفع",
+    "followUp": "المتابعة",
+    "registeredBy": "سجّله",
+    "medical": "معلومات طبية",
+    "empty": "لا يوجد مشاركون بعد",
+    "emptyHint": "ستظهر تسجيلات العائلات هنا.",
+    "add": "إضافة مشارك",
+    "addHint": "تسجيل يدوي (في المكتب، بالهاتف…). تُحترم الطاقة: قائمة انتظار عند الاكتمال.",
+    "consentReceived": "تم استلام الترخيص الأبوي",
+    "collected": "المبالغ المحصّلة",
+    "summary": "{active} مكان مشغول من {capacity}"
+  },
+  "rollCall": {
+    "allPresent": "الجميع حاضر",
+    "progress": "{done}/{total} تم تسجيلهم",
+    "eventTitle": "تسجيل الحضور — {date}"
+  },
+  "registrations": {
+    "scope": {
+      "upcoming": "القادمة",
+      "past": "السابقة",
+      "all": "الكل"
+    },
+    "kind": {
+      "event": "حدث",
+      "trip": "رحلة"
+    },
+    "target": "الحدث / الرحلة",
+    "registeredAt": "تاريخ التسجيل",
+    "registeredShort": "سُجّل {date}",
+    "consentOk": "الترخيص متوفر",
+    "consentMissing": "الترخيص ناقص",
+    "docs": "الوثائق",
+    "kpi": {
+      "active": "التسجيلات النشطة",
+      "unpaid": "غير مدفوعة"
+    },
+    "searchPlaceholder": "ابحث عن مشارك…",
+    "filters": {
+      "allKinds": "الأحداث والرحلات",
+      "allStatuses": "كل الحالات",
+      "allPayments": "كل حالات الدفع",
+      "allTargets": "كل الأحداث / الرحلات"
+    },
+    "payment": {
+      "PAID": "مدفوعة",
+      "UNPAID": "للدفع",
+      "FREE": "مجانية"
+    },
+    "familyEmpty": "لا توجد تسجيلات هنا",
+    "familyEmptyHint": "اكتشف الرحلات والاحتفالات القادمة وسجّل أطفالك بنقرتين.",
+    "browseTrips": "عرض الرحلات",
+    "browseEvents": "عرض الأحداث"
+  },
+  "invoice": {
+    "event": "حدث: {title} — {name}",
+    "trip": "رحلة: {title} — {name}",
+    "cancelledNote": "أُلغيت إثر إلغاء التسجيل.",
+    "refundNote": "أُلغي التسجيل بعد الدفع (الفاتورة {number}): الاسترجاع من مشمولات المحاسبة."
+  },
+  "notify": {
+    "registered": {
+      "PENDING": "تم تسجيل {name} في «{title}»",
+      "CONFIRMED": "تم تأكيد تسجيل {name} في «{title}»",
+      "WAITLIST": "{name} في قائمة الانتظار لـ«{title}»"
+    },
+    "payBody": "فاتورة في انتظارك: ادفعها عبر الإنترنت لتأكيد المكان.",
+    "registeredBody": "تجد كل المعلومات العملية في صفحة «{title}».",
+    "staffNew": "تسجيل جديد: {name} — «{title}»",
+    "staffStatus": {
+      "PENDING": "في انتظار الدفع",
+      "CONFIRMED": "مؤكَّد",
+      "WAITLIST": "في قائمة الانتظار"
+    },
+    "promoted": "خبر سار: توفر مكان للطفل {name} («{title}»)",
+    "cancelled": "أُلغي تسجيل {name} — «{title}»",
+    "refund": "استرجاع مبلغ: {name} — «{title}»",
+    "statusChanged": {
+      "CONFIRMED": "تم تأكيد تسجيل {name} في «{title}»",
+      "WAITLIST": "نُقل {name} إلى قائمة الانتظار لـ«{title}»",
+      "PENDING": "تسجيل {name} في انتظار الدفع («{title}»)"
+    },
+    "monitorAssigned": "أنت مؤطِّر رحلة «{title}»"
+  }
+}

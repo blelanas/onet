@@ -1,1 +1,155 @@
-{}
+{
+  "titles": {
+    "trips": "Trips",
+    "new": "New trip",
+    "edit": "Edit trip"
+  },
+  "descriptions": {
+    "trips": "Excursions, camps and discoveries: program, documents and online registration."
+  },
+  "actions": {
+    "new": "Create trip"
+  },
+  "tabs": {
+    "upcoming": "Upcoming",
+    "supervised": "I supervise",
+    "past": "Past",
+    "drafts": "Drafts"
+  },
+  "searchPlaceholder": "Search a trip or a destination…",
+  "empty": {
+    "upcoming": "No trips planned yet",
+    "supervised": "You don't supervise any trip",
+    "past": "No past trips",
+    "drafts": "No drafts",
+    "hint": "The next adventures are coming soon!"
+  },
+  "card": {
+    "days": "{count, plural, one {# day} other {# days}}",
+    "ages": "Ages {min}–{max}",
+    "monitors": "{count, plural, one {# monitor} other {# monitors}}",
+    "registered": "Registered: {names}"
+  },
+  "detail": {
+    "tabs": {
+      "overview": "Overview",
+      "participants": "Participants",
+      "rollcall": "Departure roll-call"
+    },
+    "youSupervise": "You supervise",
+    "deleteTitle": "Delete this trip?",
+    "deleteText": "Registrations will be deleted and unpaid invoices cancelled. Not possible once payments were received.",
+    "about": "About the trip",
+    "program": "Program",
+    "noProgram": "The detailed program will be published soon.",
+    "documents": "Documents to provide",
+    "sharedFiles": "Shared files",
+    "practical": "Practical info",
+    "departure": "Departure",
+    "return": "Return",
+    "duration": "Duration",
+    "monitors": "Monitors in charge",
+    "noMonitors": "Supervision being organised."
+  },
+  "form": {
+    "general": "The trip",
+    "destination": "Destination",
+    "logistics": "Logistics",
+    "departureLocation": "Meeting point",
+    "departAt": "Departure",
+    "returnAt": "Return",
+    "program": "Program",
+    "programHint": "One step per line: \"08:00 | Departure\" or \"Day 1 | Settling in\".",
+    "requiredDocuments": "Required documents",
+    "documentsHint": "One document per line.",
+    "registration": "Registration and price",
+    "priceTnd": "Price per child (TND)",
+    "priceHint": "0 = free. An invoice is created for each registration.",
+    "ageMin": "Minimum age",
+    "ageMax": "Maximum age",
+    "statusHint": "\"Full\" is set automatically from capacity.",
+    "monitors": "Supervision",
+    "monitorsHint": "Choose the monitors in charge: they'll see the trip and take the roll-call."
+  },
+  "kid": {
+    "title": "An adventure awaits!",
+    "text": "Show this trip to your parents: they can sign you up from their account."
+  },
+  "eligibility": {
+    "closed": "Registration closed",
+    "deadline": "Deadline passed",
+    "tooYoung": "Too young",
+    "tooOld": "Above the age range",
+    "registered": "Already registered"
+  },
+  "flow": {
+    "title": "Trip registration",
+    "steps": {
+      "view": "Discover",
+      "child": "Child",
+      "consent": "Consent",
+      "register": "Register",
+      "pay": "Payment",
+      "confirmed": "Confirmed",
+      "info": "Departure info"
+    },
+    "chooseChild": "Which child would you like to register?",
+    "reasonHint": {
+      "closed": "Registration isn't open for this trip.",
+      "deadline": "The deadline has passed. Contact the team if needed.",
+      "tooYoung": "This trip is for older children. Other adventures are coming soon!",
+      "tooOld": "This trip is for younger children.",
+      "registered": "This child is already registered."
+    },
+    "toBring": "To prepare",
+    "noDocs": "No specific documents.",
+    "fullHint": "The trip is full: the registration will go on the waitlist.",
+    "consentTitle": "Parental consent",
+    "consentText": "I allow {name} to take part in the \"{title}\" trip, group transport and planned activities, under the responsibility of ONET monitors. In an emergency, I allow the team to take the necessary measures.",
+    "toPay": "Amount",
+    "register": "Register {name}",
+    "joinWaitlist": "Put {name} on the waitlist",
+    "waitlistTitle": "{name} is on the waitlist",
+    "waitlistText": "As soon as a place frees up, the registration moves forward automatically and you get notified.",
+    "payTitle": "Last step: payment for {name}",
+    "payText": "The place is reserved. Pay the invoice online to confirm the registration.",
+    "payNow": "Pay now",
+    "cancelRegistration": "Cancel registration",
+    "awaitingTitle": "Payment received, thank you!",
+    "awaitingText": "The team will confirm the registration very soon.",
+    "confirmedTitle": "It's confirmed: {name} is coming with us!",
+    "confirmedText": "See you on {date} — {place}.",
+    "info": {
+      "program": "The program",
+      "documents": "Documents",
+      "monitors": "Monitors",
+      "meeting": "Meeting point"
+    },
+    "registeredOn": "Registered on {date}"
+  },
+  "cancel": {
+    "title": "Cancel the registration?",
+    "text": "The place will be freed and the unpaid invoice cancelled.",
+    "paidText": "The place will be freed. The payment already made will be handled by the accounts team for a refund.",
+    "confirm": "Yes, cancel"
+  },
+  "participants": {
+    "consent": "Consent",
+    "documents": "Documents status",
+    "docs": "Docs",
+    "placesLeft": "Places left",
+    "consentOverview": "Consents received",
+    "docsOverview": "Complete files",
+    "paymentsOverview": "Payments collected",
+    "empty": "No participants yet"
+  },
+  "monitors": {
+    "assign": "Assign a monitor",
+    "remove": "Remove {name}",
+    "removeText": "This monitor will no longer be in charge of the trip."
+  },
+  "rollCall": {
+    "title": "Departure roll-call — {date}",
+    "noConsent": "No consent"
+  }
+}
