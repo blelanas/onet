@@ -1,1 +1,27 @@
-{}
+{
+  "title": "Search",
+  "description": "Find a child, a family, a group, an activity, a trip or a song.",
+  "placeholder": "Search the whole platform…",
+  "submit": "Search",
+  "results": "{count, plural, =0 {No results} one {# result} other {# results}} for “{q}”",
+  "hintTitle": "What are you looking for?",
+  "hint": "Type at least 2 characters: a first name, a member number, a place, a title…",
+  "suggestions": "Try:",
+  "emptyTitle": "No results for “{q}”",
+  "emptyHint": "Check the spelling or try a shorter word.",
+  "all": "All",
+  "seeAll": "See all {count} results",
+  "showingFirst": "{shown} of {count}",
+  "sections": {
+    "members": "People",
+    "groups": "Groups",
+    "activities": "Activities",
+    "events": "Events",
+    "trips": "Trips",
+    "songs": "Songs",
+    "games": "Games",
+    "conferences": "Conferences",
+    "resources": "Resources",
+    "invoices": "Invoices"
+  }
+}
