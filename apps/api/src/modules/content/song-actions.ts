@@ -52,12 +52,12 @@ export async function deleteSong(id: string) {
 }
 
 /** Last counted play per user+song (in-memory, bounded): one play per user and song per minute. */
-const PLAY_WINDOW_MS = 60_000;
-const PLAY_THROTTLE_MAX = 10_000;
+export const PLAY_WINDOW_MS = 60_000;
+export const PLAY_THROTTLE_MAX = 10_000;
 const lastPlays = new Map<string, number>();
 
 /** Claims the play slot for `key`; returns a rollback restoring the previous value, or null when throttled. */
-function claimPlay(key: string, now = Date.now()) {
+export function claimPlay(key: string, now = Date.now()) {
   const last = lastPlays.get(key);
   if (last !== undefined && now - last < PLAY_WINDOW_MS) return null;
   lastPlays.delete(key);
@@ -70,6 +70,9 @@ function claimPlay(key: string, now = Date.now()) {
     else lastPlays.set(key, last);
   };
 }
+
+/** Test helpers. */
+export const playThrottle = { size: () => lastPlays.size, has: (key: string) => lastPlays.has(key), clear: () => lastPlays.clear() };
 
 /** Called by the player once each time a song starts playing. Returns the new count. */
 export async function recordSongPlay(id: string) {

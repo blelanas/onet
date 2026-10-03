@@ -36,6 +36,7 @@ for (const f of files) {
       } catch (rbErr) {
         outcome = "rollback FAILED";
         console.error(`✗ ${f}: rollback failed`, rbErr);
+        console.error(`✗ ${f}: no _migrations row was recorded, so the schema may be partially migrated and this migration will be retried on the next run. Inspect the database before re-running.`);
       }
     }
     console.error(`✗ ${f} failed (${outcome})`);
