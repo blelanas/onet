@@ -49,3 +49,21 @@ export async function requireAnyPermission(...perms: Permission[]): Promise<Curr
   if (!canAny(user, ...perms)) throw new AuthError("FORBIDDEN");
   return user;
 }
+
+/**
+ * For pages: run a query that may throw AuthError and map it to the right navigation
+ * (404 page for NOT_FOUND, forbidden page for FORBIDDEN, login for UNAUTHENTICATED).
+ */
+export async function pageQuery<T>(p: Promise<T>): Promise<T> {
+  try {
+    return await p;
+  } catch (e) {
+    if (e instanceof AuthError) {
+      const { notFound } = await import("next/navigation");
+      if (e.code === "NOT_FOUND") notFound();
+      if (e.code === "FORBIDDEN") redirect("/dashboard/forbidden");
+      redirect("/login");
+    }
+    throw e;
+  }
+}

@@ -1,1 +1,14 @@
-{}
+{
+  "title": "Documents",
+  "description": "Autorisations, fiches sanitaires, rapports et pièces jointes.",
+  "fields": {
+    "name": "Nom du document",
+    "linkedTo": "Rattaché à",
+    "size": "Taille",
+    "uploadedBy": "Ajouté par"
+  },
+  "empty": {
+    "title": "Aucun document",
+    "entity": "Les documents ajoutés apparaîtront ici."
+  }
+}

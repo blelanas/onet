@@ -1,1 +1,14 @@
-{}
+{
+  "title": "Documents",
+  "description": "Authorizations, health forms, reports and attachments.",
+  "fields": {
+    "name": "Document name",
+    "linkedTo": "Linked to",
+    "size": "Size",
+    "uploadedBy": "Uploaded by"
+  },
+  "empty": {
+    "title": "No documents",
+    "entity": "Uploaded documents will appear here."
+  }
+}

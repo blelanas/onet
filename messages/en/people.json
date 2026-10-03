@@ -1,1 +1,132 @@
-{}
+{
+  "titles": {
+    "members": "Members",
+    "children": "Children",
+    "parents": "Parents",
+    "monitors": "Monitors",
+    "newMember": "New member",
+    "editMember": "Edit member",
+    "myChildren": "My children"
+  },
+  "descriptions": {
+    "members": "Everyone at ONET Teboulba: kids, families, monitors and staff.",
+    "children": "Registered kids, their groups and families.",
+    "parents": "Families and their contact details.",
+    "monitors": "The animation team and their groups.",
+    "myChildren": "Follow your children's activities, attendance and trips."
+  },
+  "new": {
+    "CHILD": "Add a child",
+    "PARENT": "Add a parent",
+    "MONITOR": "Add a monitor",
+    "MEMBER": "Add a member",
+    "STAFF": "Add a member"
+  },
+  "filters": {
+    "allTypes": "All profiles",
+    "allStatuses": "All statuses",
+    "allGroups": "All groups",
+    "sort": "Sort",
+    "sortName": "Name (A→Z)",
+    "sortRecent": "Newest members",
+    "sortAge": "Youngest"
+  },
+  "columns": {
+    "member": "Member",
+    "number": "Member no.",
+    "type": "Profile",
+    "group": "Group",
+    "age": "Age",
+    "parents": "Parents",
+    "children": "Children",
+    "contact": "Contact",
+    "groups": "Groups",
+    "status": "Status",
+    "since": "Member since"
+  },
+  "form": {
+    "identity": "Identity",
+    "contact": "Contact details",
+    "membership": "Membership",
+    "family": "Family & group",
+    "health": "Health & emergency",
+    "type": "Profile",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "firstNameAr": "First name (Arabic)",
+    "lastNameAr": "Last name (Arabic)",
+    "dateOfBirth": "Date of birth",
+    "gender": "Gender",
+    "photo": "Photo",
+    "city": "City",
+    "emergencyName": "Emergency contact",
+    "emergencyPhone": "Emergency phone",
+    "medicalNotes": "Medical information",
+    "medicalHint": "Allergies, treatments… visible only to staff and family.",
+    "status": "Membership status",
+    "membershipDate": "Membership date",
+    "notes": "Internal notes",
+    "parents": "Parents / guardians",
+    "parentsHint": "Hold Ctrl (or Cmd) to select several.",
+    "group": "Group",
+    "noGroup": "No group",
+    "monitorGroups": "Groups supervised"
+  },
+  "profile": {
+    "tabs": {
+      "overview": "Overview",
+      "attendance": "Attendance",
+      "participation": "Participation",
+      "payments": "Payments",
+      "documents": "Documents"
+    },
+    "personal": "Personal information",
+    "family": "Family",
+    "children": "Children",
+    "parents": "Parents",
+    "groupCard": "Group",
+    "monitorsOfGroup": "Monitors",
+    "activities": "Activities",
+    "badges": "Badges",
+    "events": "Events",
+    "trips": "Trips",
+    "noActivities": "No activities yet.",
+    "noFamily": "No family links recorded.",
+    "attendanceRate": "Attendance rate",
+    "linkParent": "Link a parent",
+    "unlink": "Remove link",
+    "account": "Login account",
+    "hasAccount": "This member can sign in ({email}).",
+    "noAccount": "No login account.",
+    "createAccount": "Create account",
+    "role": "Role",
+    "password": "Initial password",
+    "lastLogin": "Last login",
+    "emergency": "Emergency",
+    "medical": "Medical",
+    "noInvoices": "No invoices.",
+    "totalDue": "Balance due",
+    "deleteTitle": "Delete this member?",
+    "deleteText": "All their registrations and attendance will be removed."
+  },
+  "import": {
+    "title": "Import members",
+    "help": "CSV file with columns: type, firstName, lastName, dateOfBirth (YYYY-MM-DD), gender (M/F), phone, email, address, membershipStatus.",
+    "result": "{created} member(s) imported. Skipped lines: {errors}",
+    "template": "Download a template"
+  },
+  "empty": {
+    "title": "No members found",
+    "description": "Add a first member or change your filters."
+  },
+  "myChildren": {
+    "switchChild": "Choose a child",
+    "upcoming": "Coming up",
+    "lastAttendance": "Recent attendance",
+    "noChildren": "No child is linked to your account.",
+    "noChildrenHint": "Contact the office to link your children to your account.",
+    "weeklySchedule": "Weekly schedule",
+    "registrations": "Registrations",
+    "openProfile": "Open full profile"
+  }
+}
