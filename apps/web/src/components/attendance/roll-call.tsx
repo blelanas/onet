@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { inputClasses } from "@/components/ui/input";
 import { ATTENDANCE_STATUSES, type AttendanceStatus } from "@onet/shared";
 import { cn } from "@/lib/utils";
-import { ATTENDANCE_COLORS } from "./status-style";
+import { ATTENDANCE_COLORS, ATTENDANCE_TEXT_COLORS } from "./status-style";
 
 type Member = { id: string; firstName: string; lastName: string; photoUrl: string | null; age: number | null; medical: boolean };
 type Entry = { status?: AttendanceStatus; note: string };
@@ -65,7 +65,7 @@ export function RollCall({ contextKey, date, members, initial, color }: { contex
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2" aria-live="polite">
           {ATTENDANCE_STATUSES.map((s) => (
-            <span key={s} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-extrabold" style={{ background: `${ATTENDANCE_COLORS[s]}1A`, color: ATTENDANCE_COLORS[s] }}>
+            <span key={s} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-extrabold" style={{ background: `${ATTENDANCE_TEXT_COLORS[s]}1A`, color: ATTENDANCE_TEXT_COLORS[s] }}>
               {tc(`status.${s}`)} <span className="tabular-nums">{counts[s]}</span>
             </span>
           ))}
@@ -127,9 +127,9 @@ export function RollCall({ contextKey, date, members, initial, color }: { contex
                           "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border-2 px-1 text-[11px] font-extrabold transition active:scale-95 sm:text-xs",
                           on ? "border-transparent text-white shadow-md" : "border-line bg-surface text-ink-2 hover:border-current",
                         )}
-                        style={on ? { background: ATTENDANCE_COLORS[s] } : { color: undefined }}
+                        style={on ? { background: ATTENDANCE_TEXT_COLORS[s] } : { color: undefined }}
                       >
-                        <I className="size-5" style={on ? undefined : { color: ATTENDANCE_COLORS[s] }} />
+                        <I className="size-5" style={on ? undefined : { color: ATTENDANCE_TEXT_COLORS[s] }} />
                         <span className="truncate">{tc(`status.${s}`)}</span>
                       </button>
                     );

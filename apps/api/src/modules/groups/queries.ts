@@ -92,8 +92,10 @@ export async function groupActivities(groupId: string) {
 }
 
 export async function groupAnnouncements(groupId: string) {
+  // Scheduled announcements stay hidden until published (same rule as the announcements feed).
+  const now = new Date();
   return db.announcement.findMany({
-    where: { audience: "GROUP", groupId, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+    where: { audience: "GROUP", groupId, publishedAt: { lte: now }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
     orderBy: [{ isPinned: "desc" }, { publishedAt: "desc" }],
     take: 20,
     include: { author: { select: { name: true } } },

@@ -20,7 +20,7 @@ import { Section } from "@/components/ui/section";
 import { FilterChips } from "@/components/ui/toolbar";
 import { categoryColor } from "@/components/activities/category-icon";
 import { ContextBar } from "./context-bar";
-import { ATTENDANCE_COLORS } from "./status-style";
+import { ATTENDANCE_COLORS, ATTENDANCE_TEXT_COLORS } from "./status-style";
 
 const STATUSES = ["PRESENT", "LATE", "EXCUSED", "ABSENT"] as const;
 const PERIODS = ["4", "8", "12", "26"];
@@ -99,7 +99,7 @@ function HistoryPanel({ data }: { data: Data }) {
                           <p className="flex flex-wrap gap-x-3 text-xs font-bold">
                             {STATUSES.map((k) =>
                               s.counts[k] ? (
-                                <span key={k} style={{ color: ATTENDANCE_COLORS[k] }}>
+                                <span key={k} style={{ color: ATTENDANCE_TEXT_COLORS[k] }}>
                                   {tc(`status.${k}`)} {s.counts[k]}
                                 </span>
                               ) : null,

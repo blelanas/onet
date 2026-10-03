@@ -1,24 +1,18 @@
 import { revalidatePath } from "@api/lib/cache";
 import { z } from "zod";
-import type { Prisma } from "@prisma/client";
 import { db } from "@api/lib/db";
 import { requirePermission } from "@api/lib/auth/guards";
 import { ActionError, formToObject, runAction, zs } from "@api/lib/actions";
 import { audit } from "@api/lib/audit";
 import { ageFrom } from "@api/lib/utils";
-import { groupForAge } from "./queries";
+import { nextMembershipNumber } from "../members/actions";
+import { activeGroupsWithCapacity, groupForAge } from "./queries";
 
 /** "Fatma Ben Salah" → { firstName: "Fatma", lastName: "Ben Salah" } */
 function splitName(full: string) {
   const parts = full.trim().split(/\s+/);
   if (parts.length === 1) return { firstName: parts[0], lastName: parts[0] };
   return { firstName: parts[0], lastName: parts.slice(1).join(" ") };
-}
-
-async function nextMembershipNumber(tx: Prisma.TransactionClient) {
-  const last = await tx.member.findFirst({ where: { membershipNumber: { startsWith: "ONT-" } }, orderBy: { membershipNumber: "desc" }, select: { membershipNumber: true } });
-  const n = last ? Number(last.membershipNumber.slice(4)) + 1 : 1;
-  return `ONT-${String(n).padStart(4, "0")}`;
 }
 
 const approveSchema = z.object({ id: zs.id, groupId: zs.optId });
@@ -47,9 +41,10 @@ export async function approveJoinRequest(fd: FormData | Record<string, unknown>)
 
       let childId: string | null = null;
       if (req.childName?.trim()) {
-        const groups = await tx.group.findMany({ where: { isActive: true }, select: { id: true, name: true, color: true, ageMin: true, ageMax: true } });
-        const chosen = groupId ? groups.find((g) => g.id === groupId) : groupForAge(groups, ageFrom(req.childDob));
+        const groups = await activeGroupsWithCapacity(tx);
+        const chosen = groupId ? groups.find((g) => g.id === groupId) : groupForAge(groups.filter((g) => !g.full), ageFrom(req.childDob));
         if (groupId && !chosen) throw new ActionError("errors.validation");
+        if (chosen?.full) throw new ActionError("errors.capacityFull");
         const names = splitName(req.childName);
         const child = await tx.member.create({
           data: {

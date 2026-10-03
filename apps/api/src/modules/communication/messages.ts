@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { db } from "@api/lib/db";
 import type { CurrentUser } from "@api/lib/auth/session";
 import { AuthError } from "@api/lib/auth/guards";
@@ -50,27 +51,31 @@ export async function openConversation(user: CurrentUser, id: string) {
     where: { id },
     include: {
       participants: { include: { user: { select: { id: true, name: true, avatarUrl: true, roles: { select: { role: { select: { key: true } } } } } } } },
-      messages: { orderBy: { createdAt: "asc" }, take: 300, include: { sender: { select: { id: true, name: true, avatarUrl: true } } } },
+      // Newest page of the thread (reversed below to chronological order).
+      messages: { orderBy: { createdAt: "desc" }, take: 300, include: { sender: { select: { id: true, name: true, avatarUrl: true } } } },
     },
   });
   if (!conv) throw new AuthError("NOT_FOUND");
   if (!conv.participants.some((p) => p.userId === user.id)) throw new AuthError("NOT_FOUND");
+  const messages = conv.messages.reverse();
   const now = new Date();
+  // Read up to the newest message actually returned, so one arriving meanwhile stays unread.
+  const readUpTo = messages.at(-1)?.createdAt ?? now;
   await Promise.all([
-    db.conversationParticipant.update({ where: { conversationId_userId: { conversationId: id, userId: user.id } }, data: { lastReadAt: now } }),
+    db.conversationParticipant.update({ where: { conversationId_userId: { conversationId: id, userId: user.id } }, data: { lastReadAt: readUpTo } }),
     db.notification.updateMany({ where: { userId: user.id, type: "MESSAGE", readAt: null, link: `/dashboard/messages?c=${id}` }, data: { readAt: now } }),
   ]);
   return {
     id: conv.id,
     subject: conv.subject,
     others: conv.participants.filter((p) => p.userId !== user.id).map((p) => ({ id: p.user.id, name: p.user.name, avatarUrl: p.user.avatarUrl, roles: p.user.roles.map((r) => r.role.key), lastReadAt: p.lastReadAt })),
-    messages: conv.messages,
+    messages,
   };
 }
 
 /** Existing one-to-one conversation between two users, if any. */
-export async function findDirectConversation(userId: string, otherId: string) {
-  const candidates = await db.conversation.findMany({
+export async function findDirectConversation(userId: string, otherId: string, tx: Prisma.TransactionClient = db) {
+  const candidates = await tx.conversation.findMany({
     where: { AND: [{ participants: { some: { userId } } }, { participants: { some: { userId: otherId } } }] },
     select: { id: true, _count: { select: { participants: true } } },
     orderBy: { updatedAt: "desc" },

@@ -1,5 +1,6 @@
 import { revalidatePath } from "@api/lib/cache";
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
 import { db } from "@api/lib/db";
 import { requirePermission } from "@api/lib/auth/guards";
 import { hashPassword, isStrongPassword } from "@api/lib/auth/password";
@@ -33,8 +34,8 @@ const memberSchema = z.object({
 });
 
 /** Next number from the NUMERIC maximum (text ordering would stall after ONT-9999 → ONT-10000). */
-async function nextMembershipNumber() {
-  const rows = await db.$queryRaw<{ n: bigint | number | null }[]>`SELECT MAX(CAST(SUBSTR(membershipNumber, 5) AS INTEGER)) AS n FROM "Member" WHERE membershipNumber LIKE 'ONT-%'`;
+export async function nextMembershipNumber(tx: Prisma.TransactionClient = db) {
+  const rows = await tx.$queryRaw<{ n: bigint | number | null }[]>`SELECT MAX(CAST(SUBSTR(membershipNumber, 5) AS INTEGER)) AS n FROM "Member" WHERE membershipNumber LIKE 'ONT-%'`;
   const n = Number(rows[0]?.n ?? 0) + 1;
   return `ONT-${String(n).padStart(4, "0")}`;
 }
@@ -63,7 +64,7 @@ export async function saveMember(fd: FormData | Record<string, unknown>) {
     const member = await db.$transaction(async (tx) => {
       const m = id
         ? await tx.member.update({ where: { id }, data: payload })
-        : await tx.member.create({ data: { ...payload, membershipNumber: await nextMembershipNumber() } });
+        : await tx.member.create({ data: { ...payload, membershipNumber: await nextMembershipNumber(tx) } });
       // An empty multi-select submits nothing: treat a missing list as "no links".
       if (fields.type === "CHILD") {
         const pids = (parentIds ?? []).filter(Boolean);

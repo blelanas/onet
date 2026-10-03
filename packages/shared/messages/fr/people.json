@@ -94,6 +94,7 @@
     "noFamily": "Aucun lien familial enregistré.",
     "attendanceRate": "Taux de présence",
     "linkParent": "Lier un parent",
+    "relation": "Lien de parenté",
     "unlink": "Retirer le lien",
     "account": "Compte de connexion",
     "hasAccount": "Ce membre peut se connecter ({email}).",

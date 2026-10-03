@@ -94,6 +94,7 @@
     "noFamily": "لا توجد روابط عائلية.",
     "attendanceRate": "نسبة الحضور",
     "linkParent": "ربط وليّ",
+    "relation": "صلة القرابة",
     "unlink": "إزالة الربط",
     "account": "حساب الدخول",
     "hasAccount": "يمكن لهذا العضو تسجيل الدخول ({email}).",

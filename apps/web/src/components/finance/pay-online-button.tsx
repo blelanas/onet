@@ -53,7 +53,9 @@ export function PayOnlineButton({
       </Button>
       <Modal
         open={open}
-        onClose={() => !pending && setOpen(false)}
+        // Always sync: Esc closes the native <dialog> regardless (it can't be reliably blocked), and a
+        // stale `open` would keep the button from reopening it. A pending payment still completes + toasts.
+        onClose={() => setOpen(false)}
         size="sm"
         title={t("confirm.payTitle", { amount: amountLabel })}
         footer={

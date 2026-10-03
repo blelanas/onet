@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { ATTENDANCE_COLORS, attended } from "./status-style";
+import { ATTENDANCE_COLORS, ATTENDANCE_TEXT_COLORS, attended } from "./status-style";
 
 const WEEKS = 16;
 const PRIORITY = ["ABSENT", "EXCUSED", "LATE", "PRESENT"] as const;
@@ -83,7 +83,7 @@ function FamilyPanel({ data }: { data: Data["children"] }) {
               <div className="mb-4 grid grid-cols-4 gap-2 text-center">
                 {(["PRESENT", "LATE", "EXCUSED", "ABSENT"] as const).map((s) => (
                   <div key={s} className="rounded-xl py-2" style={{ background: `${ATTENDANCE_COLORS[s]}14` }}>
-                    <p className="font-display text-lg font-extrabold tabular-nums" style={{ color: ATTENDANCE_COLORS[s] }}>
+                    <p className="font-display text-lg font-extrabold tabular-nums" style={{ color: ATTENDANCE_TEXT_COLORS[s] }}>
                       {records.filter((r) => r.status === s).length}
                     </p>
                     <p className="truncate px-1 text-[11px] font-bold text-ink-2">{tc(`status.${s}`)}</p>

@@ -20,7 +20,8 @@ export function normalizeDay(input?: Date | string | null): Date {
 export function parseDayParam(v: unknown): Date | null {
   if (typeof v !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return null;
   const d = normalizeDay(v);
-  return Number.isNaN(d.getTime()) ? null : d;
+  // Reject dates the Date constructor rolls over (2024-02-31 → 2024-03-02).
+  return Number.isNaN(d.getTime()) || dayKey(d) !== v ? null : d;
 }
 
 export function dayKey(d: Date) {

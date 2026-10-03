@@ -26,7 +26,9 @@ export async function createSession(userId: string) {
 
 function bearer(): string | null {
   const h = ctx().req.headers.authorization;
-  return h?.startsWith("Bearer ") ? h.slice(7).trim() : null;
+  // Auth schemes are case-insensitive (RFC 9110 §11.1).
+  const m = h ? /^bearer\s+(\S+)\s*$/i.exec(h) : null;
+  return m ? m[1]! : null;
 }
 
 export async function destroySession() {

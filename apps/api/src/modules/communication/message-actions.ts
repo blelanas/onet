@@ -27,18 +27,36 @@ async function postMessage(user: CurrentUser, conversationId: string, body: stri
   revalidatePath("/dashboard/messages");
 }
 
+/**
+ * Existing one-to-one thread or a new one. Check + create run in one transaction: SQLite/libSQL serialise
+ * writers, so a concurrent first message either sees the other's thread or fails (snapshot conflict) and
+ * then picks up the thread that won.
+ */
+async function directConversation(userId: string, otherId: string) {
+  const create = () =>
+    db.$transaction(async (tx) => {
+      const existing = await findDirectConversation(userId, otherId, tx);
+      if (existing) return existing;
+      const conv = await tx.conversation.create({ data: { participants: { create: [{ userId, lastReadAt: new Date() }, { userId: otherId }] } } });
+      return conv.id;
+    });
+  try {
+    return await create();
+  } catch (e) {
+    const existing = await findDirectConversation(userId, otherId);
+    if (existing) return existing;
+    throw e;
+  }
+}
+
 /** New conversation (or continues the existing one-to-one thread) with an allowed contact. */
 export async function startConversation(fd: FormData | Record<string, unknown>) {
   return runAction(startSchema, formToObject(fd), async (d) => {
     const user = await requirePermission("messages.use");
     if (d.to === user.id || !(await canMessage(user, d.to))) throw new AuthError("FORBIDDEN");
-    let id = d.subject ? null : await findDirectConversation(user.id, d.to);
-    if (!id) {
-      const conv = await db.conversation.create({
-        data: { subject: d.subject ?? null, participants: { create: [{ userId: user.id, lastReadAt: new Date() }, { userId: d.to }] } },
-      });
-      id = conv.id;
-    }
+    const id = d.subject
+      ? (await db.conversation.create({ data: { subject: d.subject, participants: { create: [{ userId: user.id, lastReadAt: new Date() }, { userId: d.to }] } } })).id
+      : await directConversation(user.id, d.to);
     await postMessage(user, id, d.body, [d.to], d.subject);
     return { id };
   });

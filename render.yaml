@@ -26,3 +26,5 @@ services:
         sync: false # https://<project>.web.app,https://<project>.firebaseapp.com,https://<project>--pr*.web.app
       - key: PAYMENT_PROVIDER
         value: mock
+      - key: ALLOW_MOCK_PAYMENTS
+        value: "false" # "true" only for a demo: the mock provider marks every online payment as paid

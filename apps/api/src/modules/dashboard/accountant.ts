@@ -5,20 +5,25 @@ import { latestNotifications, outstanding, revenueExpenseTrend, startOfMonth } f
 export async function accountantDashboard(userId: string) {
   const now = new Date();
   const monthStart = startOfMonth(now);
+  const yearStart = new Date(now.getFullYear(), 0, 1);
+  // Month/year to date: bounded at now so future-dated expenses (or payments) don't leak in.
+  const monthToDate = { gte: monthStart, lte: now };
+  const yearToDate = { gte: yearStart, lte: now };
+  const billedStatus = { notIn: ["DRAFT", "CANCELLED"] };
   const overdueWhere = { OR: [{ status: "OVERDUE" }, { status: { in: ["PENDING", "PARTIALLY_PAID"] }, dueDate: { lt: now } }] };
 
   const [revenue, expenses, revenueYear, expensesYear, pending, overdue, paidCount, unpaidCount, trend, billedEvents, billedTrips, collected, recentPayments, overdueList, notifications] = await Promise.all([
-    db.payment.aggregate({ _sum: { amount: true }, where: { status: "COMPLETED", paidAt: { gte: monthStart } } }),
-    db.expense.aggregate({ _sum: { amount: true }, where: { date: { gte: monthStart } } }),
-    db.payment.aggregate({ _sum: { amount: true }, where: { status: "COMPLETED", paidAt: { gte: new Date(now.getFullYear(), 0, 1) } } }),
-    db.expense.aggregate({ _sum: { amount: true }, where: { date: { gte: new Date(now.getFullYear(), 0, 1) } } }),
+    db.payment.aggregate({ _sum: { amount: true }, where: { status: "COMPLETED", paidAt: monthToDate } }),
+    db.expense.aggregate({ _sum: { amount: true }, where: { date: monthToDate } }),
+    db.payment.aggregate({ _sum: { amount: true }, where: { status: "COMPLETED", paidAt: yearToDate } }),
+    db.expense.aggregate({ _sum: { amount: true }, where: { date: yearToDate } }),
     outstanding({}),
     outstanding(overdueWhere),
     db.invoice.count({ where: { status: "PAID" } }),
     db.invoice.count({ where: { status: { in: ["PENDING", "PARTIALLY_PAID", "OVERDUE"] } } }),
     revenueExpenseTrend(6),
-    db.invoice.groupBy({ by: ["eventId"], where: { eventId: { not: null }, status: { not: "CANCELLED" } }, _sum: { amount: true } }),
-    db.invoice.groupBy({ by: ["tripId"], where: { tripId: { not: null }, status: { not: "CANCELLED" } }, _sum: { amount: true } }),
+    db.invoice.groupBy({ by: ["eventId"], where: { eventId: { not: null }, status: billedStatus }, _sum: { amount: true } }),
+    db.invoice.groupBy({ by: ["tripId"], where: { tripId: { not: null }, status: billedStatus }, _sum: { amount: true } }),
     db.payment.findMany({
       where: { status: "COMPLETED", invoice: { OR: [{ eventId: { not: null } }, { tripId: { not: null } }] } },
       select: { amount: true, invoice: { select: { eventId: true, tripId: true } } },
@@ -38,7 +43,7 @@ export async function accountantDashboard(userId: string) {
     latestNotifications(userId, 4),
   ]);
 
-  // Revenue by event/trip: billed (non-cancelled invoices) vs collected (completed payments).
+  // Revenue by event/trip: billed (issued, non-cancelled invoices) vs collected (completed payments).
   const [events, trips] = await Promise.all([
     db.event.findMany({ where: { id: { in: billedEvents.map((b) => b.eventId!) } }, select: { id: true, title: true } }),
     db.trip.findMany({ where: { id: { in: billedTrips.map((b) => b.tripId!) } }, select: { id: true, title: true } }),

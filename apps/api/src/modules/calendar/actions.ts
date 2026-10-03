@@ -7,13 +7,14 @@ import { audit } from "@api/lib/audit";
 import { CALENDAR_ENTRY_TYPES } from "@api/lib/constants";
 import { normalizeDay } from "@api/modules/attendance/day";
 import { ENTRY_AUDIENCES } from "./constants";
+import { parseFormDate } from "@onet/shared";
 
 
 /** "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm" (local time). */
 function parseWhen(v: unknown) {
   if (typeof v !== "string" || !v) return undefined;
   if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return normalizeDay(v);
-  const d = new Date(v);
+  const d = parseFormDate(v);
   return Number.isNaN(d.getTime()) ? undefined : d;
 }
 const whenReq = z.preprocess(parseWhen, z.date({ error: "errors.required" }));

@@ -16,8 +16,17 @@ export function PeriodFilter({ defaultKey = "all", className }: { defaultKey?: (
   const params = useSearchParams();
   const [pending, start] = useTransition();
   const current = params.get("period") ?? defaultKey;
-  const [from, setFrom] = useState(params.get("from") ?? "");
-  const [to, setTo] = useState(params.get("to") ?? "");
+  const urlFrom = params.get("from") ?? "";
+  const urlTo = params.get("to") ?? "";
+  const [from, setFrom] = useState(urlFrom);
+  const [to, setTo] = useState(urlTo);
+  // Re-sync the inputs when the URL changes (back/forward, chip click, external link).
+  const [synced, setSynced] = useState(`${urlFrom}|${urlTo}`);
+  if (synced !== `${urlFrom}|${urlTo}`) {
+    setSynced(`${urlFrom}|${urlTo}`);
+    setFrom(urlFrom);
+    setTo(urlTo);
+  }
 
   const go = (patch: Record<string, string | null>) => {
     const sp = new URLSearchParams(params.toString());

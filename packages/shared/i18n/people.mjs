@@ -31,7 +31,7 @@ export default {
     groupCard: T("Groupe", "المجموعة", "Group"), monitorsOfGroup: T("Moniteurs", "المنشطون", "Monitors"), activities: T("Activités suivies", "الأنشطة", "Activities"), badges: T("Badges", "الشارات", "Badges"),
     events: T("Événements", "التظاهرات", "Events"), trips: T("Sorties", "الرحلات", "Trips"), noActivities: T("Aucune activité pour le moment.", "لا توجد أنشطة حاليًا.", "No activities yet."),
     noFamily: T("Aucun lien familial enregistré.", "لا توجد روابط عائلية.", "No family links recorded."), attendanceRate: T("Taux de présence", "نسبة الحضور", "Attendance rate"),
-    linkParent: T("Lier un parent", "ربط وليّ", "Link a parent"), unlink: T("Retirer le lien", "إزالة الربط", "Remove link"), account: T("Compte de connexion", "حساب الدخول", "Login account"),
+    linkParent: T("Lier un parent", "ربط وليّ", "Link a parent"), relation: T("Lien de parenté", "صلة القرابة", "Relationship"), unlink: T("Retirer le lien", "إزالة الربط", "Remove link"), account: T("Compte de connexion", "حساب الدخول", "Login account"),
     hasAccount: T("Ce membre peut se connecter ({email}).", "يمكن لهذا العضو تسجيل الدخول ({email}).", "This member can sign in ({email})."), noAccount: T("Aucun compte de connexion.", "لا يوجد حساب دخول.", "No login account."),
     createAccount: T("Créer un compte", "إنشاء حساب", "Create account"), role: T("Rôle", "الدور", "Role"), password: T("Mot de passe initial", "كلمة المرور الأولية", "Initial password"),
     lastLogin: T("Dernière connexion", "آخر دخول", "Last login"), emergency: T("Urgence", "طوارئ", "Emergency"), medical: T("Médical", "طبي", "Medical"),

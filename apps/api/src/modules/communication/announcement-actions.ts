@@ -7,6 +7,13 @@ import { audit } from "@api/lib/audit";
 import { ANNOUNCEMENT_PRIORITIES, AUDIENCES } from "@api/lib/constants";
 import { notifyUsers } from "@api/lib/services/notifications";
 import { audienceUserIds } from "./audience";
+import { zonedTimeToDate } from "@onet/shared";
+
+/** A date-only expiry ("YYYY-MM-DD") means "until the end of that day" in Tunisian time. */
+const expiresAt = z.preprocess((v) => {
+  const m = typeof v === "string" ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(v.trim()) : null;
+  return m && Number(m[2]) >= 1 && Number(m[2]) <= 12 && Number(m[3]) >= 1 && Number(m[3]) <= 31 ? zonedTimeToDate(Number(m[1]), Number(m[2]), Number(m[3]), 23, 59, 59, 999) : v;
+}, zs.optDate);
 
 const schema = z.object({
   id: zs.optId,
@@ -16,7 +23,7 @@ const schema = z.object({
   groupId: zs.optId,
   priority: z.enum(ANNOUNCEMENT_PRIORITIES).default("NORMAL"),
   isPinned: zs.bool.default(false),
-  expiresAt: zs.optDate,
+  expiresAt,
   notify: zs.bool.default(false),
 });
 

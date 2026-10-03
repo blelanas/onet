@@ -1,15 +1,16 @@
 import { db } from "@api/lib/db";
 import type { CurrentUser } from "@api/lib/auth/session";
-import { AuthError, hasRole } from "@api/lib/auth/guards";
+import { AuthError, can, hasRole } from "@api/lib/auth/guards";
 import { myChildren } from "@api/lib/auth/scope";
 import { kidBadges } from "./kid";
 
 /**
  * Resolves whose achievements to show: a kid sees their own; a parent sees one of their
- * children (`?child=`, guardianship enforced). Anyone else is refused.
+ * children (`?child=`, guardianship enforced, needs members.read). Anyone else is refused.
  */
 export async function resolveAchievementsMember(user: CurrentUser, childParam?: string) {
-  const kids = hasRole(user, "parent") ? await myChildren(user) : [];
+  const parent = hasRole(user, "parent") && can(user, "members.read");
+  const kids = parent ? await myChildren(user) : [];
   if (childParam) {
     if (childParam === user.memberId && hasRole(user, "kid")) return { memberId: childParam, kids, viewingChild: false };
     if (kids.some((k) => k.id === childParam)) return { memberId: childParam, kids, viewingChild: true };
@@ -17,7 +18,7 @@ export async function resolveAchievementsMember(user: CurrentUser, childParam?: 
   }
   if (hasRole(user, "kid") && user.memberId) return { memberId: user.memberId, kids, viewingChild: false };
   if (kids.length) return { memberId: kids[0].id, kids, viewingChild: true };
-  if (hasRole(user, "parent")) return { memberId: null, kids, viewingChild: true };
+  if (parent) return { memberId: null, kids, viewingChild: true };
   throw new AuthError("FORBIDDEN");
 }
 
@@ -25,11 +26,14 @@ export type HistoryItem = { id: string; kind: "badge" | "trip" | "event"; title:
 
 export async function achievements(memberId: string) {
   const now = new Date();
+  // Event/trip attendance isn't taken today (contexts are group|activity), so a confirmed past
+  // registration is the signal — but an explicitly recorded absence always wins.
+  const notAbsent = { none: { memberId, status: { in: ["ABSENT", "EXCUSED"] } } };
   const [member, badges, trips, events] = await Promise.all([
     db.member.findUniqueOrThrow({ where: { id: memberId }, select: { id: true, firstName: true, lastName: true, photoUrl: true, points: true, group: { select: { name: true, color: true } } } }),
     kidBadges(memberId),
-    db.tripRegistration.findMany({ where: { memberId, status: "CONFIRMED", trip: { departAt: { lt: now } } }, select: { id: true, trip: { select: { id: true, title: true, departAt: true } } }, orderBy: { trip: { departAt: "desc" } }, take: 6 }),
-    db.eventRegistration.findMany({ where: { memberId, status: "CONFIRMED", event: { startAt: { lt: now } } }, select: { id: true, event: { select: { id: true, title: true, startAt: true } } }, orderBy: { event: { startAt: "desc" } }, take: 6 }),
+    db.tripRegistration.findMany({ where: { memberId, status: "CONFIRMED", trip: { departAt: { lt: now }, attendance: notAbsent } }, select: { id: true, trip: { select: { id: true, title: true, departAt: true } } }, orderBy: { trip: { departAt: "desc" } }, take: 6 }),
+    db.eventRegistration.findMany({ where: { memberId, status: "CONFIRMED", event: { startAt: { lt: now }, attendance: notAbsent } }, select: { id: true, event: { select: { id: true, title: true, startAt: true } } }, orderBy: { event: { startAt: "desc" } }, take: 6 }),
   ]);
   const history: HistoryItem[] = [
     ...badges.earned.map((b) => ({ id: `b-${b.badge.id}`, kind: "badge" as const, title: b.badge.name, at: b.awardedAt, color: b.badge.color, icon: b.badge.icon, points: b.badge.points })),

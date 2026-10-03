@@ -4,8 +4,8 @@ export function Ring({ value, size = 96, stroke = 10, color = "#1E9460", track =
   const c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(100, value));
   return (
-    <div className="relative shrink-0" style={{ width: size, height: size }} role="img" aria-label={label ?? `${pct}%`}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
+    <div className="relative shrink-0" style={{ width: size, height: size }} role="group" aria-label={label ?? `${pct}%`}>
+      <svg aria-hidden="true" width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={track} strokeWidth={stroke} />
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c - (pct / 100) * c} className="transition-[stroke-dashoffset] duration-700" />
       </svg>

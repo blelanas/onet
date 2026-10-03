@@ -47,7 +47,8 @@ export function ChildPicker({
   const list = useMemo(() => {
     const terms = norm(q).split(/\s+/).filter(Boolean);
     return candidates
-      .filter((c) => !onlyAge || c.age == null || ((ageMin == null || c.age >= ageMin) && (ageMax == null || c.age <= ageMax)))
+      // Unknown ages cannot be checked against the range: hidden while the age filter is on.
+      .filter((c) => !onlyAge || (ageMin == null && ageMax == null) || (c.age != null && (ageMin == null || c.age >= ageMin) && (ageMax == null || c.age <= ageMax)))
       .filter((c) => terms.every((term) => norm(`${c.firstName} ${c.lastName}`).includes(term)))
       .slice(0, 60);
   }, [q, candidates, onlyAge, ageMin, ageMax]);

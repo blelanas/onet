@@ -26,7 +26,7 @@ import { LinkTabs } from "@/components/ui/tabs";
 import { CategoryIcon, categoryColor } from "@/components/activities/category-icon";
 import { ReportForm } from "@/components/activities/report-form";
 import { ChildPicker } from "@/components/groups/child-picker";
-import { ATTENDANCE_COLORS } from "@/components/attendance/status-style";
+import { ATTENDANCE_COLORS, ATTENDANCE_TEXT_COLORS } from "@/components/attendance/status-style";
 
 type Data = Loaded<typeof activityPage>;
 
@@ -254,7 +254,7 @@ function ActivityView({ id, data }: { id: string; data: Data }) {
                         <span className="flex items-center gap-2 text-xs font-bold">
                           {(["PRESENT", "LATE", "EXCUSED", "ABSENT"] as const).map((k) =>
                             s.counts[k] ? (
-                              <span key={k} className="inline-flex items-center gap-1" style={{ color: ATTENDANCE_COLORS[k] }}>
+                              <span key={k} className="inline-flex items-center gap-1" style={{ color: ATTENDANCE_TEXT_COLORS[k] }}>
                                 <span className="size-2 rounded-full" style={{ background: ATTENDANCE_COLORS[k] }} /> {s.counts[k]}
                               </span>
                             ) : null,

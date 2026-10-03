@@ -1,5 +1,6 @@
 import { db } from "@api/lib/db";
 import type { CurrentUser } from "@api/lib/auth/session";
+import { can } from "@api/lib/auth/guards";
 import { addDays, startOfDay } from "@api/lib/dates";
 import { activitySessions, announcementsFor, groupSessions, latestNotifications, nextOccurrence, sortAgenda } from "./common";
 
@@ -34,7 +35,7 @@ export async function monitorDashboard(user: CurrentUser) {
   });
   const groupIds = links.map((l) => l.group.id);
 
-  const [children, groupMeetings, activities, trips, events, tasks, notifications, announcements, todayRecorded] = await Promise.all([
+  const [children, groupMeetings, activities, trips, events, tasks, openTasks, notifications, announcements, todayRecorded] = await Promise.all([
     db.member.findMany({
       where: { groupId: { in: groupIds }, type: "CHILD", membershipStatus: { not: "INACTIVE" } },
       orderBy: [{ firstName: "asc" }],
@@ -43,7 +44,7 @@ export async function monitorDashboard(user: CurrentUser) {
     groupSessions({ id: { in: groupIds } }, today, addDays(today, 8)),
     activitySessions({ OR: [{ monitorId: memberId }, { groupId: { in: groupIds } }] }, today, addDays(today, 8)),
     db.trip.findMany({
-      where: { monitors: { some: { memberId } }, returnAt: { gte: now }, status: { not: "CANCELLED" } },
+      where: { monitors: { some: { memberId } }, returnAt: { gte: now }, status: { notIn: can(user, "trips.manage") ? ["CANCELLED"] : ["DRAFT", "CANCELLED"] } },
       orderBy: { departAt: "asc" },
       take: 4,
       select: { id: true, title: true, destination: true, departAt: true, coverUrl: true, category: true, capacity: true, _count: { select: { registrations: { where: { status: { in: ["CONFIRMED", "PENDING"] } } } } } },
@@ -60,6 +61,7 @@ export async function monitorDashboard(user: CurrentUser) {
       take: 12,
       select: { id: true, title: true, description: true, status: true, dueDate: true, group: { select: { name: true, color: true } } },
     }),
+    db.task.count({ where: { assigneeId: user.id, status: { not: "DONE" } } }),
     latestNotifications(user.id, 4),
     announcementsFor(["ALL", "MONITORS", "STAFF"], groupIds, 3),
     db.attendance.groupBy({ by: ["groupId"], where: { date: today, groupId: { in: groupIds } }, _count: { _all: true } }),
@@ -80,7 +82,7 @@ export async function monitorDashboard(user: CurrentUser) {
     trips,
     events,
     tasks: [...tasks].sort((a, b) => TASK_ORDER[a.status] - TASK_ORDER[b.status]).slice(0, 8),
-    openTasks: tasks.filter((t) => t.status !== "DONE").length,
+    openTasks,
     notifications,
     announcements,
   };

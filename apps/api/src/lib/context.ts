@@ -18,10 +18,14 @@ export function ctx(): RequestContext {
   return c;
 }
 
+/**
+ * Client IP as resolved by Express: `trust proxy` (app.ts) only honours the X-Forwarded-For hop
+ * added by our own proxy, so a client can't spoof it by sending the header itself.
+ */
 export function clientIp(): string | null {
   const c = als.getStore();
   if (!c) return null;
-  return (c.req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0]?.trim() ?? c.req.socket.remoteAddress ?? null;
+  return c.req.ip || c.req.socket.remoteAddress || null;
 }
 
 /** Memoize an async function per request (like React `cache`). */

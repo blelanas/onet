@@ -1,6 +1,7 @@
 import { db } from "@api/lib/db";
 import type { CurrentUser } from "@api/lib/auth/session";
 import { visibleMemberIds } from "@api/lib/auth/scope";
+import { invoiceScope } from "@api/modules/finance/access";
 
 /**
  * Can `user` see / attach documents for this entity?
@@ -26,8 +27,9 @@ export async function canAccessEntityDocs(user: CurrentUser, entityType: string,
   if (entityType === "INVOICE" && entityId) {
     // Reading invoices needs finance.read; attaching files to them needs finance.manage.
     if (user.permissions.has(mode === "write" ? "finance.manage" : "finance.read")) return true;
-    const inv = await db.invoice.findUnique({ where: { id: entityId }, select: { payerId: true } });
-    return mode === "read" && !!inv && inv.payerId === user.memberId;
+    if (mode !== "read") return false;
+    // Same visibility as the invoice itself: the payer and the guardians of the invoiced child.
+    return (await db.invoice.count({ where: { AND: [{ id: entityId }, await invoiceScope(user)] } })) > 0;
   }
   return mode === "read";
 }

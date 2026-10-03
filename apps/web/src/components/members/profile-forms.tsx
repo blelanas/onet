@@ -14,7 +14,7 @@ export function LinkParentForm({ childId, parents }: { childId: string; parents:
         <>
           <input type="hidden" name="childId" value={childId} />
           <Select name="parentId" label={t("linkParent")} placeholder="—" required options={parents.map((p) => ({ value: p.id, label: `${p.lastName} ${p.firstName}` }))} />
-          <Select name="relation" label=" " defaultValue="PARENT" options={GUARDIAN_RELATIONS.map((r) => ({ value: r, label: tc(`enums.relation.${r}`) }))} />
+          <Select name="relation" label=" " aria-label={t("relation")} defaultValue="PARENT" options={GUARDIAN_RELATIONS.map((r) => ({ value: r, label: tc(`enums.relation.${r}`) }))} />
           <Button type="submit" variant="soft" loading={pending}>
             {tc("actions.add")}
           </Button>

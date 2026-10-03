@@ -1,7 +1,7 @@
 import { Router, type Request } from "express";
 import { AuthError, can, requireUser } from "@api/lib/auth/guards";
 import { mutation, param, qs, query } from "@api/lib/http";
-import { listRegistrations, paymentState, targetOptions } from "./queries";
+import { listRegistrations, registrationTotals, targetOptions } from "./queries";
 import { addParticipant, bulkRegistrations, cancelRegistrationAction, registerMembers, setRegistrationStatusAction, updateTripRegistration } from "./actions";
 import type { RegKind } from "./service";
 
@@ -20,13 +20,15 @@ export async function registrationsPage(req: Request) {
   if (!staff && !can(user, "events.register") && !can(user, "trips.register")) throw new AuthError("FORBIDDEN");
   const scope = qs(req, "scope") === "past" ? "past" : qs(req, "scope") === "all" ? "all" : "upcoming";
   const filters = { kind: qs(req, "kind"), status: qs(req, "status"), target: qs(req, "target"), payment: qs(req, "payment"), q: qs(req, "q"), scope };
-  const rows = await listRegistrations(user, filters);
   if (!staff) {
+    // Families: only their own children's registrations (small), not paginated.
+    const rows = await listRegistrations(user, filters);
     return { staff: false as const, scope, rows, canPay: can(user, "invoices.pay") || can(user, "finance.read"), page: 1, pageSize: rows.length, total: rows.length, kpi: null, targets: null };
   }
-  const page = Math.max(1, Number(qs(req, "page")) || 1);
-  const live = rows.filter((r) => r.status !== "CANCELLED");
-  const unpaid = live.filter((r) => paymentState(r.invoice) === "UNPAID");
+  const totals = await registrationTotals(user, filters);
+  // Clamped to the last page: rows are fetched `page * PAGE_SIZE` deep per kind.
+  const page = Math.min(Math.max(1, Math.floor(Number(qs(req, "page"))) || 1), Math.max(1, Math.ceil(totals.total / PAGE_SIZE)));
+  const rows = await listRegistrations(user, filters, { take: page * PAGE_SIZE });
   return {
     staff: true as const,
     scope,
@@ -34,14 +36,8 @@ export async function registrationsPage(req: Request) {
     canPay: true,
     page,
     pageSize: PAGE_SIZE,
-    total: rows.length,
-    kpi: {
-      active: live.length,
-      pending: live.filter((r) => r.status === "PENDING").length,
-      waitlist: live.filter((r) => r.status === "WAITLIST").length,
-      unpaid: unpaid.length,
-      unpaidAmount: unpaid.reduce((s, r) => s + (r.invoice?.amount ?? 0), 0),
-    },
+    total: totals.total,
+    kpi: totals.kpi,
     targets: await targetOptions(),
   };
 }

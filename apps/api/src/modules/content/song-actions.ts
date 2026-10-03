@@ -51,10 +51,29 @@ export async function deleteSong(id: string) {
   });
 }
 
+/** Last counted play per user+song (in-memory, bounded): one play per user and song per minute. */
+const PLAY_WINDOW_MS = 60_000;
+const PLAY_THROTTLE_MAX = 10_000;
+const lastPlays = new Map<string, number>();
+
+function shouldCountPlay(key: string, now = Date.now()) {
+  const last = lastPlays.get(key);
+  if (last !== undefined && now - last < PLAY_WINDOW_MS) return false;
+  lastPlays.delete(key);
+  lastPlays.set(key, now);
+  // Insertion order = age: evict the oldest entries once the map is full.
+  while (lastPlays.size > PLAY_THROTTLE_MAX) lastPlays.delete(lastPlays.keys().next().value!);
+  return true;
+}
+
 /** Called by the player once each time a song starts playing. Returns the new count. */
 export async function recordSongPlay(id: string) {
   return runAction(zs.id, id, async (songId) => {
-    await requirePermission("content.read");
+    const user = await requirePermission("content.read");
+    if (!shouldCountPlay(`${user.id}:${songId}`)) {
+      const s = await db.song.findUnique({ where: { id: songId }, select: { plays: true } });
+      return { plays: s?.plays ?? 0 };
+    }
     const s = await db.song.update({ where: { id: songId }, data: { plays: { increment: 1 } }, select: { plays: true } });
     return { plays: s.plays };
   });

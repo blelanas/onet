@@ -6,7 +6,7 @@ import { AuthError, can } from "@api/lib/auth/guards";
 import { registrableMemberIds } from "@api/lib/auth/scope";
 import { ActionError } from "@api/lib/actions";
 import { audit } from "@api/lib/audit";
-import { nextInvoiceNumber } from "@api/lib/services/invoices";
+import { createNumberedInvoice } from "@api/lib/services/invoices";
 import { guardianUserIds, notifyLocalized, roleUserIds } from "./notify";
 
 export type RegKind = "event" | "trip";
@@ -40,7 +40,7 @@ export async function loadTarget(kind: RegKind, id: string, tx: Tx | typeof db =
   if (kind === "event") {
     const e = await tx.event.findUnique({ where: { id } });
     if (!e) throw new AuthError("NOT_FOUND");
-    return { kind, id, title: e.title, status: e.status, startAt: e.startAt, deadline: e.registrationDeadline, capacity: e.capacity, price: e.price, requiresPayment: e.requiresPayment || e.price > 0, ageMin: null, ageMax: null, link: `/dashboard/events/${id}` };
+    return { kind, id, title: e.title, status: e.status, startAt: e.startAt, deadline: e.registrationDeadline, capacity: e.capacity, price: e.price, requiresPayment: e.requiresPayment && e.price > 0, ageMin: null, ageMax: null, link: `/dashboard/events/${id}` };
   }
   const t = await tx.trip.findUnique({ where: { id } });
   if (!t) throw new AuthError("NOT_FOUND");
@@ -100,18 +100,15 @@ async function countActive(tx: Tx, target: RegTarget) {
 
 async function createInvoice(tx: Tx, target: RegTarget, memberId: string, memberName: string) {
   const t = await getTranslations({ locale: "fr", namespace: "events" });
-  return tx.invoice.create({
-    data: {
-      number: await nextInvoiceNumber(tx),
-      description: t(target.kind === "event" ? "invoice.event" : "invoice.trip", { title: target.title, name: memberName }),
-      amount: target.price,
-      payerId: await payerFor(tx, memberId),
-      childId: memberId,
-      eventId: target.kind === "event" ? target.id : null,
-      tripId: target.kind === "trip" ? target.id : null,
-      dueDate: target.deadline ?? target.startAt,
-      status: "PENDING",
-    },
+  return createNumberedInvoice(tx, {
+    description: t(target.kind === "event" ? "invoice.event" : "invoice.trip", { title: target.title, name: memberName }),
+    amount: target.price,
+    payerId: await payerFor(tx, memberId),
+    childId: memberId,
+    eventId: target.kind === "event" ? target.id : null,
+    tripId: target.kind === "trip" ? target.id : null,
+    dueDate: target.deadline ?? target.startAt,
+    status: "PENDING",
   });
 }
 

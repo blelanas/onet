@@ -39,13 +39,18 @@ export async function submitJoinRequest(fd: FormData | Record<string, unknown>) 
       data: { parentName: data.parentName, email: data.email, phone: data.phone, childName: data.childName ?? null, childDob: data.childDob ?? null, message: data.message ?? null },
     });
     await audit(null, "create", "JoinRequest", req.id, { source: "public" });
-    const t = await getTranslations({ locale: DEFAULT_LOCALE, namespace: "public.notify" });
-    await notifyRoles(["super_admin", "admin"], {
-      type: "SYSTEM",
-      title: t("joinTitle", { name: data.parentName }),
-      body: data.childName ? t("joinBodyChild", { child: data.childName }) : t("joinBody"),
-      link: "/dashboard/join-requests",
-    });
+    // The request is saved: a notification failure must not turn it into an error (and a retry into a duplicate).
+    try {
+      const t = await getTranslations({ locale: DEFAULT_LOCALE, namespace: "public.notify" });
+      await notifyRoles(["super_admin", "admin"], {
+        type: "SYSTEM",
+        title: t("joinTitle", { name: data.parentName }),
+        body: data.childName ? t("joinBodyChild", { child: data.childName }) : t("joinBody"),
+        link: "/dashboard/join-requests",
+      });
+    } catch (e) {
+      console.error("[join] admin notification failed for request", req.id, e);
+    }
     revalidatePath("/dashboard/join-requests");
     return { id: req.id };
   });

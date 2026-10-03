@@ -17,7 +17,8 @@ const schema = z.object({
   entries: z
     .array(z.object({ memberId: z.string().min(1), status: z.enum(ATTENDANCE_STATUSES), note: z.string().trim().max(300).optional() }))
     .min(1, "errors.required")
-    .max(300),
+    .max(300)
+    .refine((entries) => new Set(entries.map((e) => e.memberId)).size === entries.length, "errors.validation"),
 });
 
 /**
@@ -58,7 +59,9 @@ export async function saveAttendance(input: z.input<typeof schema>) {
       // Stored notifications are plain text: written in the association's default language.
       const t = await getTranslations({ locale: "fr", namespace: "attendance.notify" });
       const names = new Map(roster.members.map((m) => [m.id, m.firstName]));
-      await Promise.all(
+      // The attendance is already committed: a notification failure is logged, not reported as a failed save
+      // (a retry would see the child as already ABSENT and not alert again).
+      const sent = await Promise.allSettled(
         newlyAbsent.map((e) =>
           notifyGuardians(e.memberId, {
             type: "ATTENDANCE",
@@ -68,6 +71,7 @@ export async function saveAttendance(input: z.input<typeof schema>) {
           }),
         ),
       );
+      for (const r of sent) if (r.status === "rejected") console.error("[attendance] absence notification failed", r.reason);
     }
 
     const counts = Object.fromEntries(ATTENDANCE_STATUSES.map((s) => [s, d.entries.filter((e) => e.status === s).length]));

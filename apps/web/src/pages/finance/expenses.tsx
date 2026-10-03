@@ -29,7 +29,7 @@ type SP = Record<string, string | undefined>;
 type Data = Loaded<typeof expensesPage>;
 
 /** Only the editable fields are sent to the client dialog. */
-const editable = (e: ExpenseRow) => ({ id: e.id, category: e.category, amount: e.amount, date: e.date, description: e.description, supplier: e.supplier, attachmentUrl: e.attachmentUrl, eventId: e.eventId, tripId: e.tripId });
+const editable = (e: ExpenseRow) => ({ id: e.id, category: e.category, amount: e.amount, date: e.date, description: e.description, supplier: e.supplier, attachmentUrl: e.attachmentUrl, eventId: e.eventId, tripId: e.tripId, event: e.event, trip: e.trip });
 
 /** /dashboard/finance/expenses (finance staff; managers can create/edit/delete). */
 export function Component() {

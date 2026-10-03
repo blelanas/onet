@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { AuthError } from "@api/lib/auth/guards";
-import type { ActionResult } from "@onet/shared";
+import { parseFormDate, type ActionResult } from "@onet/shared";
 
 export type { ActionResult };
 
@@ -62,8 +62,9 @@ export function formToObject(fd: FormData | Record<string, unknown>): Record<str
 export const zs = {
   optStr: z.preprocess((v) => (typeof v === "string" && v.trim() === "" ? undefined : typeof v === "string" ? v.trim() : v), z.string().max(5000).optional()),
   reqStr: (max = 200) => z.string().trim().min(1, "errors.required").max(max),
-  optDate: z.preprocess((v) => (v === "" || v == null ? undefined : new Date(String(v))), z.date().optional()),
-  reqDate: z.preprocess((v) => (v === "" || v == null ? undefined : new Date(String(v))), z.date({ error: "errors.required" })),
+  // datetime-local values (no offset) are Tunisian wall time, not the server's (UTC) time zone.
+  optDate: z.preprocess((v) => (v === "" || v == null ? undefined : v instanceof Date ? v : parseFormDate(String(v))), z.date().optional()),
+  reqDate: z.preprocess((v) => (v === "" || v == null ? undefined : v instanceof Date ? v : parseFormDate(String(v))), z.date({ error: "errors.required" })),
   optInt: z.preprocess((v) => (v === "" || v == null ? undefined : Number(v)), z.number().int().optional()),
   int: (min = 0) => z.preprocess((v) => (v === "" || v == null ? undefined : Number(v)), z.number().int().min(min)),
   bool: z.preprocess((v) => v === true || v === "true" || v === "on" || v === "1", z.boolean()),

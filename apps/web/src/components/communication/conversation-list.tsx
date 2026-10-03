@@ -1,6 +1,6 @@
 import { useLocale, useTranslations } from "use-intl";
 import { Link } from "@/lib/router";
-import { formatDate, formatTime, startOfDay } from "@onet/shared";
+import { formatTime, intlLocale, startOfDay } from "@onet/shared";
 import { cn } from "@/lib/utils";
 import type { messagesPage } from "@api/modules/communication/routes";
 import type { Loaded } from "@/lib/types";
@@ -9,7 +9,7 @@ export type ConversationSummary = Loaded<typeof messagesPage>["conversations"][n
 import { Avatar } from "@/components/ui/avatar";
 
 export function shortStamp(d: Date, locale: string) {
-  return d >= startOfDay() ? formatTime(d, locale) : formatDate(d, locale, "short").slice(0, 5);
+  return d >= startOfDay() ? formatTime(d, locale) : new Intl.DateTimeFormat(intlLocale(locale), { day: "2-digit", month: "2-digit" }).format(d);
 }
 
 export function ConversationList({ items, activeId, meId }: { items: ConversationSummary[]; activeId?: string; meId: string }) {

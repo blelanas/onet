@@ -4,7 +4,7 @@ import { db } from "@api/lib/db";
 import { AuthError } from "@api/lib/auth/guards";
 import { ActionError, formToObject, runAction, zs } from "@api/lib/actions";
 import { audit } from "@api/lib/audit";
-import { nextInvoiceNumber, paidAmount } from "@api/lib/services/invoices";
+import { createNumberedInvoice, paidAmount } from "@api/lib/services/invoices";
 import { getPaymentProvider } from "@api/lib/services/payments";
 import { invoiceScope, requireFinance } from "./access";
 import { notifyNewInvoice, settleInvoice } from "./settle";
@@ -65,7 +65,7 @@ export async function saveInvoice(fd: FormData | Record<string, unknown>) {
       return { id: data.id };
     }
 
-    const created = await db.$transaction(async (tx) => tx.invoice.create({ data: { ...fields, number: await nextInvoiceNumber(tx) } }));
+    const created = await db.$transaction(async (tx) => createNumberedInvoice(tx, fields));
     await settleInvoice(created.id);
     if (data.status === "PENDING") await notifyNewInvoice(created.id);
     await audit(user.id, "create", "Invoice", created.id, { number: created.number, amount: created.amount, payerId: created.payerId });

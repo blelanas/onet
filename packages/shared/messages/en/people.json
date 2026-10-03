@@ -94,6 +94,7 @@
     "noFamily": "No family links recorded.",
     "attendanceRate": "Attendance rate",
     "linkParent": "Link a parent",
+    "relation": "Relationship",
     "unlink": "Remove link",
     "account": "Login account",
     "hasAccount": "This member can sign in ({email}).",

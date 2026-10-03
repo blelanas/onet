@@ -1,6 +1,6 @@
 import { useTranslations } from "use-intl";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { usePathname, useRouter, useSearchParams } from "@/lib/router";
+import { usePathname, useRouter } from "@/lib/router";
 import { Loader2, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -10,7 +10,6 @@ export function SearchInput({ defaultValue, pending: fetching }: { defaultValue:
   const tc = useTranslations("common");
   const router = useRouter();
   const pathname = usePathname();
-  const params = useSearchParams();
   const [value, setValue] = useState(defaultValue);
   const [pending, start] = useTransition();
   const ref = useRef<HTMLInputElement>(null);
@@ -22,7 +21,8 @@ export function SearchInput({ defaultValue, pending: fetching }: { defaultValue:
       return;
     }
     const id = setTimeout(() => {
-      const sp = new URLSearchParams(params.toString());
+      // Read the URL when the timer fires: other params may have changed during the debounce.
+      const sp = new URLSearchParams(window.location.search);
       if (value.trim()) sp.set("q", value.trim());
       else sp.delete("q");
       start(() => router.replace(`${pathname}?${sp.toString()}`, { scroll: false }));
@@ -44,6 +44,7 @@ export function SearchInput({ defaultValue, pending: fetching }: { defaultValue:
         aria-label={t("placeholder")}
         autoFocus={!defaultValue}
         enterKeyHint="search"
+        maxLength={80}
         className={cn("h-14 w-full rounded-2xl border border-line bg-surface ps-12 pe-12 text-base text-ink shadow-[var(--shadow-soft)] placeholder:text-muted/70 focus:border-brand-400 focus:ring-4 focus:ring-brand-100 focus:outline-none sm:text-lg [&::-webkit-search-cancel-button]:hidden")}
       />
       {value && (

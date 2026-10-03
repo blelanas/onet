@@ -82,8 +82,8 @@ function FinanceReportsPage({ data, sp }: { data: Data; sp: Record<string, strin
           hint={t("reports.netHint")}
           className="col-span-2 lg:col-span-1"
         />
-        <KpiCard accent="sun" icon={<Clock className="size-5" />} label={t("reports.pending")} value={<Amount value={r.kpis.pending} />} hint={t("reports.snapshot", { count: r.outstanding.filter((i) => i.status !== "OVERDUE").length })} href="/dashboard/finance/invoices?status=PENDING" />
-        <KpiCard accent="brand" icon={<AlertTriangle className="size-5" />} label={t("reports.overdue")} value={<Amount value={r.kpis.overdue} />} hint={t("reports.snapshot", { count: r.outstanding.filter((i) => i.status === "OVERDUE").length })} href="/dashboard/finance/invoices?status=OVERDUE" />
+        <KpiCard accent="sun" icon={<Clock className="size-5" />} label={t("reports.pending")} value={<Amount value={r.kpis.pending} />} hint={t("reports.snapshot", { count: r.outstanding.filter((i) => !i.overdue).length })} href="/dashboard/finance/invoices?status=PENDING" />
+        <KpiCard accent="brand" icon={<AlertTriangle className="size-5" />} label={t("reports.overdue")} value={<Amount value={r.kpis.overdue} />} hint={t("reports.snapshot", { count: r.outstanding.filter((i) => i.overdue).length })} href="/dashboard/finance/invoices?status=OVERDUE" />
       </div>
 
       {empty ? (
@@ -167,7 +167,7 @@ function FinanceReportsPage({ data, sp }: { data: Data; sp: Record<string, strin
                       </p>
                     </div>
                     <div className="hidden text-end text-xs sm:block">
-                      <p className={cn("font-bold", i.status === "OVERDUE" ? "text-red-600" : "text-ink-2")}>{formatDate(i.dueDate, locale)}</p>
+                      <p className={cn("font-bold", i.overdue ? "text-red-600" : "text-ink-2")}>{formatDate(i.dueDate, locale)}</p>
                     </div>
                     <StatusBadge status={i.status} className="hidden sm:inline-flex" />
                     <Amount value={i.remaining} className="w-24 text-end font-bold text-ink" />

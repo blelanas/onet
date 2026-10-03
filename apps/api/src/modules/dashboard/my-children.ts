@@ -52,7 +52,7 @@ export async function myChildDetail(user: CurrentUser, childId: string) {
             color: true,
             schedule: true,
             location: true,
-            monitors: { select: { isLead: true, member: { select: { id: true, firstName: true, lastName: true, photoUrl: true, phone: true, userId: true } } } },
+            monitors: { select: { isLead: true, member: { select: { id: true, firstName: true, lastName: true, photoUrl: true, userId: true } } } },
           },
         },
         activityEnrollments: { select: { activity: { select: { id: true, title: true, category: true, schedule: true } } } },

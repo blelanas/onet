@@ -52,6 +52,7 @@ export function PlayAllButtons({ tracks, onColor }: { tracks: Track[]; onColor?:
           }
           playQueue(s, 0);
         }}
+        aria-label={t("shuffle")}
         className={cn("inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm font-extrabold transition active:scale-95", onColor ? "bg-white/20 text-white ring-1 ring-white/40 hover:bg-white/30" : "border border-line bg-surface text-ink hover:bg-surface-2")}
       >
         <Shuffle className="size-4" /> <span className="hidden sm:inline">{t("shuffle")}</span>

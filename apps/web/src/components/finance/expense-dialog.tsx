@@ -20,8 +20,14 @@ export type ExpenseValues = {
   attachmentUrl: string | null;
   eventId: string | null;
   tripId: string | null;
+  /** Currently linked event/trip (may be outside the option lists, which are capped). */
+  event?: Opt | null;
+  trip?: Opt | null;
 };
 type Opt = { id: string; title: string };
+
+/** Options plus the current link when it isn't among them, so editing never drops it. */
+const withCurrent = (opts: Opt[], current?: Opt | null) => (current && !opts.some((o) => o.id === current.id) ? [current, ...opts] : opts);
 
 /** Create (no `initial`) or edit an expense in a modal / bottom sheet. */
 export function ExpenseDialog({ initial, events, trips }: { initial?: ExpenseValues; events: Opt[]; trips: Opt[] }) {
@@ -29,6 +35,8 @@ export function ExpenseDialog({ initial, events, trips }: { initial?: ExpenseVal
   const tc = useTranslations("common");
   const [open, setOpen] = useState(false);
   const link = initial?.eventId ? `event:${initial.eventId}` : initial?.tripId ? `trip:${initial.tripId}` : "";
+  const eventOpts = withCurrent(events, initial?.event);
+  const tripOpts = withCurrent(trips, initial?.trip);
 
   return (
     <>
@@ -57,7 +65,7 @@ export function ExpenseDialog({ initial, events, trips }: { initial?: ExpenseVal
                   label={t("form.linkExpense")}
                   defaultValue={link}
                   placeholder={t("form.noLink")}
-                  options={[...events.map((e) => ({ value: `event:${e.id}`, label: `${t("invoice.event")} · ${e.title}` })), ...trips.map((x) => ({ value: `trip:${x.id}`, label: `${t("invoice.trip")} · ${x.title}` }))]}
+                  options={[...eventOpts.map((e) => ({ value: `event:${e.id}`, label: `${t("invoice.event")} · ${e.title}` })), ...tripOpts.map((x) => ({ value: `trip:${x.id}`, label: `${t("invoice.trip")} · ${x.title}` }))]}
                   wrapperClassName="sm:col-span-2"
                 />
                 <Upload name="attachmentUrl" kind="document" label={t("form.attachment")} defaultValue={initial?.attachmentUrl} className="sm:col-span-2" />

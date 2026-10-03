@@ -126,11 +126,13 @@ export function paymentState(inv: { status: string } | null | undefined): "FREE"
 
 export type RegFilters = { kind?: string; status?: string; target?: string; payment?: string; q?: string; scope?: string };
 
+const UNPAID_INVOICE_STATUSES = ["PENDING", "OVERDUE", "PARTIALLY_PAID", "DRAFT"];
+
 /**
- * Event + trip registrations, merged and sorted by date. Staff see everything; families see the
- * registrations of their children and their own.
+ * DB filters for the registrations list (null = that kind is filtered out). Staff see everything;
+ * families see the registrations of their children and their own.
  */
-export async function listRegistrations(user: CurrentUser, f: RegFilters) {
+async function registrationWheres(user: CurrentUser, f: RegFilters) {
   const staff = can(user, "registrations.manage");
   let memberWhere: Prisma.MemberWhereInput = {};
   if (!staff) {
@@ -144,40 +146,72 @@ export async function listRegistrations(user: CurrentUser, f: RegFilters) {
   }
   const [targetKind, targetId] = (f.target ?? "").split(":");
   const payWhere: Prisma.EventRegistrationWhereInput =
-    f.payment === "PAID" ? { invoice: { status: "PAID" } } : f.payment === "UNPAID" ? { invoice: { status: { in: ["PENDING", "OVERDUE", "PARTIALLY_PAID", "DRAFT"] } } } : f.payment === "FREE" ? { invoiceId: null } : {};
+    f.payment === "PAID" ? { invoice: { status: "PAID" } } : f.payment === "UNPAID" ? { invoice: { status: { in: UNPAID_INVOICE_STATUSES } } } : f.payment === "FREE" ? { invoiceId: null } : {};
   const scopeWhere = f.scope === "past" ? "past" : f.scope === "all" ? "all" : "upcoming";
   const now = startOfDay();
   const base = { member: memberWhere, ...(f.status ? { status: f.status } : {}), ...payWhere };
+  const event: Prisma.EventRegistrationWhereInput | null =
+    f.kind === "trip" || (targetKind && targetKind !== "event")
+      ? null
+      : { ...base, ...(targetId ? { eventId: targetId } : {}), event: scopeWhere === "all" ? {} : scopeWhere === "past" ? { endAt: { lt: now } } : { endAt: { gte: now } } };
+  const trip: Prisma.TripRegistrationWhereInput | null =
+    f.kind === "event" || (targetKind && targetKind !== "trip")
+      ? null
+      : { ...(base as Prisma.TripRegistrationWhereInput), ...(targetId ? { tripId: targetId } : {}), trip: scopeWhere === "all" ? {} : scopeWhere === "past" ? { returnAt: { lt: now } } : { returnAt: { gte: now } } };
+  return { staff, event, trip };
+}
+
+/**
+ * Event + trip registrations, merged and sorted (staff: newest first; families: soonest first).
+ * `take` limits each kind at the DB: newest-first, the first N merged rows are always within the
+ * first N of each kind, so `take = page * pageSize` is enough to slice a page.
+ */
+export async function listRegistrations(user: CurrentUser, f: RegFilters, opts: { take?: number } = {}) {
+  const { staff, event, trip } = await registrationWheres(user, f);
   const include = {
     member: { select: { id: true, firstName: true, lastName: true, photoUrl: true, dateOfBirth: true } },
     registeredBy: { select: { name: true } },
     invoice: { select: invoiceSelect },
   } as const;
+  const orderBy = [{ createdAt: "desc" as const }, { id: "desc" as const }];
   const [events, trips] = await Promise.all([
-    f.kind === "trip" || (targetKind && targetKind !== "event")
-      ? []
-      : db.eventRegistration.findMany({
-          where: { ...base, ...(targetId ? { eventId: targetId } : {}), event: scopeWhere === "all" ? {} : scopeWhere === "past" ? { endAt: { lt: now } } : { endAt: { gte: now } } },
-          include: { ...include, event: { select: { id: true, title: true, startAt: true, category: true, price: true } } },
-          orderBy: { createdAt: "desc" },
-          take: 600,
-        }),
-    f.kind === "event" || (targetKind && targetKind !== "trip")
-      ? []
-      : db.tripRegistration.findMany({
-          where: { ...(base as Prisma.TripRegistrationWhereInput), ...(targetId ? { tripId: targetId } : {}), trip: scopeWhere === "all" ? {} : scopeWhere === "past" ? { returnAt: { lt: now } } : { returnAt: { gte: now } } },
-          include: { ...include, trip: { select: { id: true, title: true, departAt: true, category: true, price: true, destination: true } } },
-          orderBy: { createdAt: "desc" },
-          take: 600,
-        }),
+    event ? db.eventRegistration.findMany({ where: event, include: { ...include, event: { select: { id: true, title: true, startAt: true, category: true, price: true } } }, orderBy, take: opts.take }) : [],
+    trip ? db.tripRegistration.findMany({ where: trip, include: { ...include, trip: { select: { id: true, title: true, departAt: true, category: true, price: true, destination: true } } }, orderBy, take: opts.take }) : [],
   ]);
   const rows = [
     ...events.map((r) => ({ kind: "event" as const, id: r.id, status: r.status, createdAt: r.createdAt, member: r.member, registeredBy: r.registeredBy, invoice: r.invoice, target: { id: r.event.id, title: r.event.title, date: r.event.startAt, category: r.event.category, price: r.event.price }, parentConsent: null as boolean | null, documentsStatus: null as string | null })),
     ...trips.map((r) => ({ kind: "trip" as const, id: r.id, status: r.status, createdAt: r.createdAt, member: r.member, registeredBy: r.registeredBy, invoice: r.invoice, target: { id: r.trip.id, title: r.trip.title, date: r.trip.departAt, category: r.trip.category, price: r.trip.price }, parentConsent: r.parentConsent, documentsStatus: r.documentsStatus })),
   ];
   // Staff: newest registrations first. Families: soonest event first.
-  rows.sort((a, b) => (staff ? b.createdAt.getTime() - a.createdAt.getTime() : a.target.date.getTime() - b.target.date.getTime()));
+  rows.sort((a, b) => (staff ? b.createdAt.getTime() - a.createdAt.getTime() || b.id.localeCompare(a.id) : a.target.date.getTime() - b.target.date.getTime()));
   return rows;
+}
+
+/** Total + KPIs for the registrations console, computed in the DB over every matching row. */
+export async function registrationTotals(user: CurrentUser, f: RegFilters) {
+  const { event, trip } = await registrationWheres(user, f);
+  const live = { status: { not: "CANCELLED" } };
+  const unpaidInvoice = { invoice: { status: { in: UNPAID_INVOICE_STATUSES } } };
+  const count = async (...extra: Prisma.EventRegistrationWhereInput[]) => {
+    const [e, t] = await Promise.all([
+      event ? db.eventRegistration.count({ where: { AND: [event, ...extra] } }) : 0,
+      trip ? db.tripRegistration.count({ where: { AND: [trip, ...(extra as Prisma.TripRegistrationWhereInput[])] } }) : 0,
+    ]);
+    return e + t;
+  };
+  const owners: Prisma.InvoiceWhereInput[] = [
+    ...(event ? [{ eventRegistration: { is: { AND: [event, live] } } }] : []),
+    ...(trip ? [{ tripRegistration: { is: { AND: [trip, live] } } }] : []),
+  ];
+  const [total, active, pending, waitlist, unpaid, unpaidSum] = await Promise.all([
+    count(),
+    count(live),
+    count({ status: "PENDING" }),
+    count({ status: "WAITLIST" }),
+    count(live, unpaidInvoice),
+    owners.length ? db.invoice.aggregate({ where: { status: { in: UNPAID_INVOICE_STATUSES }, OR: owners }, _sum: { amount: true } }) : null,
+  ]);
+  return { total, kpi: { active, pending, waitlist, unpaid, unpaidAmount: unpaidSum?._sum.amount ?? 0 } };
 }
 export type RegistrationRow = Awaited<ReturnType<typeof listRegistrations>>[number];
 

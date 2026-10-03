@@ -21,7 +21,7 @@ export async function calendarPage(req: Request) {
   const anchor = parseDayParam(qs(req, "d")) ?? normalizeDay();
   const typesParam = qs(req, "types");
   const kinds: CalKind[] = typesParam ? (typesParam.split(",").filter((k) => (CAL_KINDS as readonly string[]).includes(k)) as CalKind[]) : [...CAL_KINDS];
-  const personal = user.roles.some((r) => r === "parent" || r === "kid" || r === "monitor");
+  const personal = user.roles.some((r) => r === "parent" || r === "kid" || r === "monitor" || r === "member");
   const defaultMine = user.roles.includes("parent") || (user.roles.includes("kid") && user.roles.length === 1);
   const mine = personal && (qs(req, "scope") ? qs(req, "scope") === "mine" : defaultMine);
   const groups = await calendarGroupOptions(user);

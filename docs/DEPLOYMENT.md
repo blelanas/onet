@@ -81,4 +81,5 @@ GitHub → Settings → Branches → **Add rule** for `main`: require a pull req
 | `CORS_ORIGINS` | API | comma list; `*` allowed inside a hostname (preview channels) |
 | `PORT` | API | set by Render |
 | `PAYMENT_PROVIDER` | API | `mock` until a real gateway is integrated (unknown values are rejected) |
+| `ALLOW_MOCK_PAYMENTS` | API | `false` (default). The `mock` provider marks every online payment as paid, so it is refused when `NODE_ENV=production` unless this is `true` — only for a demo deployment |
 | `VITE_API_URL` | web build | `https://onet-api.onrender.com` |

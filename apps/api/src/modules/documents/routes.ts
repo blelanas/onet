@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
 import { db } from "@api/lib/db";
-import { AuthError, requirePermission, requireUser } from "@api/lib/auth/guards";
+import { AuthError, requireAnyPermission, requireUser } from "@api/lib/auth/guards";
 import { mutation, param, qs, query } from "@api/lib/http";
 import { canAccessEntityDocs } from "./access";
 import { addDocument, deleteDocument } from "./actions";
@@ -27,7 +27,7 @@ router.get(
 
 /** Document library (scoped like canAccessEntityDocs): filters ?q, ?type (entity type), ?category, ?page. */
 export async function documentsLibraryPage(req: Request) {
-  const user = await requirePermission("documents.read");
+  const user = await requireAnyPermission("documents.read", "documents.manage");
   const pageSize = 18;
   const page = Math.max(1, Number(qs(req, "page")) || 1);
   const filters = { q: qs(req, "q"), entityType: qs(req, "type"), category: qs(req, "category") };

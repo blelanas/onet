@@ -1,10 +1,12 @@
 import { revalidatePath } from "@api/lib/cache";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { db } from "@api/lib/db";
 import { requirePermission } from "@api/lib/auth/guards";
 import { formToObject, runAction, zs } from "@api/lib/actions";
 import { audit } from "@api/lib/audit";
 import { NOTIFICATION_CHANNELS, PAYMENT_METHODS } from "@api/lib/constants";
+import { isLocalFile } from "@api/modules/content/shared";
 import { setSetting } from "./store";
 
 const optUrl = z.preprocess((v) => (v === "" || v == null ? undefined : v), z.string().trim().url("errors.validation").max(300).optional());
@@ -22,7 +24,8 @@ const orgSchema = z.object({
   youtube: optUrl,
   website: optUrl,
   foundedYear: z.preprocess((v) => (v === "" || v == null ? undefined : Number(v)), z.number().int().min(1900).max(2100).optional()),
-  logoUrl: z.preprocess((v) => (v === "" || v == null ? undefined : v), z.string().startsWith("/", "errors.validation").max(300).optional()),
+  // Uploaded file (/api/files/<id>) or bundled demo asset only — never //host or an external URL.
+  logoUrl: z.preprocess((v) => (v === "" || v == null ? undefined : typeof v === "string" ? v.trim() : v), z.string().max(300).refine(isLocalFile, "errors.validation").optional()),
 });
 
 export async function saveOrganization(fd: FormData | Record<string, unknown>) {
@@ -79,7 +82,11 @@ export async function setContactMessageRead(id: string, isRead: boolean) {
 export async function deleteContactMessage(id: string) {
   return runAction(zs.id, id, async (mid) => {
     const user = await requirePermission("settings.manage");
-    const m = await db.contactMessage.delete({ where: { id: mid } }).catch(() => null);
+    // Already deleted (P2025) is fine; any other failure must surface.
+    const m = await db.contactMessage.delete({ where: { id: mid } }).catch((e: unknown) => {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2025") return null;
+      throw e;
+    });
     if (m) await audit(user.id, "delete", "ContactMessage", mid, { email: m.email });
     revalidatePath("/dashboard/settings/contact");
   });

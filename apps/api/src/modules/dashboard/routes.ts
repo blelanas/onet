@@ -1,8 +1,8 @@
 import { Router, type Request } from "express";
-import { can, hasRole, requirePermission, requireUser, AuthError } from "@api/lib/auth/guards";
+import { can, hasRole, requirePermission, AuthError } from "@api/lib/auth/guards";
 import type { CurrentUser } from "@api/lib/auth/session";
 import { mutation, param, qs, query } from "@api/lib/http";
-import { DASHBOARD_PRIORITY, type RoleKey } from "@onet/shared";
+import { DASHBOARD_PRIORITY, type Permission, type RoleKey } from "@onet/shared";
 import { adminDashboard } from "./admin";
 import { accountantDashboard } from "./accountant";
 import { monitorDashboard } from "./monitor";
@@ -16,12 +16,26 @@ import { setMyTaskStatus } from "./actions";
 /** dashboard module routes (mounted under /api). */
 export const router = Router();
 
-/** Which dashboard flavour to render: first matching role in DASHBOARD_PRIORITY. */
+/**
+ * Roles are editable in Settings, so a flavour that exposes association-wide data also needs
+ * the matching permission: the admin dashboard lists every member and registration, the
+ * accountant one shows finance.
+ */
+const FLAVOUR_PERMISSIONS: Partial<Record<RoleKey, Permission[]>> = {
+  super_admin: ["members.read_all"],
+  admin: ["members.read_all"],
+  accountant: ["finance.read"],
+};
+
+/** Which dashboard flavour to render: first role in DASHBOARD_PRIORITY the user has (with its permissions). */
 function flavour(user: CurrentUser): RoleKey {
-  const role = DASHBOARD_PRIORITY.find((r) => user.roles.includes(r)) ?? "member";
-  // Roles are editable in Settings: never show finance widgets without the permission.
-  if (role === "accountant" && !can(user, "finance.read")) return "member";
-  return role;
+  return (
+    DASHBOARD_PRIORITY.find((r) => {
+      if (!user.roles.includes(r)) return false;
+      const perms = FLAVOUR_PERMISSIONS[r];
+      return !perms || can(user, ...perms);
+    }) ?? "member"
+  );
 }
 
 /** Role dashboard: the flavour is chosen server-side from the user's roles. */
@@ -47,7 +61,7 @@ router.get("/dashboard", query(dashboardPage));
 
 /** Parent space: overview of every child + details of the selected one (guardianship enforced). */
 export async function myChildrenPage(req: Request) {
-  const user = await requireUser();
+  const user = await requirePermission("members.read");
   if (!hasRole(user, "parent")) throw new AuthError("FORBIDDEN");
   const kids = await myChildrenOverview(user);
   if (!kids.length) return { kids, detail: null };
@@ -59,7 +73,8 @@ router.get("/dashboard/my-children", query(myChildrenPage));
 
 /** Badges, level and history: a kid sees their own, a parent one of their children. */
 export async function achievementsPage(req: Request) {
-  const user = await requireUser();
+  // Kids have no members.read: they may see their own page; a parent's child view needs it (see resolver).
+  const user = await requirePermission("dashboard.view");
   const who = await resolveAchievementsMember(user, qs(req, "child"));
   return {
     kids: who.kids.map((k) => ({ id: k.id, firstName: k.firstName, lastName: k.lastName, photoUrl: k.photoUrl, group: k.group ? { color: k.group.color } : null })),

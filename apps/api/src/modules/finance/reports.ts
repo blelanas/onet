@@ -26,14 +26,21 @@ export async function financialReport(period: Period) {
 
   const revenue = payments.reduce((s, p) => s + p.amount, 0);
   const spent = expenses.reduce((s, e) => s + e.amount, 0);
-  const outstanding = open.map((i) => ({ ...i, remaining: Math.max(0, i.amount - paidAmount(i)) })).filter((i) => i.remaining > 0);
-  const pending = outstanding.filter((i) => i.status !== "OVERDUE").reduce((s, i) => s + i.remaining, 0);
-  const overdue = outstanding.filter((i) => i.status === "OVERDUE").reduce((s, i) => s + i.remaining, 0);
+  // Past due counts as overdue even before the status flips (PENDING / PARTIALLY_PAID).
+  const now = new Date();
+  const outstanding = open
+    .map((i) => ({ ...i, remaining: Math.max(0, i.amount - paidAmount(i)), overdue: i.status === "OVERDUE" || i.dueDate < now }))
+    .filter((i) => i.remaining > 0);
+  const pending = outstanding.filter((i) => !i.overdue).reduce((s, i) => s + i.remaining, 0);
+  const overdue = outstanding.filter((i) => i.overdue).reduce((s, i) => s + i.remaining, 0);
 
   // Monthly buckets: from the period start (or first movement) to its end (or today).
-  const dates = [...payments.map((p) => p.paidAt), ...expenses.map((e) => e.date)];
-  const from = period.from ?? (dates.length ? new Date(Math.min(...dates.map((d) => d.getTime()))) : new Date());
-  const to = period.to ?? new Date();
+  // Iterative min: spreading thousands of rows into Math.min can overflow the call stack.
+  let first = Number.POSITIVE_INFINITY;
+  for (const p of payments) first = Math.min(first, p.paidAt.getTime());
+  for (const e of expenses) first = Math.min(first, e.date.getTime());
+  const from = period.from ?? (Number.isFinite(first) ? new Date(first) : now);
+  const to = period.to ?? now;
   const months = monthKeys(from, to).map((key) => ({ key, revenue: 0, expenses: 0 }));
   const byKey = new Map(months.map((m) => [m.key, m]));
   for (const p of payments) {

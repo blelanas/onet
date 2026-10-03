@@ -2,7 +2,7 @@ import { Router } from "express";
 import { rateLimit } from "express-rate-limit";
 import { z } from "zod";
 import { db } from "@api/lib/db";
-import { verifyPassword } from "@api/lib/auth/password";
+import { verifyDummyPassword, verifyPassword } from "@api/lib/auth/password";
 import { createSession, destroySession, getCurrentUser } from "@api/lib/auth/session";
 import { audit } from "@api/lib/audit";
 import { mutation, query, sendData } from "@api/lib/http";
@@ -47,7 +47,8 @@ authRouter.post(
     if (f && f.n >= 5 && f.until > Date.now()) return { ok: false, error: "errors.tooManyAttempts" };
 
     const user = await db.user.findUnique({ where: { email } });
-    const valid = user && user.isActive && (await verifyPassword(password, user.passwordHash));
+    // Unknown/inactive accounts still pay for a bcrypt comparison so response time doesn't reveal them.
+    const valid = user && user.isActive ? await verifyPassword(password, user.passwordHash) : await verifyDummyPassword(password);
     if (!user || !valid) {
       const cur = failures.get(key) ?? { n: 0, until: 0 };
       failures.set(key, { n: cur.n + 1, until: Date.now() + 5 * 60_000 });

@@ -28,7 +28,7 @@ export async function updateProfile(fd: FormData | Record<string, unknown>) {
     const user = await me();
     await db.user.update({ where: { id: user.id }, data: { name: d.name, phone: d.phone ?? null, avatarUrl: d.avatarUrl ?? null, locale: d.locale } });
     // Keep the linked membership record in sync (photo + phone shown across the app).
-    if (user.memberId) await db.member.update({ where: { id: user.memberId }, data: { photoUrl: d.avatarUrl ?? null, ...(d.phone ? { phone: d.phone } : {}) } });
+    if (user.memberId) await db.member.update({ where: { id: user.memberId }, data: { photoUrl: d.avatarUrl ?? null, phone: d.phone ?? null } });
     await audit(user.id, "update_profile", "User", user.id, { locale: d.locale, avatar: !!d.avatarUrl });
     revalidatePath("/dashboard", "layout");
   });

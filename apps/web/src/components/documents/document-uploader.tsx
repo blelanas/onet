@@ -1,6 +1,6 @@
 import { useTranslations } from "use-intl";
-import { useState } from "react";
-import { addDocument } from "@/api/documents";
+import { useEffect, useRef, useState } from "react";
+import { addDocument, discardUpload } from "@/api/documents";
 import { ActionForm } from "@/components/ui/action-form";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
@@ -12,12 +12,26 @@ export function DocumentUploader({ entityType, entityId, revalidate, onDone }: {
   const tc = useTranslations("common");
   const [file, setFile] = useState<UploadedFile | null>(null);
   const [key, setKey] = useState(0);
+  // Uploaded but not yet saved as a document: discarded when replaced or when the uploader closes.
+  const unsaved = useRef<string | null>(null);
+  useEffect(
+    () => () => {
+      if (unsaved.current) void discardUpload(unsaved.current);
+    },
+    [],
+  );
+  const onUploaded = (f: UploadedFile) => {
+    if (unsaved.current && unsaved.current !== f.url) void discardUpload(unsaved.current);
+    unsaved.current = f.url;
+    setFile(f);
+  };
   return (
     <ActionForm
       key={key}
       action={addDocument}
       successMessage="toast.created"
       onSuccess={() => {
+        unsaved.current = null;
         setFile(null);
         setKey((k) => k + 1);
         onDone?.();
@@ -26,7 +40,7 @@ export function DocumentUploader({ entityType, entityId, revalidate, onDone }: {
     >
       {(pending) => (
         <div className="space-y-3">
-          <Upload name="url" kind="document" onUploaded={setFile} />
+          <Upload name="url" kind="document" onUploaded={onUploaded} />
           {file && (
             <div className="grid gap-3 sm:grid-cols-[1fr_200px_auto] sm:items-end">
               <input type="hidden" name="mimeType" value={file.mimeType} />

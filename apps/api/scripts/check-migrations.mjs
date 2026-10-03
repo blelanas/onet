@@ -11,12 +11,15 @@ const file = path.join(mkdtempSync(path.join(os.tmpdir(), "onet-drift-")), "drif
 const client = createClient({ url: `file:${file}` });
 for (const f of readdirSync(dir).filter((x) => x.endsWith(".sql")).sort()) await client.executeMultiple(readFileSync(path.join(dir, f), "utf8"));
 client.close();
+// `migrate diff --to-schema-datamodel` doesn't connect to the datasource today, but the schema's
+// url = env("DATABASE_URL") must stay resolvable (and must never point at a real database here).
+const prismaEnv = { ...process.env, DATABASE_URL: `file:${file}` };
 try {
-  execFileSync("npx", ["prisma", "migrate", "diff", "--from-url", `file:${file}`, "--to-schema-datamodel", "prisma/schema.prisma", "--exit-code"], { stdio: "pipe" });
+  execFileSync("npx", ["prisma", "migrate", "diff", "--from-url", `file:${file}`, "--to-schema-datamodel", "prisma/schema.prisma", "--exit-code"], { stdio: "pipe", env: prismaEnv });
   console.log("✓ migrations match the Prisma schema");
 } catch (e) {
   if (e.status === 2) {
-    const sql = execFileSync("npx", ["prisma", "migrate", "diff", "--from-url", `file:${file}`, "--to-schema-datamodel", "prisma/schema.prisma", "--script"]).toString();
+    const sql = execFileSync("npx", ["prisma", "migrate", "diff", "--from-url", `file:${file}`, "--to-schema-datamodel", "prisma/schema.prisma", "--script"], { env: prismaEnv }).toString();
     console.error("✗ prisma/schema.prisma has changes without a migration. Add prisma/migrations/000N_<name>.sql with:\n\n" + sql);
     process.exit(1);
   }

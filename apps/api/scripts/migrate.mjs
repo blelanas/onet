@@ -19,8 +19,22 @@ let count = 0;
 for (const f of files) {
   if (applied.has(f)) continue;
   const sql = readFileSync(path.join(dir, f), "utf8");
-  await client.executeMultiple(sql);
-  await client.execute({ sql: `INSERT INTO "_migrations" (name, appliedAt) VALUES (?, ?)`, args: [f, new Date().toISOString()] });
+  // Applying the migration and recording it is atomic (local file and Turso alike): a failure
+  // half-way leaves neither partial schema changes nor a missing _migrations row behind.
+  // Migration files must therefore not contain their own BEGIN/COMMIT.
+  const tx = await client.transaction("write");
+  try {
+    await tx.executeMultiple(sql);
+    await tx.execute({ sql: `INSERT INTO "_migrations" (name, appliedAt) VALUES (?, ?)`, args: [f, new Date().toISOString()] });
+    await tx.commit();
+  } catch (e) {
+    if (!tx.closed) await tx.rollback().catch(() => {});
+    console.error(`✗ ${f} failed, rolled back`);
+    client.close();
+    throw e;
+  } finally {
+    tx.close();
+  }
   console.log(`✓ applied ${f}`);
   count++;
 }

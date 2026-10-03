@@ -10,10 +10,15 @@ function get(sp: SP, k: string) {
   return typeof v === "string" && v ? v : undefined;
 }
 
+// Custom ranges outside these years are ignored (e.g. a typo'd "0001-01-01" would otherwise
+// span ~24,000 monthly buckets in reports).
+const MIN_YEAR = 2000;
+const MAX_YEAR = 2100;
+
 function parseDay(v?: string, endOfDay = false) {
   if (!v || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return undefined;
   const d = new Date(`${v}T00:00:00`);
-  if (Number.isNaN(d.getTime())) return undefined;
+  if (Number.isNaN(d.getTime()) || d.getFullYear() < MIN_YEAR || d.getFullYear() > MAX_YEAR) return undefined;
   if (endOfDay) d.setHours(23, 59, 59, 999);
   return d;
 }
@@ -64,11 +69,14 @@ export function monthKey(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-/** "2026-03" month keys between two dates (inclusive). */
+/**
+ * "2026-03" month keys between two dates (inclusive). Not capped, so the series always covers
+ * the same range as the totals; callers bound the range (custom periods are validated above).
+ */
 export function monthKeys(from: Date, to: Date) {
   const keys: string[] = [];
   const d = new Date(from.getFullYear(), from.getMonth(), 1);
-  while (d <= to && keys.length < 120) {
+  while (d <= to) {
     keys.push(monthKey(d));
     d.setMonth(d.getMonth() + 1);
   }

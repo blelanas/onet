@@ -30,7 +30,8 @@ export function MessageComposer({ conversationId }: { conversationId: string }) 
       fd.set("body", text);
       const res = await sendMessage(fd);
       if (res.ok) {
-        setBody("");
+        // Keep anything typed while the message was sending.
+        setBody((current) => (current.trim() === text ? "" : current));
         router.refresh();
         ref.current?.focus();
       } else toast.error(tc(res.error.startsWith("errors.") ? res.error : "errors.unexpected"));
