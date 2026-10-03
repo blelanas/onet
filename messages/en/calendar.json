@@ -1,1 +1,42 @@
-{}
+{
+  "title": "Calendar",
+  "description": "Activities, group meetings, events, trips and key dates in one place.",
+  "descriptionMine": "Your agenda: the groups, activities and trips that concern you.",
+  "previous": "Previous period",
+  "next": "Next period",
+  "today": "Today",
+  "scope": {
+    "label": "Scope",
+    "mine": "My agenda",
+    "all": "Everything"
+  },
+  "views": {
+    "label": "View",
+    "month": "Month",
+    "week": "Week",
+    "agenda": "List"
+  },
+  "kinds": {
+    "activity": "Activities",
+    "group": "Group meetings",
+    "event": "Events",
+    "trip": "Trips",
+    "conference": "Conferences",
+    "entry": "Meetings & dates"
+  },
+  "allGroups": "All groups",
+  "more": "+{count} more",
+  "free": "Free",
+  "emptyPeriod": "Nothing planned for this period.",
+  "nothingToday": "Nothing planned today.",
+  "entry": {
+    "new": "New entry",
+    "edit": "Edit entry",
+    "type": "Type",
+    "audience": "Visible to",
+    "allDay": "All day",
+    "start": "Start",
+    "end": "End",
+    "deleteTitle": "Delete this entry?"
+  }
+}

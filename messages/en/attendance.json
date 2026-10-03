@@ -1,1 +1,65 @@
-{}
+{
+  "title": "Attendance",
+  "description": "Take the roll call in seconds and follow children's attendance.",
+  "tabs": {
+    "roll": "Roll call",
+    "history": "History"
+  },
+  "context": "Group or activity",
+  "groups": "Groups",
+  "activities": "Activities",
+  "date": "Session date",
+  "prevSession": "Previous session",
+  "nextSession": "Next session",
+  "groupSession": "Group meeting",
+  "activitySession": "Activity session",
+  "roll": {
+    "noContext": "No group or activity to supervise",
+    "noContextHint": "Ask an administrator to assign you a group.",
+    "count": "{count, plural, =0 {no children} one {# child} other {# children}}",
+    "recordedAt": "Roll call saved · {at}",
+    "notRecorded": "Roll call not taken yet",
+    "future": "This date is in the future.",
+    "offDay": "Heads up: this isn't the usual day ({day}).",
+    "emptyRoster": "Nobody to call",
+    "emptyRosterHint": "Add children to the group or enroll them in the activity.",
+    "unmarked": "{count} to mark",
+    "allPresent": "Everyone present",
+    "medical": "Health info",
+    "note": "Add a note",
+    "notePlaceholder": "E.g. left at 11am, medical note…",
+    "nothing": "Mark at least one child",
+    "saved": "{count, plural, one {Attendance saved} other {# records saved}}",
+    "savedNotified": "Saved · {count, plural, one {# absence reported to parents} other {# absences reported to parents}}",
+    "summary": "{marked}/{total} marked",
+    "unsaved": "Unsaved changes",
+    "absentNotice": "Parents are notified of absences.",
+    "save": "Save"
+  },
+  "history": {
+    "allContexts": "All my groups and activities",
+    "weeks": "{count} weeks",
+    "sessions": "Sessions",
+    "rate": "Attendance rate",
+    "absences": "Absences",
+    "children": "Children tracked",
+    "sessionsList": "Sessions",
+    "perChild": "Attendance per child",
+    "childLine": "{present}/{total} present · {absent} abs.",
+    "empty": "No sessions in this period",
+    "emptyHint": "Try a longer period or another group."
+  },
+  "family": {
+    "title": "My children's attendance",
+    "description": "Attendance recorded by the monitors, week after week.",
+    "noChildren": "No children linked to your account",
+    "rate": "attendance",
+    "heatmap": "Last {count} weeks",
+    "recent": "Latest sessions",
+    "noRecords": "No attendance recorded yet."
+  },
+  "notify": {
+    "title": "{name} was marked absent",
+    "body": "{context} — {date}. Contact the monitor if needed."
+  }
+}
