@@ -90,7 +90,7 @@ export function AppShell({ user, unread, children }: { user: ShellUser; unread: 
       </aside>
 
       {/* Mobile drawer */}
-      <div className={cn("fixed inset-0 z-50 lg:hidden", drawer ? "pointer-events-auto" : "pointer-events-none")} aria-hidden={!drawer}>
+      <div className={cn("fixed inset-0 z-50 overflow-hidden lg:hidden", drawer ? "pointer-events-auto" : "pointer-events-none invisible")} aria-hidden={!drawer}>
         <div className={cn("absolute inset-0 bg-ink/40 backdrop-blur-sm transition-opacity", drawer ? "opacity-100" : "opacity-0")} onClick={() => setDrawer(false)} />
         <div
           className={cn(

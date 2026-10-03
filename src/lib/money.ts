@@ -11,7 +11,7 @@ export function fromMillimes(m: number): number {
   return m / 1000;
 }
 
-const LOCALE_MAP: Record<string, string> = { fr: "fr-TN", ar: "ar-TN", en: "en-GB" };
+const LOCALE_MAP: Record<string, string> = { fr: "fr-TN", ar: "ar-u-nu-latn", en: "en-GB" };
 
 export function formatMoney(millimes: number, locale = "fr", opts: { compact?: boolean } = {}) {
   const value = millimes / 1000;
