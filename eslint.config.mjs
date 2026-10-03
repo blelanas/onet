@@ -1,29 +1,27 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+import reactHooks from "eslint-plugin-react-hooks";
+import globals from "globals";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
-  // Translation sources export one anonymous message tree (object literal) per namespace by design.
-  { files: ["i18n/**/*.mjs"], rules: { "import/no-anonymous-default-export": ["error", { allowObject: true }] } },
+export default tseslint.config(
+  { ignores: ["**/node_modules/**", "**/dist/**", "legacy/**", ".claude/**", "**/public/demo/**", "packages/shared/messages/**", "**/*.d.ts"] },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
   {
-    ignores: [
-      "node_modules/**",
-      ".next/**",
-      "out/**",
-      "build/**",
-      "next-env.d.ts",
-      ".claude/**",
-      ".screenshots/**",
-    ],
+    rules: {
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_", ignoreRestSiblings: true }],
+      "@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports", fixStyle: "inline-type-imports", disallowTypeAnnotations: false }],
+    },
   },
-];
-
-export default eslintConfig;
+  {
+    files: ["apps/web/**/*.{ts,tsx}"],
+    plugins: { "react-hooks": reactHooks },
+    languageOptions: { globals: globals.browser },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      // "@api/*" only exists for the type checker: runtime imports from the API are forbidden.
+      "no-restricted-imports": ["error", { patterns: [{ group: ["@api/*"], allowTypeImports: true, message: "Only `import type` is allowed from the API." }] }],
+    },
+  },
+  { files: ["apps/api/**/*.ts", "packages/**/*.{ts,mjs}", "tools/**/*.mjs", "tests/**/*.mjs", "apps/web/scripts/**/*.mjs", "apps/api/scripts/**/*.mjs"], languageOptions: { globals: globals.node } },
+);

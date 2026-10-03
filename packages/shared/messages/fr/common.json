@@ -1,0 +1,359 @@
+{
+  "app": {
+    "title": "ONET Teboulba — Plateforme de l'enfance",
+    "short": "ONET Teboulba",
+    "tagline": "Apprendre, jouer, découvrir, participer et appartenir."
+  },
+  "actions": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "add": "Ajouter",
+    "close": "Fermer",
+    "search": "Rechercher…",
+    "clear": "Effacer",
+    "remove": "Retirer",
+    "view": "Voir",
+    "viewAll": "Tout voir",
+    "back": "Retour",
+    "retry": "Réessayer",
+    "backToDashboard": "Retour au tableau de bord",
+    "export": "Exporter",
+    "import": "Importer",
+    "exportCsv": "Exporter CSV",
+    "filter": "Filtrer",
+    "register": "S'inscrire",
+    "pay": "Payer",
+    "download": "Télécharger",
+    "send": "Envoyer",
+    "print": "Imprimer",
+    "more": "Plus",
+    "details": "Détails",
+    "approve": "Approuver",
+    "reject": "Refuser",
+    "markAllRead": "Tout marquer comme lu",
+    "open": "Ouvrir",
+    "next": "Suivant",
+    "previous": "Précédent"
+  },
+  "states": {
+    "loading": "Chargement…",
+    "empty": "Rien à afficher pour le moment",
+    "noResults": "Aucun résultat",
+    "noResultsHint": "Essayez d'autres mots-clés ou retirez des filtres.",
+    "errorTitle": "Oups, quelque chose s'est mal passé",
+    "errorDescription": "Nous n'avons pas pu charger cette page. Réessayez dans un instant.",
+    "notFoundTitle": "Page introuvable",
+    "notFoundDescription": "Cette page n'existe pas ou a été déplacée.",
+    "forbiddenTitle": "Accès réservé",
+    "forbiddenDescription": "Vous n'avez pas les autorisations nécessaires pour voir cette page."
+  },
+  "confirm": {
+    "title": "Êtes-vous sûr ?",
+    "description": "Cette action est définitive."
+  },
+  "toast": {
+    "saved": "Modifications enregistrées",
+    "created": "Élément créé",
+    "deleted": "Élément supprimé",
+    "welcome": "Bienvenue !",
+    "sent": "Envoyé",
+    "registered": "Inscription enregistrée",
+    "cancelled": "Annulé",
+    "paid": "Paiement enregistré"
+  },
+  "errors": {
+    "validation": "Certains champs sont invalides",
+    "required": "Ce champ est obligatoire",
+    "email": "Adresse e-mail invalide",
+    "unauthenticated": "Veuillez vous connecter",
+    "forbidden": "Action non autorisée",
+    "notFound": "Élément introuvable",
+    "unexpected": "Erreur inattendue, réessayez",
+    "network": "Connexion impossible au serveur. Vérifiez votre connexion.",
+    "invalidCredentials": "E-mail ou mot de passe incorrect",
+    "tooManyAttempts": "Trop de tentatives. Réessayez dans 5 minutes.",
+    "uploadType": "Type de fichier non autorisé",
+    "uploadSize": "Fichier trop volumineux (10 Mo max)",
+    "weakPassword": "8 caractères minimum, avec au moins une lettre et un chiffre",
+    "emailTaken": "Cette adresse e-mail est déjà utilisée",
+    "capacityFull": "Plus de places disponibles",
+    "deadlinePassed": "La date limite d'inscription est dépassée",
+    "alreadyRegistered": "Déjà inscrit",
+    "inUse": "Impossible : cet élément est utilisé ailleurs",
+    "amountTooHigh": "Le montant dépasse le reste à payer",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "wrongPassword": "Mot de passe actuel incorrect"
+  },
+  "pagination": {
+    "label": "Pagination",
+    "showing": "{from}–{to} sur {total}",
+    "previous": "Page précédente",
+    "next": "Page suivante"
+  },
+  "upload": {
+    "drop": "Glissez un fichier ici",
+    "browse": "Parcourir",
+    "replace": "Remplacer",
+    "hint": {
+      "image": "JPG, PNG ou WebP — 10 Mo max",
+      "document": "PDF, JPG, PNG, DOCX — 10 Mo max",
+      "audio": "MP3, OGG, WAV, M4A — 10 Mo max",
+      "video": "MP4 ou WebM — 10 Mo max"
+    }
+  },
+  "audio": {
+    "play": "Lecture",
+    "pause": "Pause",
+    "seek": "Position",
+    "mute": "Muet",
+    "restart": "Recommencer",
+    "unavailable": "Audio indisponible"
+  },
+  "roles": {
+    "super_admin": "Super admin",
+    "admin": "Administrateur",
+    "accountant": "Comptable",
+    "monitor": "Moniteur",
+    "parent": "Parent",
+    "member": "Membre",
+    "kid": "Enfant"
+  },
+  "status": {
+    "ACTIVE": "Actif",
+    "PENDING": "En attente",
+    "INACTIVE": "Inactif",
+    "SUSPENDED": "Suspendu",
+    "DRAFT": "Brouillon",
+    "PUBLISHED": "Publié",
+    "OPEN": "Ouvert",
+    "FULL": "Complet",
+    "CLOSED": "Clôturé",
+    "COMPLETED": "Terminé",
+    "CANCELLED": "Annulé",
+    "CONFIRMED": "Confirmé",
+    "WAITLIST": "Liste d'attente",
+    "PAID": "Payée",
+    "PARTIALLY_PAID": "Partiellement payée",
+    "OVERDUE": "En retard",
+    "FAILED": "Échoué",
+    "REFUNDED": "Remboursé",
+    "PRESENT": "Présent",
+    "ABSENT": "Absent",
+    "LATE": "En retard",
+    "EXCUSED": "Excusé",
+    "MISSING": "Manquants",
+    "PARTIAL": "Partiels",
+    "COMPLETE": "Complets",
+    "APPROVED": "Approuvée",
+    "REJECTED": "Refusée",
+    "TODO": "À faire",
+    "IN_PROGRESS": "En cours",
+    "DONE": "Fait",
+    "NORMAL": "Normale",
+    "IMPORTANT": "Importante",
+    "URGENT": "Urgente"
+  },
+  "enums": {
+    "memberType": {
+      "CHILD": "Enfant",
+      "PARENT": "Parent",
+      "MONITOR": "Moniteur",
+      "MEMBER": "Membre",
+      "STAFF": "Équipe"
+    },
+    "gender": {
+      "M": "Garçon / Homme",
+      "F": "Fille / Femme"
+    },
+    "relation": {
+      "FATHER": "Père",
+      "MOTHER": "Mère",
+      "GUARDIAN": "Tuteur",
+      "PARENT": "Parent"
+    },
+    "activityCategory": {
+      "SPORTS": "Sport",
+      "MUSIC": "Musique",
+      "SONGS": "Chant",
+      "EDUCATIONAL": "Éducatif",
+      "GAMES": "Jeux",
+      "WORKSHOP": "Atelier",
+      "CULTURAL": "Culturel",
+      "CREATIVE": "Créatif",
+      "OUTDOOR": "Plein air"
+    },
+    "eventCategory": {
+      "CULTURAL": "Culturel",
+      "CHILDREN": "Enfants",
+      "COMPETITION": "Concours",
+      "CELEBRATION": "Fête",
+      "WORKSHOP": "Atelier",
+      "PUBLIC": "Public",
+      "MEETING": "Réunion"
+    },
+    "tripCategory": {
+      "EDUCATIONAL": "Éducative",
+      "CAMPING": "Camping",
+      "CULTURAL": "Culturelle",
+      "OUTDOOR": "Plein air",
+      "EXCURSION": "Excursion",
+      "REGIONAL": "Régionale"
+    },
+    "songCategory": {
+      "ANTHEM": "Hymne",
+      "CHILDREN": "Comptine",
+      "EDUCATIONAL": "Éducative",
+      "FOLK": "Patrimoine",
+      "CAMP": "Camp",
+      "CELEBRATION": "Fête"
+    },
+    "gameCategory": {
+      "OUTDOOR": "Extérieur",
+      "INDOOR": "Intérieur",
+      "TEAM": "Équipe",
+      "EDUCATIONAL": "Éducatif",
+      "ICEBREAKER": "Brise-glace",
+      "ENERGIZER": "Dynamiseur"
+    },
+    "conferenceCategory": {
+      "EDUCATION": "Éducation",
+      "HEALTH": "Santé",
+      "PARENTING": "Parentalité",
+      "CHILD_RIGHTS": "Droits de l'enfant",
+      "ENVIRONMENT": "Environnement",
+      "CULTURE": "Culture",
+      "TECHNOLOGY": "Technologie"
+    },
+    "resourceType": {
+      "PDF": "PDF",
+      "IMAGE": "Image",
+      "VIDEO": "Vidéo",
+      "DOCUMENT": "Document",
+      "LINK": "Lien"
+    },
+    "ageGroup": {
+      "ALL": "Tous âges",
+      "4-7": "4–7 ans",
+      "8-12": "8–12 ans",
+      "13-17": "13–17 ans"
+    },
+    "audience": {
+      "ALL": "Tout le monde",
+      "PARENTS": "Parents",
+      "MONITORS": "Moniteurs",
+      "KIDS": "Enfants",
+      "STAFF": "Équipe",
+      "GROUP": "Un groupe"
+    },
+    "paymentMethod": {
+      "CASH": "Espèces",
+      "BANK_TRANSFER": "Virement",
+      "ONLINE": "En ligne",
+      "CHECK": "Chèque",
+      "OTHER": "Autre"
+    },
+    "expenseCategory": {
+      "TRANSPORT": "Transport",
+      "FOOD": "Restauration",
+      "MATERIALS": "Matériel pédagogique",
+      "ACCOMMODATION": "Hébergement",
+      "RENT": "Loyer",
+      "UTILITIES": "Charges",
+      "EQUIPMENT": "Équipement",
+      "COMMUNICATION": "Communication",
+      "OTHER": "Autre"
+    },
+    "notificationType": {
+      "EVENT_NEW": "Nouvel événement",
+      "TRIP_REGISTRATION": "Inscription sortie",
+      "PAYMENT_REMINDER": "Rappel de paiement",
+      "PAYMENT_CONFIRMED": "Paiement confirmé",
+      "ACTIVITY": "Activité",
+      "EVENT_REMINDER": "Rappel d'événement",
+      "ATTENDANCE": "Présence",
+      "MESSAGE": "Message",
+      "ANNOUNCEMENT": "Annonce",
+      "SYSTEM": "Système"
+    },
+    "channel": {
+      "IN_APP": "Dans l'application",
+      "EMAIL": "E-mail",
+      "SMS": "SMS",
+      "PUSH": "Notifications push"
+    },
+    "documentCategory": {
+      "MEDICAL": "Médical",
+      "ID": "Identité",
+      "AUTHORIZATION": "Autorisation",
+      "INVOICE": "Facture",
+      "REPORT": "Rapport",
+      "PHOTO": "Photo",
+      "OTHER": "Autre"
+    },
+    "entityType": {
+      "GENERAL": "Général",
+      "MEMBER": "Membre",
+      "EVENT": "Événement",
+      "TRIP": "Sortie",
+      "INVOICE": "Facture",
+      "ACTIVITY": "Activité"
+    },
+    "calendarType": {
+      "MEETING": "Réunion",
+      "HOLIDAY": "Vacances",
+      "IMPORTANT": "Date importante",
+      "OTHER": "Autre"
+    },
+    "weekday": {
+      "0": "Dimanche",
+      "1": "Lundi",
+      "2": "Mardi",
+      "3": "Mercredi",
+      "4": "Jeudi",
+      "5": "Vendredi",
+      "6": "Samedi"
+    }
+  },
+  "fields": {
+    "title": "Titre",
+    "name": "Nom",
+    "description": "Description",
+    "category": "Catégorie",
+    "status": "Statut",
+    "date": "Date",
+    "startDate": "Début",
+    "endDate": "Fin",
+    "time": "Heure",
+    "location": "Lieu",
+    "capacity": "Capacité",
+    "price": "Prix",
+    "free": "Gratuit",
+    "amount": "Montant",
+    "email": "E-mail",
+    "phone": "Téléphone",
+    "address": "Adresse",
+    "notes": "Notes",
+    "cover": "Image de couverture",
+    "age": "Âge",
+    "ageRange": "Tranche d'âge",
+    "years": "{count, plural, one {# an} other {# ans}}",
+    "minutes": "{count} min",
+    "group": "Groupe",
+    "monitor": "Moniteur",
+    "participants": "Participants",
+    "createdAt": "Créé le",
+    "actions": "Actions",
+    "all": "Tous",
+    "yes": "Oui",
+    "no": "Non",
+    "places": "{count, plural, one {# place} other {# places}}",
+    "placesLeft": "{count, plural, =0 {Complet} one {# place restante} other {# places restantes}}",
+    "deadline": "Date limite",
+    "optional": "facultatif",
+    "public": "Visible sur le site public"
+  }
+}

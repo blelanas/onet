@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -49,3 +49,10 @@ public/demo/
 .screenshots/
 prisma/test.db*
 .claude/worktrees/
+
+# monorepo
+**/dist/
+apps/api/prisma/*.db
+apps/api/prisma/*.db-journal
+apps/web/public/demo/
+node_modules/
