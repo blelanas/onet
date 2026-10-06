@@ -2,7 +2,8 @@
  * Production bootstrap (idempotent, never deletes data):
  *  - creates missing permissions and system roles (with their default grants),
  *  - grants new default permissions to existing system roles,
- *  - creates the first super administrator from ADMIN_EMAIL / ADMIN_PASSWORD / ADMIN_NAME.
+ *  - creates the first super administrator from ADMIN_EMAIL / ADMIN_PASSWORD / ADMIN_NAME
+ *    (only while no active super administrator exists).
  * Usage: DATABASE_URL=… DATABASE_AUTH_TOKEN=… ADMIN_EMAIL=… ADMIN_PASSWORD=… npm run db:bootstrap -w @onet/api
  */
 import { PrismaClient } from "@prisma/client";
@@ -30,10 +31,14 @@ async function main() {
   const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
   const password = process.env.ADMIN_PASSWORD;
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error(`ADMIN_EMAIL "${email}" is not a valid e-mail address`);
+  const superAdminWhere = { isActive: true, roles: { some: { role: { key: "super_admin" } } } };
   if (email && password) {
     if (password.length < 10) throw new Error("ADMIN_PASSWORD must be at least 10 characters");
     const existing = await db.user.findUnique({ where: { email } });
     if (existing) console.log(`• admin ${email} already exists — unchanged`);
+    // Only the very first administrator comes from the environment: once one exists, a changed
+    // ADMIN_EMAIL must not create another super administrator (add accounts from the app instead).
+    else if (await db.user.count({ where: superAdminWhere })) console.log(`• a super administrator already exists — ADMIN_EMAIL ${email} ignored`);
     else {
       const superAdmin = await db.role.findUniqueOrThrow({ where: { key: "super_admin" } });
       await db.user.create({
@@ -43,7 +48,7 @@ async function main() {
     }
   }
   // A database without any active super administrator is not usable: fail loudly.
-  const admins = await db.user.count({ where: { isActive: true, roles: { some: { role: { key: "super_admin" } } } } });
+  const admins = await db.user.count({ where: superAdminWhere });
   if (!admins) throw new Error("No super administrator exists — set ADMIN_EMAIL and ADMIN_PASSWORD and run again");
   if (!(await db.setting.findUnique({ where: { key: "organization.profile" } }))) {
     await db.setting.create({
