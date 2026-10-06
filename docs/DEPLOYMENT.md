@@ -37,8 +37,9 @@ Order: **1. database → 2. API → 3. website** (each step needs the previous o
    - `DATABASE_URL` = the Turso URL
    - `DATABASE_AUTH_TOKEN` = the Turso token
    - `ADMIN_EMAIL`, `ADMIN_PASSWORD` (10+ characters), `ADMIN_NAME` = your first super-administrator account, created at
-     the first start only while no super administrator exists (changing these values later creates nothing; add other
-     accounts from the app). You can delete `ADMIN_PASSWORD` once you have logged in.
+     at a start only when no active super administrator exists (so changing these values later is ignored while one exists;
+     add other accounts from the app). You can delete `ADMIN_PASSWORD` once you have logged in — this also serves as a
+     recovery path if every super administrator is ever deactivated.
    - `CORS_ORIGINS` = `https://<firebase-project-id>.web.app,https://<firebase-project-id>.firebaseapp.com,https://<firebase-project-id>--*.web.app`
      (you get the project id in step 3 — you can put a placeholder now and edit it later in **Environment**).
 4. **Apply**. When the deploy is green, open `https://onet-api.onrender.com/health` (the exact URL is shown at the top of the service page) → `{"json":{"ok":true}}`.
