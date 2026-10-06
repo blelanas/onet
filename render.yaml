@@ -9,8 +9,9 @@ services:
     branch: main
     # --include=dev: the build needs prisma/esbuild/tsx (NODE_ENV=production would skip them).
     buildCommand: npm ci --include=dev --no-audit --no-fund && npm run i18n && npm run build -w @onet/api
-    # Pending SQL migrations are applied on every start (idempotent).
-    startCommand: npm run db:migrate -w @onet/api && npm start -w @onet/api
+    # Every start (all steps idempotent): pending SQL migrations, then roles/permissions and the first
+    # super administrator (from ADMIN_EMAIL / ADMIN_PASSWORD, only if that account doesn't exist yet), then the API.
+    startCommand: npm run db:migrate -w @onet/api && npm run db:bootstrap -w @onet/api && npm start -w @onet/api
     healthCheckPath: /health
     autoDeploy: true
     envVars:
@@ -24,6 +25,12 @@ services:
         sync: false # turso db tokens create <database>
       - key: CORS_ORIGINS
         sync: false # https://<project>.web.app,https://<project>.firebaseapp.com,https://<project>--pr*.web.app
+      - key: ADMIN_EMAIL
+        sync: false # your login e-mail for the first super administrator
+      - key: ADMIN_PASSWORD
+        sync: false # at least 10 characters; can be removed once you have logged in
+      - key: ADMIN_NAME
+        sync: false # e.g. your full name
       - key: PAYMENT_PROVIDER
         value: mock
       - key: ALLOW_MOCK_PAYMENTS
