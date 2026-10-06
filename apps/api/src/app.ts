@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import { env } from "@api/env";
+import { db } from "@api/lib/db";
 import { als } from "@api/lib/context";
 import { errorHandler, sendData } from "@api/lib/http";
 import { authRouter } from "@api/modules/auth/routes";
@@ -37,6 +38,15 @@ export function createApp() {
   app.use(express.json({ limit: "2mb" }));
 
   app.get("/health", (_req, res) => sendData(res, { ok: true }));
+  // Touches the database: pinged on a schedule so a free Turso database is never archived for inactivity.
+  app.get("/health/db", async (_req, res, next) => {
+    try {
+      await db.$queryRaw`SELECT 1`;
+      sendData(res, { ok: true });
+    } catch (e) {
+      next(e);
+    }
+  });
   const api = express.Router();
   api.use(authRouter);
   api.use(filesRouter);

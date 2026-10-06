@@ -42,6 +42,9 @@ Order: **1. database → 2. API → 3. website** (each step needs the previous o
 
 > The free instance sleeps when unused; the first request after a pause takes ~30–50 s.
 > A free monitor (e.g. UptimeRobot pinging `/health` every 10 min) keeps it awake during the day.
+> Free Turso databases are archived after 10 days without activity: `.github/workflows/keep-alive.yml`
+> calls `/health/db` every 3 days (once the `API_URL` variable is set) so this never happens.
+> Never add a payment card to Turso or Render: over a free limit the service pauses instead of billing you.
 
 ## 3. Website — Firebase Hosting (≈ 15 min)
 
