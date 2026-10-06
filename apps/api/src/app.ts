@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import { rateLimit } from "express-rate-limit";
 import { env } from "@api/env";
 import { db } from "@api/lib/db";
 import { als } from "@api/lib/context";
@@ -38,8 +39,9 @@ export function createApp() {
   app.use(express.json({ limit: "2mb" }));
 
   app.get("/health", (_req, res) => sendData(res, { ok: true }));
-  // Touches the database: pinged on a schedule so a free Turso database is never archived for inactivity.
-  app.get("/health/db", async (_req, res, next) => {
+  // Touches the database: pinged on a schedule so a free Turso database isn't archived for inactivity.
+  const dbPingLimit = rateLimit({ windowMs: 60_000, limit: 6, standardHeaders: "draft-8", legacyHeaders: false, handler: (_req, res) => sendData(res, { ok: false, error: "errors.tooManyAttempts" }, 429) });
+  app.get("/health/db", dbPingLimit, async (_req, res, next) => {
     try {
       await db.$queryRaw`SELECT 1`;
       sendData(res, { ok: true });
