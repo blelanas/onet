@@ -1,0 +1,123 @@
+{
+  "announcements": {
+    "title": "Annonces",
+    "description": "Les nouvelles importantes de la vie du comité.",
+    "kidTitle": "Les nouvelles du club",
+    "kidSubtitle": "Tout ce qui se passe à l'ONET, rien que pour toi !",
+    "new": "Nouvelle annonce",
+    "edit": "Modifier l'annonce",
+    "pinned": "Épinglée",
+    "pin": "Épingler",
+    "unpin": "Désépingler",
+    "expired": "Expirée",
+    "expiresOn": "Jusqu'au {date}",
+    "by": "par {name}",
+    "forAudience": "Pour : {audience}",
+    "readMore": "Lire la suite",
+    "count": "{count, plural, =0 {Aucune annonce} one {# annonce} other {# annonces}}",
+    "deleteConfirm": "Supprimer cette annonce ? Elle disparaîtra pour tout le monde.",
+    "empty": {
+      "title": "Aucune annonce pour le moment",
+      "description": "Les annonces publiées par l'équipe apparaîtront ici.",
+      "kid": "Pas de nouvelles aujourd'hui… reviens bientôt !"
+    },
+    "filters": {
+      "allPriorities": "Toutes priorités",
+      "allAudiences": "Tous publics",
+      "current": "En cours",
+      "expired": "Expirées"
+    },
+    "form": {
+      "title": "Titre",
+      "body": "Message",
+      "audience": "Public",
+      "group": "Groupe",
+      "groupHint": "Les enfants, leurs parents et les moniteurs du groupe la verront.",
+      "priority": "Priorité",
+      "pin": "Épingler en haut du fil",
+      "expiresAt": "Expire le",
+      "expiresHint": "Laisser vide pour une annonce permanente.",
+      "notify": "Notifier le public concerné",
+      "notifyHint": "Une notification est envoyée à chaque personne ciblée.",
+      "publish": "Publier"
+    }
+  },
+  "messages": {
+    "title": "Messages",
+    "description": "Échangez avec l'équipe, les moniteurs et les familles.",
+    "new": "Nouveau message",
+    "conversations": "Conversations",
+    "search": "Rechercher une conversation…",
+    "you": "Vous",
+    "youSaid": "Vous : {text}",
+    "back": "Conversations",
+    "noMessagesYet": "Pas encore de message",
+    "unread": "{count, plural, one {# non lu} other {# non lus}}",
+    "seen": "Vu",
+    "placeholder": "Écrire un message…",
+    "enterHint": "Entrée pour envoyer · Maj+Entrée pour un retour à la ligne",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "liveHint": "Mise à jour automatique",
+    "empty": {
+      "title": "Aucune conversation",
+      "description": "Démarrez une conversation avec un moniteur, un parent ou l'équipe."
+    },
+    "pick": {
+      "title": "Sélectionnez une conversation",
+      "description": "Ou démarrez-en une nouvelle avec l'un de vos contacts."
+    },
+    "compose": {
+      "title": "Nouvelle conversation",
+      "to": "Destinataire",
+      "choose": "Choisir un destinataire",
+      "change": "Changer",
+      "searchContacts": "Rechercher un contact…",
+      "subject": "Sujet",
+      "subjectHint": "Facultatif — un sujet ouvre une nouvelle discussion dédiée.",
+      "message": "Message",
+      "noContacts": "Aucun contact disponible",
+      "noMatch": "Aucun contact ne correspond",
+      "rules": "Vous ne voyez que les personnes que vous pouvez contacter : l'équipe, et selon votre rôle, les moniteurs de vos enfants ou les parents de vos groupes.",
+      "notAllowed": "Vous ne pouvez pas écrire à cette personne."
+    },
+    "kinds": {
+      "STAFF": "Équipe",
+      "MONITOR": "Moniteurs",
+      "PARENT": "Parents",
+      "OTHER": "Autres"
+    },
+    "via": "Lien : {names}"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "description": "Rappels, confirmations et nouveautés qui vous concernent.",
+    "all": "Toutes",
+    "unreadTab": "Non lues",
+    "unreadCount": "{count, plural, =0 {Tout est lu} one {# non lue} other {# non lues}}",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "markRead": "Marquer comme lue",
+    "markUnread": "Marquer comme non lue",
+    "allTypes": "Tous les types",
+    "empty": {
+      "title": "Aucune notification",
+      "description": "Vous serez prévenu ici des nouveautés importantes.",
+      "unread": "Bravo, tout est lu !"
+    },
+    "channelsLink": "Canaux d'envoi",
+    "broadcast": {
+      "button": "Diffuser",
+      "title": "Diffuser une notification",
+      "description": "Envoyée à tous les comptes actifs des rôles choisis.",
+      "titleField": "Titre",
+      "body": "Message",
+      "link": "Lien interne",
+      "linkHint": "Ex. /dashboard/events — facultatif",
+      "roles": "Destinataires",
+      "users": "{count, plural, one {# compte} other {# comptes}}",
+      "send": "Envoyer",
+      "sent": "Notification envoyée"
+    }
+  }
+}

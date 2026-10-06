@@ -1,0 +1,65 @@
+{
+  "title": "Présences",
+  "description": "Faites l'appel en quelques secondes et suivez l'assiduité des enfants.",
+  "tabs": {
+    "roll": "Faire l'appel",
+    "history": "Historique"
+  },
+  "context": "Groupe ou activité",
+  "groups": "Groupes",
+  "activities": "Activités",
+  "date": "Date de la séance",
+  "prevSession": "Séance précédente",
+  "nextSession": "Séance suivante",
+  "groupSession": "Réunion de groupe",
+  "activitySession": "Séance d'activité",
+  "roll": {
+    "noContext": "Aucun groupe ni activité à encadrer",
+    "noContextHint": "Demandez à un administrateur de vous assigner un groupe.",
+    "count": "{count, plural, =0 {aucun enfant} one {# enfant} other {# enfants}}",
+    "recordedAt": "Appel enregistré · {at}",
+    "notRecorded": "Appel pas encore fait",
+    "future": "Cette date est dans le futur.",
+    "offDay": "Attention : ce n'est pas le jour habituel ({day}).",
+    "emptyRoster": "Personne à appeler",
+    "emptyRosterHint": "Ajoutez des enfants au groupe ou inscrivez-les à l'activité.",
+    "unmarked": "{count} à marquer",
+    "allPresent": "Tout le monde présent",
+    "medical": "Info santé",
+    "note": "Ajouter une note",
+    "notePlaceholder": "Ex. parti à 11h, certificat médical…",
+    "nothing": "Marquez au moins un enfant",
+    "saved": "{count, plural, one {Présence enregistrée} other {# présences enregistrées}}",
+    "savedNotified": "Appel enregistré · {count, plural, one {# absence signalée aux parents} other {# absences signalées aux parents}}",
+    "summary": "{marked}/{total} marqués",
+    "unsaved": "Modifications non enregistrées",
+    "absentNotice": "Les parents sont prévenus des absences.",
+    "save": "Enregistrer"
+  },
+  "history": {
+    "allContexts": "Tous mes groupes et activités",
+    "weeks": "{count} semaines",
+    "sessions": "Séances",
+    "rate": "Taux de présence",
+    "absences": "Absences",
+    "children": "Enfants suivis",
+    "sessionsList": "Séances",
+    "perChild": "Assiduité par enfant",
+    "childLine": "{present}/{total} présent · {absent} abs.",
+    "empty": "Aucune séance sur cette période",
+    "emptyHint": "Essayez une période plus longue ou un autre groupe."
+  },
+  "family": {
+    "title": "Présences de mes enfants",
+    "description": "Les présences enregistrées par les moniteurs, semaine après semaine.",
+    "noChildren": "Aucun enfant rattaché à votre compte",
+    "rate": "de présence",
+    "heatmap": "{count} dernières semaines",
+    "recent": "Dernières séances",
+    "noRecords": "Pas encore de présence enregistrée."
+  },
+  "notify": {
+    "title": "{name} a été noté(e) absent(e)",
+    "body": "{context} — {date}. Contactez le moniteur si besoin."
+  }
+}

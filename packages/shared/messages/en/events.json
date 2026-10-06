@@ -1,0 +1,205 @@
+{
+  "titles": {
+    "events": "Events",
+    "new": "New event",
+    "edit": "Edit event",
+    "registrations": "Registrations",
+    "myRegistrations": "My registrations"
+  },
+  "descriptions": {
+    "events": "Celebrations, shows, competitions and workshops: register your children in a few clicks.",
+    "registrations": "Every event and trip registration, with payment and follow-up.",
+    "myRegistrations": "Your family's registrations: status, payment and cancellation."
+  },
+  "actions": {
+    "new": "Create event",
+    "confirm": "Confirm",
+    "waitlist": "Waitlist",
+    "cancelRegistration": "Cancel registration"
+  },
+  "tabs": {
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "drafts": "Drafts"
+  },
+  "searchPlaceholder": "Search an event or a place…",
+  "empty": {
+    "upcoming": "No upcoming events yet",
+    "past": "No past events",
+    "drafts": "No drafts",
+    "hint": "Come back soon: lovely surprises are on the way!"
+  },
+  "card": {
+    "internal": "Internal",
+    "registered": "Registered: {names}"
+  },
+  "detail": {
+    "tabs": {
+      "overview": "Overview",
+      "participants": "Participants",
+      "checkin": "Check-in"
+    },
+    "deleteTitle": "Delete this event?",
+    "deleteText": "Registrations will be deleted and unpaid invoices cancelled. Not possible once payments were received.",
+    "about": "About",
+    "practical": "Practical info",
+    "when": "Date",
+    "noDeadline": "Until the day itself",
+    "payment": "Payment",
+    "paymentRequired": "Online, before the event",
+    "paymentOnSite": "On site or later",
+    "activities": "Related activities",
+    "deadlineOn": "Registration until {date}"
+  },
+  "form": {
+    "general": "The event",
+    "statusHint": "\"Draft\" stays hidden from families.",
+    "when": "Date and place",
+    "startAt": "Starts",
+    "endAt": "Ends",
+    "organizer": "Organizer",
+    "registration": "Registration and price",
+    "deadlineHint": "Leave empty to accept registrations until it starts.",
+    "priceTnd": "Price per participant (TND)",
+    "priceHint": "0 = free. An invoice is created automatically on registration.",
+    "requiresPayment": "Payment required to confirm",
+    "requiresPaymentHint": "Otherwise the registration is confirmed right away and paid later.",
+    "publicHint": "Untick for an internal event (staff, monitors)."
+  },
+  "kid": {
+    "title": "Fancy it?",
+    "text": "Talk to your parents: they're the ones who can sign you up!"
+  },
+  "panel": {
+    "title": "Register my family",
+    "pricePer": "{price} per participant",
+    "closedHint": "Registration is no longer open for this event.",
+    "me": "me",
+    "willWaitlist": "waitlist",
+    "waitlistHint": "We'll let you know as soon as a place frees up.",
+    "total": "{count, plural, =0 {Pick one or more participants} one {Total for # participant} other {Total for # participants}}",
+    "register": "{count, plural, =0 {Register} one {Register # participant} other {Register # participants}}",
+    "joinWaitlist": "Join the waitlist",
+    "invoiceHint": "An invoice will be created: you can pay it online right after."
+  },
+  "eligibility": {
+    "closed": "Registration closed",
+    "deadline": "Deadline passed",
+    "tooYoung": "Too young for this one",
+    "tooOld": "Above the age range",
+    "registered": "Already registered"
+  },
+  "errors": {
+    "closed": "Registration is closed",
+    "deadline": "The registration deadline has passed",
+    "tooYoung": "This child is too young for this trip",
+    "tooOld": "This child is above the age range",
+    "registered": "Already registered",
+    "consent": "Parental consent is required"
+  },
+  "cancel": {
+    "title": "Cancel the registration?",
+    "text": "The place will be freed and the unpaid invoice cancelled.",
+    "paidText": "The place will be freed. The payment already made will be handled by the accounts team for a refund.",
+    "staffText": "The place is freed, the unpaid invoice cancelled and the family notified. The first person on the waitlist is promoted.",
+    "confirm": "Yes, cancel",
+    "refund": "Registration cancelled — accounts notified for the refund"
+  },
+  "register": {
+    "success": "{count, plural, one {Registration saved!} other {# registrations saved!}}",
+    "waitlisted": "It's full: registration placed on the waitlist",
+    "partial": "{ok} registration(s) saved, {failed} refused"
+  },
+  "bulk": {
+    "selectAll": "Select all",
+    "selected": "{count} selected",
+    "action": "Bulk action",
+    "done": "{count, plural, =0 {No registration changed} one {# registration updated} other {# registrations updated}}"
+  },
+  "participants": {
+    "member": "Participant",
+    "payment": "Payment",
+    "followUp": "Follow-up",
+    "registeredBy": "Registered by",
+    "medical": "Medical info",
+    "empty": "No participants yet",
+    "emptyHint": "Family registrations will show up here.",
+    "add": "Add a participant",
+    "addHint": "Manual registration (at the desk, by phone…). Capacity applies: waitlist when full.",
+    "consentReceived": "Parental consent received",
+    "collected": "Collected",
+    "summary": "{active} of {capacity} places taken"
+  },
+  "rollCall": {
+    "allPresent": "All present",
+    "progress": "{done}/{total} checked",
+    "eventTitle": "Check-in — {date}"
+  },
+  "registrations": {
+    "scope": {
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "all": "All"
+    },
+    "kind": {
+      "event": "Event",
+      "trip": "Trip"
+    },
+    "target": "Event / trip",
+    "registeredAt": "Registered on",
+    "registeredShort": "registered {date}",
+    "consentOk": "Consent OK",
+    "consentMissing": "Consent missing",
+    "docs": "Documents",
+    "kpi": {
+      "active": "Active registrations",
+      "unpaid": "Unpaid"
+    },
+    "searchPlaceholder": "Search a participant…",
+    "filters": {
+      "allKinds": "Events and trips",
+      "allStatuses": "All statuses",
+      "allPayments": "All payments",
+      "allTargets": "All events / trips"
+    },
+    "payment": {
+      "PAID": "Paid",
+      "UNPAID": "To pay",
+      "FREE": "Free"
+    },
+    "familyEmpty": "No registrations here",
+    "familyEmptyHint": "Discover the next trips and celebrations and register your children in two clicks.",
+    "browseTrips": "See trips",
+    "browseEvents": "See events"
+  },
+  "invoice": {
+    "event": "Event: {title} — {name}",
+    "trip": "Trip: {title} — {name}",
+    "cancelledNote": "Cancelled after the registration was cancelled.",
+    "refundNote": "Registration cancelled after payment (invoice {number}): refund to be handled by accounts."
+  },
+  "notify": {
+    "registered": {
+      "PENDING": "{name} is registered for \"{title}\"",
+      "CONFIRMED": "Registration confirmed: {name} — \"{title}\"",
+      "WAITLIST": "{name} is on the waitlist for \"{title}\""
+    },
+    "payBody": "An invoice is waiting: pay it online to confirm the place.",
+    "registeredBody": "All practical info is on the \"{title}\" page.",
+    "staffNew": "New registration: {name} — \"{title}\"",
+    "staffStatus": {
+      "PENDING": "Awaiting payment",
+      "CONFIRMED": "Confirmed",
+      "WAITLIST": "Placed on the waitlist"
+    },
+    "promoted": "Good news: a place opened up for {name} (\"{title}\")",
+    "cancelled": "Registration cancelled: {name} — \"{title}\"",
+    "refund": "Refund to process: {name} — \"{title}\"",
+    "statusChanged": {
+      "CONFIRMED": "Registration confirmed: {name} — \"{title}\"",
+      "WAITLIST": "{name} moved to the waitlist for \"{title}\"",
+      "PENDING": "{name}'s registration is awaiting payment (\"{title}\")"
+    },
+    "monitorAssigned": "You are supervising the trip \"{title}\""
+  }
+}

@@ -1,0 +1,360 @@
+{
+  "app": {
+    "title": "ONET Teboulba — Children's Platform",
+    "short": "ONET Teboulba",
+    "tagline": "Learn, play, discover, take part and belong."
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "add": "Add",
+    "close": "Close",
+    "search": "Search…",
+    "clear": "Clear",
+    "remove": "Remove",
+    "view": "View",
+    "viewAll": "View all",
+    "back": "Back",
+    "retry": "Try again",
+    "backToDashboard": "Back to dashboard",
+    "export": "Export",
+    "import": "Import",
+    "exportCsv": "Export CSV",
+    "filter": "Filter",
+    "register": "Register",
+    "pay": "Pay",
+    "download": "Download",
+    "send": "Send",
+    "print": "Print",
+    "more": "More",
+    "details": "Details",
+    "approve": "Approve",
+    "reject": "Reject",
+    "markAllRead": "Mark all as read",
+    "open": "Open",
+    "next": "Next",
+    "previous": "Previous"
+  },
+  "states": {
+    "loading": "Loading…",
+    "empty": "Nothing to show yet",
+    "noResults": "No results",
+    "noResultsHint": "Try other keywords or remove some filters.",
+    "errorTitle": "Oops, something went wrong",
+    "errorDescription": "We couldn't load this page. Please try again in a moment.",
+    "notFoundTitle": "Page not found",
+    "notFoundDescription": "This page doesn't exist or has moved.",
+    "forbiddenTitle": "Restricted access",
+    "forbiddenDescription": "You don't have permission to view this page."
+  },
+  "confirm": {
+    "title": "Are you sure?",
+    "description": "This action cannot be undone."
+  },
+  "toast": {
+    "saved": "Changes saved",
+    "created": "Created successfully",
+    "deleted": "Deleted",
+    "welcome": "Welcome!",
+    "sent": "Sent",
+    "registered": "Registration saved",
+    "cancelled": "Cancelled",
+    "paid": "Payment recorded"
+  },
+  "errors": {
+    "validation": "Some fields are invalid",
+    "required": "This field is required",
+    "email": "Invalid email address",
+    "unauthenticated": "Please sign in",
+    "forbidden": "You are not allowed to do this",
+    "notFound": "Item not found",
+    "unexpected": "Unexpected error, please try again",
+    "network": "Can't reach the server. Check your connection.",
+    "invalidCredentials": "Incorrect email or password",
+    "tooManyAttempts": "Too many attempts. Try again in 5 minutes.",
+    "uploadType": "File type not allowed",
+    "uploadSize": "File too large (10 MB max)",
+    "weakPassword": "At least 8 characters with a letter and a digit",
+    "emailTaken": "This email is already in use",
+    "capacityFull": "No places left",
+    "deadlinePassed": "The registration deadline has passed",
+    "alreadyRegistered": "Already registered",
+    "inUse": "Not possible: this item is used elsewhere",
+    "amountTooHigh": "Amount exceeds the remaining balance",
+    "passwordMismatch": "Passwords do not match",
+    "wrongPassword": "Current password is incorrect"
+  },
+  "pagination": {
+    "label": "Pagination",
+    "showing": "{from}–{to} of {total}",
+    "previous": "Previous page",
+    "next": "Next page"
+  },
+  "upload": {
+    "pending": "Please wait, the file is still uploading…",
+    "drop": "Drop a file here",
+    "browse": "Browse",
+    "replace": "Replace",
+    "hint": {
+      "image": "JPG, PNG or WebP — 10 MB max",
+      "document": "PDF, JPG, PNG, DOCX — 10 MB max",
+      "audio": "MP3, OGG, WAV, M4A — 10 MB max",
+      "video": "MP4 or WebM — 10 MB max"
+    }
+  },
+  "audio": {
+    "play": "Play",
+    "pause": "Pause",
+    "seek": "Position",
+    "mute": "Mute",
+    "restart": "Restart",
+    "unavailable": "Audio unavailable"
+  },
+  "roles": {
+    "super_admin": "Super admin",
+    "admin": "Administrator",
+    "accountant": "Accountant",
+    "monitor": "Monitor",
+    "parent": "Parent",
+    "member": "Member",
+    "kid": "Child"
+  },
+  "status": {
+    "ACTIVE": "Active",
+    "PENDING": "Pending",
+    "INACTIVE": "Inactive",
+    "SUSPENDED": "Suspended",
+    "DRAFT": "Draft",
+    "PUBLISHED": "Published",
+    "OPEN": "Open",
+    "FULL": "Full",
+    "CLOSED": "Closed",
+    "COMPLETED": "Completed",
+    "CANCELLED": "Cancelled",
+    "CONFIRMED": "Confirmed",
+    "WAITLIST": "Waitlist",
+    "PAID": "Paid",
+    "PARTIALLY_PAID": "Partially paid",
+    "OVERDUE": "Overdue",
+    "FAILED": "Failed",
+    "REFUNDED": "Refunded",
+    "PRESENT": "Present",
+    "ABSENT": "Absent",
+    "LATE": "Late",
+    "EXCUSED": "Excused",
+    "MISSING": "Missing",
+    "PARTIAL": "Partial",
+    "COMPLETE": "Complete",
+    "APPROVED": "Approved",
+    "REJECTED": "Rejected",
+    "TODO": "To do",
+    "IN_PROGRESS": "In progress",
+    "DONE": "Done",
+    "NORMAL": "Normal",
+    "IMPORTANT": "Important",
+    "URGENT": "Urgent"
+  },
+  "enums": {
+    "memberType": {
+      "CHILD": "Child",
+      "PARENT": "Parent",
+      "MONITOR": "Monitor",
+      "MEMBER": "Member",
+      "STAFF": "Staff"
+    },
+    "gender": {
+      "M": "Male",
+      "F": "Female"
+    },
+    "relation": {
+      "FATHER": "Father",
+      "MOTHER": "Mother",
+      "GUARDIAN": "Guardian",
+      "PARENT": "Parent"
+    },
+    "activityCategory": {
+      "SPORTS": "Sports",
+      "MUSIC": "Music",
+      "SONGS": "Songs",
+      "EDUCATIONAL": "Educational",
+      "GAMES": "Games",
+      "WORKSHOP": "Workshop",
+      "CULTURAL": "Cultural",
+      "CREATIVE": "Creative",
+      "OUTDOOR": "Outdoor"
+    },
+    "eventCategory": {
+      "CULTURAL": "Cultural",
+      "CHILDREN": "Children",
+      "COMPETITION": "Competition",
+      "CELEBRATION": "Celebration",
+      "WORKSHOP": "Workshop",
+      "PUBLIC": "Public",
+      "MEETING": "Meeting"
+    },
+    "tripCategory": {
+      "EDUCATIONAL": "Educational",
+      "CAMPING": "Camping",
+      "CULTURAL": "Cultural",
+      "OUTDOOR": "Outdoor",
+      "EXCURSION": "Excursion",
+      "REGIONAL": "Regional"
+    },
+    "songCategory": {
+      "ANTHEM": "Anthem",
+      "CHILDREN": "Children's song",
+      "EDUCATIONAL": "Educational",
+      "FOLK": "Folk",
+      "CAMP": "Camp",
+      "CELEBRATION": "Celebration"
+    },
+    "gameCategory": {
+      "OUTDOOR": "Outdoor",
+      "INDOOR": "Indoor",
+      "TEAM": "Team",
+      "EDUCATIONAL": "Educational",
+      "ICEBREAKER": "Icebreaker",
+      "ENERGIZER": "Energizer"
+    },
+    "conferenceCategory": {
+      "EDUCATION": "Education",
+      "HEALTH": "Health",
+      "PARENTING": "Parenting",
+      "CHILD_RIGHTS": "Child rights",
+      "ENVIRONMENT": "Environment",
+      "CULTURE": "Culture",
+      "TECHNOLOGY": "Technology"
+    },
+    "resourceType": {
+      "PDF": "PDF",
+      "IMAGE": "Image",
+      "VIDEO": "Video",
+      "DOCUMENT": "Document",
+      "LINK": "Link"
+    },
+    "ageGroup": {
+      "ALL": "All ages",
+      "4-7": "Ages 4–7",
+      "8-12": "Ages 8–12",
+      "13-17": "Ages 13–17"
+    },
+    "audience": {
+      "ALL": "Everyone",
+      "PARENTS": "Parents",
+      "MONITORS": "Monitors",
+      "KIDS": "Kids",
+      "STAFF": "Staff",
+      "GROUP": "A group"
+    },
+    "paymentMethod": {
+      "CASH": "Cash",
+      "BANK_TRANSFER": "Bank transfer",
+      "ONLINE": "Online",
+      "CHECK": "Check",
+      "OTHER": "Other"
+    },
+    "expenseCategory": {
+      "TRANSPORT": "Transport",
+      "FOOD": "Food",
+      "MATERIALS": "Materials",
+      "ACCOMMODATION": "Accommodation",
+      "RENT": "Rent",
+      "UTILITIES": "Utilities",
+      "EQUIPMENT": "Equipment",
+      "COMMUNICATION": "Communication",
+      "OTHER": "Other"
+    },
+    "notificationType": {
+      "EVENT_NEW": "New event",
+      "TRIP_REGISTRATION": "Trip registration",
+      "PAYMENT_REMINDER": "Payment reminder",
+      "PAYMENT_CONFIRMED": "Payment confirmed",
+      "ACTIVITY": "Activity",
+      "EVENT_REMINDER": "Event reminder",
+      "ATTENDANCE": "Attendance",
+      "MESSAGE": "Message",
+      "ANNOUNCEMENT": "Announcement",
+      "SYSTEM": "System"
+    },
+    "channel": {
+      "IN_APP": "In-app",
+      "EMAIL": "Email",
+      "SMS": "SMS",
+      "PUSH": "Push"
+    },
+    "documentCategory": {
+      "MEDICAL": "Medical",
+      "ID": "ID",
+      "AUTHORIZATION": "Authorization",
+      "INVOICE": "Invoice",
+      "REPORT": "Report",
+      "PHOTO": "Photo",
+      "OTHER": "Other"
+    },
+    "entityType": {
+      "GENERAL": "General",
+      "MEMBER": "Member",
+      "EVENT": "Event",
+      "TRIP": "Trip",
+      "INVOICE": "Invoice",
+      "ACTIVITY": "Activity"
+    },
+    "calendarType": {
+      "MEETING": "Meeting",
+      "HOLIDAY": "Holiday",
+      "IMPORTANT": "Important date",
+      "OTHER": "Other"
+    },
+    "weekday": {
+      "0": "Sunday",
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday"
+    }
+  },
+  "fields": {
+    "title": "Title",
+    "name": "Name",
+    "description": "Description",
+    "category": "Category",
+    "status": "Status",
+    "date": "Date",
+    "startDate": "Start",
+    "endDate": "End",
+    "time": "Time",
+    "location": "Location",
+    "capacity": "Capacity",
+    "price": "Price",
+    "free": "Free",
+    "amount": "Amount",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "notes": "Notes",
+    "cover": "Cover image",
+    "age": "Age",
+    "ageRange": "Age range",
+    "years": "{count, plural, one {# year} other {# years}}",
+    "minutes": "{count} min",
+    "group": "Group",
+    "monitor": "Monitor",
+    "participants": "Participants",
+    "createdAt": "Created",
+    "actions": "Actions",
+    "all": "All",
+    "yes": "Yes",
+    "no": "No",
+    "places": "{count, plural, one {# place} other {# places}}",
+    "placesLeft": "{count, plural, =0 {Full} one {# place left} other {# places left}}",
+    "deadline": "Deadline",
+    "optional": "optional",
+    "public": "Visible on the public website"
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "title": "Groups",
+  "titleMine": "My groups",
+  "description": "Children's groups by age, their monitors and meetings.",
+  "descriptionMine": "The groups you lead this season.",
+  "new": "New group",
+  "edit": "Edit group",
+  "searchPlaceholder": "Search a group…",
+  "takeAttendance": "Take attendance",
+  "deleteTitle": "Delete this group?",
+  "deleteText": "Children stay registered but without a group. Past attendance is kept.",
+  "kpi": {
+    "groups": "Active groups",
+    "children": "Children enrolled",
+    "fill": "Fill rate",
+    "fillHint": "{capacity} places in total",
+    "monitors": "Monitors"
+  },
+  "filters": {
+    "all": "All",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "empty": {
+    "title": "No groups yet",
+    "mine": "You don't lead any group yet",
+    "filtered": "No matching group",
+    "description": "Create a first group to organise the children."
+  },
+  "card": {
+    "mine": "My group",
+    "ages": "Ages {min}–{max}",
+    "agesFrom": "Ages {min}+",
+    "activities": "{count, plural, =0 {No activities} one {# activity} other {# activities}}",
+    "fill": "{count}/{capacity} children",
+    "noMonitor": "No monitor assigned"
+  },
+  "tabs": {
+    "members": "Children",
+    "monitors": "Monitors",
+    "schedule": "Schedule",
+    "attendance": "Attendance",
+    "activities": "Activities",
+    "announcements": "Announcements",
+    "tasks": "Tasks"
+  },
+  "form": {
+    "identity": "The group",
+    "meetings": "Weekly meeting",
+    "look": "Color & icon",
+    "ageMin": "Minimum age",
+    "ageMax": "Maximum age",
+    "capacityHint": "Maximum number of children in the group.",
+    "isActive": "Active group",
+    "isActiveHint": "Inactive groups no longer appear in attendance.",
+    "meetingDay": "Day",
+    "meetingTime": "Time",
+    "schedule": "Displayed schedule",
+    "scheduleHint": "E.g. “Saturday 09:30 – 11:30”",
+    "color": "Color",
+    "icon": "Icon",
+    "previewName": "Group name"
+  },
+  "members": {
+    "title": "{count, plural, =0 {Children} one {# child} other {# children}}",
+    "add": "Add a child",
+    "addTitle": "Add a child to the group",
+    "addHint": "A child belongs to one group only: they will be moved.",
+    "searchChild": "Child's name…",
+    "onlyAge": "Only the group's age range",
+    "noGroup": "no group",
+    "added": "Child added to the group",
+    "fullHint": "The group is full ({capacity} places). Increase capacity to add children.",
+    "medical": "Medical information",
+    "rate": "{rate}% present",
+    "removeTitle": "Remove from group?",
+    "removeText": "{name} stays registered but without a group.",
+    "empty": "No children in this group",
+    "emptyHint": "Add children with the button above."
+  },
+  "monitors": {
+    "title": "Supervising team",
+    "assign": "Add a monitor",
+    "assignButton": "Assign",
+    "lead": "Lead",
+    "leadBadge": "Lead",
+    "message": "Message",
+    "makeLead": "Make lead",
+    "removeTitle": "Remove this monitor?",
+    "removeText": "{name} will no longer lead this group.",
+    "empty": "No monitor assigned"
+  },
+  "schedule": {
+    "week": "Typical week",
+    "meeting": "Group meeting",
+    "next": "Next meetings",
+    "noMeeting": "No meeting day set."
+  },
+  "attendance": {
+    "empty": "No attendance recorded yet",
+    "emptyHint": "Statistics will appear after the first roll call.",
+    "takeFirst": "Take the first roll call",
+    "overall": "Attendance rate",
+    "sessions": "Sessions",
+    "lastWeeks": "Last {count} weeks",
+    "lastSession": "Last session",
+    "perSession": "Attendance per session",
+    "history": "History",
+    "watchList": "Keep an eye on"
+  },
+  "activities": {
+    "title": "Group activities",
+    "new": "New activity",
+    "empty": "No activity linked to this group"
+  },
+  "announcements": {
+    "title": "Group announcements",
+    "all": "All announcements",
+    "pinned": "Pinned",
+    "empty": "No announcements for this group"
+  },
+  "tasks": {
+    "title": "Group tasks",
+    "progress": "{done}/{total} done",
+    "cycle": "Change status",
+    "empty": "No tasks yet",
+    "newTitle": "New task",
+    "placeholder": "E.g. prepare Saturday's materials",
+    "due": "Due date",
+    "assignee": "Assigned to",
+    "me": "Me",
+    "add": "Add"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "title": "Documents",
+  "description": "Authorizations, health forms, reports and attachments.",
+  "fields": {
+    "name": "Document name",
+    "linkedTo": "Linked to",
+    "size": "Size",
+    "uploadedBy": "Uploaded by"
+  },
+  "empty": {
+    "title": "No documents",
+    "entity": "Uploaded documents will appear here."
+  },
+  "library": {
+    "subtitle": "Every document you can access, in one place.",
+    "upload": "Add a document",
+    "uploadTitle": "New general document",
+    "uploadHint": "Rules, blank forms, minutes… visible to every account with document access.",
+    "allEntities": "All",
+    "allCategories": "All categories",
+    "count": "{count, plural, =0 {No documents} one {# document} other {# documents}}",
+    "emptyFiltered": "No document matches these filters.",
+    "emptyHint": "Documents attached to members, trips, events and invoices will appear here.",
+    "general": "General document",
+    "open": "Open record",
+    "deleteConfirm": "Delete this document? The file will no longer be accessible."
+  }
+}

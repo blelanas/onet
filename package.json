@@ -1,0 +1,29 @@
+{
+  "name": "onet-teboulba",
+  "version": "0.2.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c red,blue \"npm run dev -w @onet/api\" \"npm run dev -w @onet/web\"",
+    "build": "npm run build -w @onet/api && npm run build -w @onet/web",
+    "setup": "npm run i18n && npm run db:setup -w @onet/api",
+    "i18n": "npm run i18n -w @onet/shared",
+    "typecheck": "npm run typecheck -w @onet/api && npm run typecheck -w @onet/web",
+    "lint": "eslint",
+    "test": "npm test -w @onet/api",
+    "test:e2e": "node tests/e2e/smoke.mjs",
+    "postinstall": "prisma generate --schema apps/api/prisma/schema.prisma"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "concurrently": "^10.0.5",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^17.13.0",
+    "playwright": "^1.56.1",
+    "typescript-eslint": "^8.71.0"
+  }
+}

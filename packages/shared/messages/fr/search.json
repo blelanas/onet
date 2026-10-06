@@ -1,0 +1,27 @@
+{
+  "title": "Recherche",
+  "description": "Trouvez un enfant, une famille, un groupe, une activité, une sortie ou une chanson.",
+  "placeholder": "Rechercher dans toute la plateforme…",
+  "submit": "Rechercher",
+  "results": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}} pour « {q} »",
+  "hintTitle": "Que cherchez-vous ?",
+  "hint": "Tapez au moins 2 caractères : un prénom, un numéro d'adhérent, un lieu, un titre…",
+  "suggestions": "Essayez :",
+  "emptyTitle": "Aucun résultat pour « {q} »",
+  "emptyHint": "Vérifiez l'orthographe ou essayez un mot plus court.",
+  "all": "Tout",
+  "seeAll": "Voir les {count} résultats",
+  "showingFirst": "{shown} sur {count}",
+  "sections": {
+    "members": "Personnes",
+    "groups": "Groupes",
+    "activities": "Activités",
+    "events": "Événements",
+    "trips": "Sorties",
+    "songs": "Chansons",
+    "games": "Jeux",
+    "conferences": "Conférences",
+    "resources": "Ressources",
+    "invoices": "Factures"
+  }
+}

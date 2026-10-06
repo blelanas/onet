@@ -1,0 +1,91 @@
+{
+  "title": "Rapports",
+  "description": "Les chiffres clés du comité pour piloter et rendre compte.",
+  "generatedAt": "Données au {date}",
+  "tabs": {
+    "members": "Membres",
+    "activities": "Activités",
+    "events": "Événements",
+    "trips": "Sorties",
+    "finance": "Finances"
+  },
+  "members": {
+    "total": "Membres inscrits",
+    "children": "Enfants",
+    "active": "Adhésions actives",
+    "inactiveHint": "{count} inactifs ou en attente",
+    "newThisMonth": "Nouveaux ce mois-ci",
+    "perMonth": "Nouvelles adhésions par mois",
+    "perMonthHint": "12 derniers mois, par date d'adhésion",
+    "byAge": "Enfants par tranche d'âge",
+    "byGroup": "Enfants par groupe",
+    "byGender": "Enfants par genre",
+    "byType": "Membres par profil",
+    "byStatus": "Statut des adhésions",
+    "childrenSeries": "Enfants",
+    "othersSeries": "Adultes",
+    "years": "{range} ans",
+    "unknown": "Non renseigné",
+    "noGroup": "Sans groupe",
+    "fill": "Remplissage",
+    "gender": {
+      "M": "Garçons",
+      "F": "Filles",
+      "UNKNOWN": "Non renseigné"
+    }
+  },
+  "activities": {
+    "participants": "Inscriptions aux activités",
+    "count": "Activités suivies",
+    "rate": "Taux de présence global",
+    "popular": "Activités les plus populaires",
+    "popularHint": "Nombre d'enfants inscrits",
+    "byGroup": "Présence par groupe",
+    "table": "Détail par activité",
+    "sessions": "Pointages",
+    "viaGroup": "d'après le groupe"
+  },
+  "events": {
+    "count": "Événements",
+    "participants": "Participants confirmés",
+    "revenue": "Recettes encaissées",
+    "chart": "Participants par événement",
+    "table": "Détail par événement",
+    "attended": "Présents"
+  },
+  "trips": {
+    "count": "Sorties",
+    "fill": "Taux de remplissage",
+    "collected": "Encaissé",
+    "expected": "Attendu",
+    "collection": "Recouvrement",
+    "chart": "Participants vs capacité",
+    "payments": "Paiements encaissés vs attendus",
+    "table": "Détail par sortie"
+  },
+  "finance": {
+    "title": "Synthèse financière",
+    "invoiced": "Total facturé",
+    "collected": "Encaissé",
+    "outstanding": "Reste à encaisser",
+    "expenses": "Dépenses",
+    "balance": "Solde (encaissé − dépenses)",
+    "overdue": "{count, plural, =0 {Aucune facture en retard} one {# facture en retard} other {# factures en retard}}",
+    "detailed": "Rapport financier détaillé",
+    "detailedHint": "Évolution mensuelle, dépenses par catégorie, exports comptables.",
+    "restricted": "Les montants sont réservés aux personnes ayant accès aux finances."
+  },
+  "columns": {
+    "name": "Nom",
+    "date": "Date",
+    "participants": "Participants",
+    "capacity": "Capacité",
+    "rate": "Présence",
+    "revenue": "Recettes",
+    "status": "Statut",
+    "group": "Groupe",
+    "category": "Catégorie",
+    "pending": "En attente"
+  },
+  "empty": "Pas encore de données pour ce rapport."
+}

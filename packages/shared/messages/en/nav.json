@@ -1,0 +1,59 @@
+{
+  "sections": {
+    "main": "Main",
+    "people": "People",
+    "activities": "Activities",
+    "events": "Events & trips",
+    "content": "Content",
+    "finance": "Finance",
+    "communication": "Communication",
+    "admin": "Administration"
+  },
+  "items": {
+    "dashboard": "Dashboard",
+    "myChildren": "My children",
+    "achievements": "My badges",
+    "members": "Members",
+    "children": "Children",
+    "parents": "Parents",
+    "monitors": "Monitors",
+    "groups": "Groups",
+    "joinRequests": "Join requests",
+    "activities": "Activities",
+    "attendance": "Attendance",
+    "calendar": "Calendar",
+    "events": "Events",
+    "trips": "Trips",
+    "registrations": "Registrations",
+    "songs": "Songs",
+    "games": "Games",
+    "conferences": "Conferences",
+    "resources": "Resources",
+    "invoices": "Invoices",
+    "payments": "Payments",
+    "expenses": "Expenses",
+    "financeReports": "Financial reports",
+    "announcements": "Announcements",
+    "messages": "Messages",
+    "notifications": "Notifications",
+    "documents": "Documents",
+    "reports": "Reports",
+    "settings": "Settings",
+    "profile": "My profile",
+    "logout": "Sign out",
+    "publicSite": "Public website",
+    "more": "More"
+  },
+  "search": {
+    "placeholder": "Search a child, an event, a song…"
+  },
+  "language": "Language",
+  "aria": {
+    "main": "Main navigation",
+    "menu": "Menu",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "tabs": "Quick navigation",
+    "userMenu": "User menu"
+  }
+}

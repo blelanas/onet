@@ -1,0 +1,133 @@
+{
+  "titles": {
+    "members": "Membres",
+    "children": "Enfants",
+    "parents": "Parents",
+    "monitors": "Moniteurs",
+    "newMember": "Nouveau membre",
+    "editMember": "Modifier le membre",
+    "myChildren": "Mes enfants"
+  },
+  "descriptions": {
+    "members": "Tous les membres de l'ONET Teboulba : enfants, familles, moniteurs et équipe.",
+    "children": "Les enfants inscrits, leurs groupes et leurs familles.",
+    "parents": "Les familles et leurs coordonnées.",
+    "monitors": "L'équipe d'animation et ses groupes.",
+    "myChildren": "Suivez les activités, présences et sorties de vos enfants."
+  },
+  "new": {
+    "CHILD": "Ajouter un enfant",
+    "PARENT": "Ajouter un parent",
+    "MONITOR": "Ajouter un moniteur",
+    "MEMBER": "Ajouter un membre",
+    "STAFF": "Ajouter un membre"
+  },
+  "filters": {
+    "allTypes": "Tous les profils",
+    "allStatuses": "Tous les statuts",
+    "allGroups": "Tous les groupes",
+    "sort": "Trier",
+    "sortName": "Nom (A→Z)",
+    "sortRecent": "Adhésion récente",
+    "sortAge": "Plus jeunes"
+  },
+  "columns": {
+    "member": "Membre",
+    "number": "N° adhérent",
+    "type": "Profil",
+    "group": "Groupe",
+    "age": "Âge",
+    "parents": "Parents",
+    "children": "Enfants",
+    "contact": "Contact",
+    "groups": "Groupes",
+    "status": "Statut",
+    "since": "Membre depuis"
+  },
+  "form": {
+    "identity": "Identité",
+    "contact": "Coordonnées",
+    "membership": "Adhésion",
+    "family": "Famille & groupe",
+    "health": "Santé & urgence",
+    "type": "Profil",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "firstNameAr": "Prénom (arabe)",
+    "lastNameAr": "Nom (arabe)",
+    "dateOfBirth": "Date de naissance",
+    "gender": "Genre",
+    "photo": "Photo",
+    "city": "Ville",
+    "emergencyName": "Contact d'urgence",
+    "emergencyPhone": "Téléphone d'urgence",
+    "medicalNotes": "Informations médicales",
+    "medicalHint": "Allergies, traitements… visible uniquement par l'équipe et la famille.",
+    "status": "Statut d'adhésion",
+    "membershipDate": "Date d'adhésion",
+    "notes": "Notes internes",
+    "parents": "Parents / tuteurs",
+    "parentsHint": "Maintenez Ctrl (ou Cmd) pour en sélectionner plusieurs.",
+    "group": "Groupe",
+    "noGroup": "Aucun groupe",
+    "monitorGroups": "Groupes encadrés"
+  },
+  "profile": {
+    "tabs": {
+      "overview": "Aperçu",
+      "attendance": "Présences",
+      "participation": "Participation",
+      "payments": "Paiements",
+      "documents": "Documents"
+    },
+    "personal": "Informations personnelles",
+    "family": "Famille",
+    "children": "Enfants",
+    "parents": "Parents",
+    "groupCard": "Groupe",
+    "monitorsOfGroup": "Moniteurs",
+    "activities": "Activités suivies",
+    "badges": "Badges",
+    "events": "Événements",
+    "trips": "Sorties",
+    "noActivities": "Aucune activité pour le moment.",
+    "noFamily": "Aucun lien familial enregistré.",
+    "attendanceRate": "Taux de présence",
+    "linkParent": "Lier un parent",
+    "relation": "Lien de parenté",
+    "unlink": "Retirer le lien",
+    "account": "Compte de connexion",
+    "hasAccount": "Ce membre peut se connecter ({email}).",
+    "noAccount": "Aucun compte de connexion.",
+    "createAccount": "Créer un compte",
+    "role": "Rôle",
+    "password": "Mot de passe initial",
+    "lastLogin": "Dernière connexion",
+    "emergency": "Urgence",
+    "medical": "Médical",
+    "noInvoices": "Aucune facture.",
+    "totalDue": "Reste à payer",
+    "deleteTitle": "Supprimer ce membre ?",
+    "deleteText": "Toutes ses inscriptions et présences seront supprimées."
+  },
+  "import": {
+    "title": "Importer des membres",
+    "help": "Fichier CSV avec les colonnes : type, firstName, lastName, dateOfBirth (AAAA-MM-JJ), gender (M/F), phone, email, address, membershipStatus.",
+    "result": "{created} membre(s) importé(s). Lignes ignorées : {errors}",
+    "template": "Télécharger un modèle"
+  },
+  "empty": {
+    "title": "Aucun membre trouvé",
+    "description": "Ajoutez un premier membre ou modifiez vos filtres."
+  },
+  "myChildren": {
+    "switchChild": "Choisir un enfant",
+    "upcoming": "À venir",
+    "lastAttendance": "Dernières présences",
+    "noChildren": "Aucun enfant n'est lié à votre compte.",
+    "noChildrenHint": "Contactez l'administration pour lier vos enfants à votre compte.",
+    "weeklySchedule": "Planning de la semaine",
+    "registrations": "Inscriptions",
+    "openProfile": "Voir la fiche complète"
+  }
+}

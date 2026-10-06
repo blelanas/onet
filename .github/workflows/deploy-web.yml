@@ -1,0 +1,75 @@
+name: Deploy web (Firebase Hosting)
+
+# Production deploy on every push to main; a temporary preview channel (with its link
+# commented on the PR) for every pull request.
+# Required repository settings (Settings → Secrets and variables → Actions):
+#   secret   FIREBASE_SERVICE_ACCOUNT  — JSON key of a service account with the "Firebase Hosting Admin" role
+#   variable FIREBASE_PROJECT_ID       — e.g. onet-teboulba
+#   variable API_URL                   — public URL of the API, e.g. https://onet-api.onrender.com
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: deploy-web-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  deploy:
+    name: Firebase Hosting
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Forks don't get secrets; skip instead of failing. PR previews run in the "preview"
+    # environment: add required reviewers there (Settings → Environments) to approve each
+    # preview deploy before the Firebase credential is exposed to the PR's workflow code.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    environment: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+    steps:
+      - name: Check configuration
+        id: cfg
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$SA" ] || [ -z "${{ vars.FIREBASE_PROJECT_ID }}" ] || [ -z "${{ vars.API_URL }}" ]; then
+            echo "::notice::Firebase deploy skipped — set the FIREBASE_SERVICE_ACCOUNT secret and the FIREBASE_PROJECT_ID / API_URL variables (see docs/DEPLOYMENT.md)."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.cfg.outputs.ready == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.cfg.outputs.ready == 'true'
+        with:
+          node-version: 22
+          cache: npm
+      - name: Build web
+        if: steps.cfg.outputs.ready == 'true'
+        run: |
+          npm ci --no-audit --no-fund
+          npm run i18n
+          npm run build -w @onet/web
+        env:
+          VITE_API_URL: ${{ vars.API_URL }}
+      - name: Deploy preview channel (pull request)
+        if: steps.cfg.outputs.ready == 'true' && github.event_name == 'pull_request'
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: ${{ vars.FIREBASE_PROJECT_ID }}
+          expires: 7d
+      - name: Deploy production (main)
+        if: steps.cfg.outputs.ready == 'true' && github.event_name == 'push'
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: ${{ vars.FIREBASE_PROJECT_ID }}
+          channelId: live

@@ -1,0 +1,109 @@
+{
+  "title": "Activités",
+  "description": "Clubs et ateliers hebdomadaires : sport, chant, sciences, arts et plein air.",
+  "new": "Nouvelle activité",
+  "edit": "Modifier l'activité",
+  "searchPlaceholder": "Rechercher une activité…",
+  "ages": "{min}–{max} ans",
+  "agesFrom": "Dès {min} ans",
+  "public": "Visible sur le site",
+  "private": "Interne",
+  "deleteTitle": "Supprimer cette activité ?",
+  "deleteText": "Les inscriptions et comptes rendus seront supprimés. Les présences passées restent dans l'historique des enfants.",
+  "filters": {
+    "allStatuses": "Tous les statuts",
+    "allGroups": "Tous les groupes",
+    "everything": "Toutes",
+    "mine": "Mes activités",
+    "allCategories": "Toutes les catégories"
+  },
+  "card": {
+    "youLead": "Vous animez"
+  },
+  "empty": {
+    "title": "Aucune activité pour l'instant",
+    "description": "Créez la première activité du catalogue."
+  },
+  "personal": {
+    "heroBadge": "Programme de la saison",
+    "heroBadgeKid": "C'est parti !",
+    "heroTitle": "Nos activités",
+    "heroTitleParent": "Les activités de vos enfants",
+    "heroTitleKid": "Salut {name}, prêt(e) à t'amuser ?",
+    "heroText": "Découvrez les clubs et ateliers proposés par l'ONET Teboulba.",
+    "heroTextParent": "{count, plural, =0 {Aucune activité en cours pour le moment.} one {# activité en cours cette saison.} other {# activités en cours cette saison.}}",
+    "heroTextKid": "{count, plural, =0 {Choisis une activité qui te plaît !} one {Tu as # activité cette saison. Amuse-toi bien !} other {Tu as # activités cette saison. Amuse-toi bien !}}",
+    "mine": "Mes activités",
+    "mineParent": "Pour mes enfants",
+    "mineKid": "Mes activités",
+    "enrolled": "Inscrit·e",
+    "discoverMore": "Autres activités à découvrir",
+    "discover": "Tout le catalogue",
+    "discoverKid": "Découvre d'autres activités"
+  },
+  "form": {
+    "general": "L'activité",
+    "ageMin": "Âge minimum",
+    "ageMax": "Âge maximum",
+    "duration": "Durée (minutes)",
+    "materials": "Matériel à prévoir",
+    "materialsHint": "Visible par les familles.",
+    "schedule": "Planning",
+    "dayOfWeek": "Jour (chaque semaine)",
+    "noRecurrence": "Pas de séance hebdomadaire",
+    "startTime": "Heure de début",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "scheduleText": "Horaire affiché",
+    "scheduleHint": "Facultatif — ex. « Un samedi sur deux ».",
+    "organisation": "Organisation",
+    "noGroup": "Ouvert à tous les groupes",
+    "event": "Événement lié",
+    "noEvent": "Aucun",
+    "coverHint": "Sans image, une couverture colorée est générée automatiquement."
+  },
+  "tabs": {
+    "overview": "Aperçu",
+    "participants": "Participants",
+    "attendance": "Présences",
+    "reports": "Comptes rendus"
+  },
+  "detail": {
+    "about": "À propos",
+    "noDescription": "Pas encore de description.",
+    "materials": "À apporter",
+    "practical": "Infos pratiques",
+    "when": "Quand",
+    "every": "Chaque {day}",
+    "duration": "Durée",
+    "period": "Période",
+    "event": "Événement",
+    "places": "Places",
+    "contact": "Envoyer un message",
+    "next": "Prochaines séances"
+  },
+  "participants": {
+    "title": "Participants · {count}/{capacity}",
+    "mine": "Inscrits de ma famille",
+    "enroll": "Inscrire un enfant",
+    "enrollTitle": "Inscrire un enfant à l'activité",
+    "enrolled": "Enfant inscrit",
+    "unenrollTitle": "Désinscrire cet enfant ?",
+    "unenrollText": "{name} ne participera plus à cette activité.",
+    "empty": "Aucun participant pour l'instant",
+    "emptyMine": "Personne de votre famille n'est inscrit"
+  },
+  "attendance": {
+    "title": "Présences aux séances",
+    "take": "Faire l'appel",
+    "empty": "Aucune présence enregistrée pour cette activité"
+  },
+  "reports": {
+    "title": "Comptes rendus de séance",
+    "empty": "Aucun compte rendu pour l'instant",
+    "date": "Séance du",
+    "summary": "Compte rendu",
+    "placeholder": "Ce qui a été fait, ambiance, points à suivre…",
+    "add": "Ajouter le compte rendu"
+  }
+}

@@ -1,0 +1,133 @@
+{
+  "titles": {
+    "members": "الأعضاء",
+    "children": "الأطفال",
+    "parents": "الأولياء",
+    "monitors": "المنشطون",
+    "newMember": "عضو جديد",
+    "editMember": "تعديل العضو",
+    "myChildren": "أطفالي"
+  },
+  "descriptions": {
+    "members": "جميع أعضاء المنظمة بطبلبة: الأطفال والعائلات والمنشطون والفريق.",
+    "children": "الأطفال المسجلون ومجموعاتهم وعائلاتهم.",
+    "parents": "العائلات ومعلومات الاتصال بها.",
+    "monitors": "فريق التنشيط ومجموعاته.",
+    "myChildren": "تابع أنشطة أطفالك وحضورهم ورحلاتهم."
+  },
+  "new": {
+    "CHILD": "إضافة طفل",
+    "PARENT": "إضافة وليّ",
+    "MONITOR": "إضافة منشّط",
+    "MEMBER": "إضافة عضو",
+    "STAFF": "إضافة عضو"
+  },
+  "filters": {
+    "allTypes": "كل الأصناف",
+    "allStatuses": "كل الحالات",
+    "allGroups": "كل المجموعات",
+    "sort": "ترتيب",
+    "sortName": "الاسم",
+    "sortRecent": "الانخراط الأحدث",
+    "sortAge": "الأصغر سنًا"
+  },
+  "columns": {
+    "member": "العضو",
+    "number": "رقم الانخراط",
+    "type": "الصنف",
+    "group": "المجموعة",
+    "age": "العمر",
+    "parents": "الأولياء",
+    "children": "الأطفال",
+    "contact": "الاتصال",
+    "groups": "المجموعات",
+    "status": "الحالة",
+    "since": "عضو منذ"
+  },
+  "form": {
+    "identity": "الهوية",
+    "contact": "معلومات الاتصال",
+    "membership": "الانخراط",
+    "family": "العائلة والمجموعة",
+    "health": "الصحة والطوارئ",
+    "type": "الصنف",
+    "firstName": "الاسم",
+    "lastName": "اللقب",
+    "firstNameAr": "الاسم بالعربية",
+    "lastNameAr": "اللقب بالعربية",
+    "dateOfBirth": "تاريخ الولادة",
+    "gender": "الجنس",
+    "photo": "الصورة",
+    "city": "المدينة",
+    "emergencyName": "شخص للاتصال عند الطوارئ",
+    "emergencyPhone": "هاتف الطوارئ",
+    "medicalNotes": "معلومات طبية",
+    "medicalHint": "حساسية، أدوية… مرئية فقط للفريق والعائلة.",
+    "status": "حالة الانخراط",
+    "membershipDate": "تاريخ الانخراط",
+    "notes": "ملاحظات داخلية",
+    "parents": "الأولياء",
+    "parentsHint": "اضغط Ctrl لاختيار أكثر من وليّ.",
+    "group": "المجموعة",
+    "noGroup": "بدون مجموعة",
+    "monitorGroups": "المجموعات المؤطَّرة"
+  },
+  "profile": {
+    "tabs": {
+      "overview": "نظرة عامة",
+      "attendance": "الحضور",
+      "participation": "المشاركة",
+      "payments": "المدفوعات",
+      "documents": "الوثائق"
+    },
+    "personal": "المعلومات الشخصية",
+    "family": "العائلة",
+    "children": "الأطفال",
+    "parents": "الأولياء",
+    "groupCard": "المجموعة",
+    "monitorsOfGroup": "المنشطون",
+    "activities": "الأنشطة",
+    "badges": "الشارات",
+    "events": "التظاهرات",
+    "trips": "الرحلات",
+    "noActivities": "لا توجد أنشطة حاليًا.",
+    "noFamily": "لا توجد روابط عائلية.",
+    "attendanceRate": "نسبة الحضور",
+    "linkParent": "ربط وليّ",
+    "relation": "صلة القرابة",
+    "unlink": "إزالة الربط",
+    "account": "حساب الدخول",
+    "hasAccount": "يمكن لهذا العضو تسجيل الدخول ({email}).",
+    "noAccount": "لا يوجد حساب دخول.",
+    "createAccount": "إنشاء حساب",
+    "role": "الدور",
+    "password": "كلمة المرور الأولية",
+    "lastLogin": "آخر دخول",
+    "emergency": "طوارئ",
+    "medical": "طبي",
+    "noInvoices": "لا توجد فواتير.",
+    "totalDue": "المتبقي للدفع",
+    "deleteTitle": "حذف هذا العضو؟",
+    "deleteText": "سيتم حذف جميع تسجيلاته وحضوره."
+  },
+  "import": {
+    "title": "استيراد أعضاء",
+    "help": "ملف CSV بالأعمدة: type وfirstName وlastName وdateOfBirth وgender وphone وemail وaddress وmembershipStatus.",
+    "result": "تم استيراد {created} عضو. أسطر متجاهلة: {errors}",
+    "template": "تحميل نموذج"
+  },
+  "empty": {
+    "title": "لم يتم العثور على أعضاء",
+    "description": "أضف أول عضو أو غيّر عوامل التصفية."
+  },
+  "myChildren": {
+    "switchChild": "اختر طفلًا",
+    "upcoming": "القادم",
+    "lastAttendance": "آخر الحضور",
+    "noChildren": "لا يوجد أطفال مرتبطون بحسابك.",
+    "noChildrenHint": "اتصل بالإدارة لربط أطفالك بحسابك.",
+    "weeklySchedule": "برنامج الأسبوع",
+    "registrations": "التسجيلات",
+    "openProfile": "عرض الملف الكامل"
+  }
+}

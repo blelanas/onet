@@ -1,0 +1,155 @@
+{
+  "titles": {
+    "trips": "Sorties",
+    "new": "Nouvelle sortie",
+    "edit": "Modifier la sortie"
+  },
+  "descriptions": {
+    "trips": "Excursions, camps et découvertes : programme, documents et inscription en ligne."
+  },
+  "actions": {
+    "new": "Créer une sortie"
+  },
+  "tabs": {
+    "upcoming": "À venir",
+    "supervised": "Que j'encadre",
+    "past": "Passées",
+    "drafts": "Brouillons"
+  },
+  "searchPlaceholder": "Rechercher une sortie, une destination…",
+  "empty": {
+    "upcoming": "Aucune sortie programmée pour le moment",
+    "supervised": "Vous n'encadrez aucune sortie",
+    "past": "Aucune sortie passée",
+    "drafts": "Aucun brouillon",
+    "hint": "Les prochaines aventures arrivent bientôt !"
+  },
+  "card": {
+    "days": "{count, plural, one {# jour} other {# jours}}",
+    "ages": "{min}–{max} ans",
+    "monitors": "{count, plural, one {# moniteur} other {# moniteurs}}",
+    "registered": "Inscrit(s) : {names}"
+  },
+  "detail": {
+    "tabs": {
+      "overview": "Aperçu",
+      "participants": "Participants",
+      "rollcall": "Appel du départ"
+    },
+    "youSupervise": "Vous encadrez",
+    "deleteTitle": "Supprimer cette sortie ?",
+    "deleteText": "Les inscriptions seront supprimées et les factures impayées annulées. Impossible si des paiements ont été reçus.",
+    "about": "La sortie",
+    "program": "Programme",
+    "noProgram": "Le programme détaillé sera publié bientôt.",
+    "documents": "Documents à fournir",
+    "sharedFiles": "Fichiers partagés",
+    "practical": "Infos pratiques",
+    "departure": "Départ",
+    "return": "Retour",
+    "duration": "Durée",
+    "monitors": "Moniteurs responsables",
+    "noMonitors": "Encadrement en cours d'organisation."
+  },
+  "form": {
+    "general": "La sortie",
+    "destination": "Destination",
+    "logistics": "Organisation",
+    "departureLocation": "Point de rendez-vous",
+    "departAt": "Départ",
+    "returnAt": "Retour",
+    "program": "Programme",
+    "programHint": "Une étape par ligne : « 08:00 | Départ » ou « Jour 1 | Installation ».",
+    "requiredDocuments": "Documents à fournir",
+    "documentsHint": "Un document par ligne.",
+    "registration": "Inscriptions et tarif",
+    "priceTnd": "Prix par enfant (TND)",
+    "priceHint": "0 = gratuit. Une facture est créée à chaque inscription.",
+    "ageMin": "Âge minimum",
+    "ageMax": "Âge maximum",
+    "statusHint": "« Complet » passe automatiquement selon la capacité.",
+    "monitors": "Encadrement",
+    "monitorsHint": "Choisissez les moniteurs responsables : ils verront la sortie et feront l'appel."
+  },
+  "kid": {
+    "title": "Une aventure t'attend !",
+    "text": "Montre cette sortie à tes parents : ils peuvent t'inscrire depuis leur compte."
+  },
+  "eligibility": {
+    "closed": "Inscriptions fermées",
+    "deadline": "Date limite dépassée",
+    "tooYoung": "Trop jeune",
+    "tooOld": "Hors tranche d'âge",
+    "registered": "Déjà inscrit"
+  },
+  "flow": {
+    "title": "Inscription à la sortie",
+    "steps": {
+      "view": "Découvrir",
+      "child": "Enfant",
+      "consent": "Autorisation",
+      "register": "Inscription",
+      "pay": "Paiement",
+      "confirmed": "Confirmation",
+      "info": "Infos départ"
+    },
+    "chooseChild": "Quel enfant souhaitez-vous inscrire ?",
+    "reasonHint": {
+      "closed": "Les inscriptions ne sont pas ouvertes pour cette sortie.",
+      "deadline": "La date limite est passée. Contactez l'équipe si besoin.",
+      "tooYoung": "Cette sortie est prévue pour des enfants plus âgés. D'autres aventures arrivent bientôt !",
+      "tooOld": "Cette sortie est prévue pour des enfants plus jeunes.",
+      "registered": "Cet enfant est déjà inscrit."
+    },
+    "toBring": "À préparer",
+    "noDocs": "Aucun document particulier.",
+    "fullHint": "La sortie est complète : l'inscription sera placée en liste d'attente.",
+    "consentTitle": "Autorisation parentale",
+    "consentText": "J'autorise {name} à participer à la sortie « {title} », au transport en groupe et aux activités prévues, sous la responsabilité des moniteurs de l'ONET. En cas d'urgence, j'autorise l'équipe à prendre les mesures nécessaires.",
+    "toPay": "Montant",
+    "register": "Inscrire {name}",
+    "joinWaitlist": "Mettre {name} en liste d'attente",
+    "waitlistTitle": "{name} est en liste d'attente",
+    "waitlistText": "Dès qu'une place se libère, l'inscription passe automatiquement et vous recevez une notification.",
+    "payTitle": "Dernière étape : le paiement pour {name}",
+    "payText": "La place est réservée. Réglez la facture en ligne pour confirmer l'inscription.",
+    "payNow": "Payer maintenant",
+    "cancelRegistration": "Annuler l'inscription",
+    "awaitingTitle": "Paiement reçu, merci !",
+    "awaitingText": "L'équipe confirme l'inscription très bientôt.",
+    "confirmedTitle": "C'est confirmé : {name} part avec nous !",
+    "confirmedText": "Rendez-vous le {date} — {place}.",
+    "info": {
+      "program": "Le programme",
+      "documents": "Documents",
+      "monitors": "Les moniteurs",
+      "meeting": "Point de rendez-vous"
+    },
+    "registeredOn": "Inscrit le {date}"
+  },
+  "cancel": {
+    "title": "Annuler l'inscription ?",
+    "text": "La place sera libérée et la facture non payée annulée.",
+    "paidText": "La place sera libérée. Le paiement déjà effectué sera traité par la comptabilité pour remboursement.",
+    "confirm": "Oui, annuler"
+  },
+  "participants": {
+    "consent": "Autorisation",
+    "documents": "Statut des documents",
+    "docs": "Docs",
+    "placesLeft": "Places restantes",
+    "consentOverview": "Autorisations reçues",
+    "docsOverview": "Dossiers complets",
+    "paymentsOverview": "Paiements encaissés",
+    "empty": "Aucun participant pour l'instant"
+  },
+  "monitors": {
+    "assign": "Affecter un moniteur",
+    "remove": "Retirer {name}",
+    "removeText": "Ce moniteur ne sera plus responsable de la sortie."
+  },
+  "rollCall": {
+    "title": "Appel du départ — {date}",
+    "noConsent": "Sans autorisation"
+  }
+}

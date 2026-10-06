@@ -1,0 +1,134 @@
+{
+  "title": "Groupes",
+  "titleMine": "Mes groupes",
+  "description": "Les groupes d'enfants par âge, leurs moniteurs et leurs rendez-vous.",
+  "descriptionMine": "Les groupes que vous encadrez cette saison.",
+  "new": "Nouveau groupe",
+  "edit": "Modifier le groupe",
+  "searchPlaceholder": "Rechercher un groupe…",
+  "takeAttendance": "Faire l'appel",
+  "deleteTitle": "Supprimer ce groupe ?",
+  "deleteText": "Les enfants resteront inscrits mais sans groupe. Les présences passées sont conservées.",
+  "kpi": {
+    "groups": "Groupes actifs",
+    "children": "Enfants inscrits",
+    "fill": "Taux de remplissage",
+    "fillHint": "{capacity} places au total",
+    "monitors": "Moniteurs"
+  },
+  "filters": {
+    "all": "Tous",
+    "active": "Actifs",
+    "inactive": "Inactifs"
+  },
+  "empty": {
+    "title": "Aucun groupe pour l'instant",
+    "mine": "Vous n'encadrez aucun groupe pour le moment",
+    "filtered": "Aucun groupe ne correspond",
+    "description": "Créez un premier groupe pour y répartir les enfants."
+  },
+  "card": {
+    "mine": "Mon groupe",
+    "ages": "{min}–{max} ans",
+    "agesFrom": "Dès {min} ans",
+    "activities": "{count, plural, =0 {Aucune activité} one {# activité} other {# activités}}",
+    "fill": "{count}/{capacity} enfants",
+    "noMonitor": "Aucun moniteur assigné"
+  },
+  "tabs": {
+    "members": "Enfants",
+    "monitors": "Moniteurs",
+    "schedule": "Planning",
+    "attendance": "Présences",
+    "activities": "Activités",
+    "announcements": "Annonces",
+    "tasks": "Tâches"
+  },
+  "form": {
+    "identity": "Le groupe",
+    "meetings": "Rendez-vous hebdomadaire",
+    "look": "Couleur & icône",
+    "ageMin": "Âge minimum",
+    "ageMax": "Âge maximum",
+    "capacityHint": "Nombre maximum d'enfants dans le groupe.",
+    "isActive": "Groupe actif",
+    "isActiveHint": "Les groupes inactifs n'apparaissent plus dans l'appel.",
+    "meetingDay": "Jour",
+    "meetingTime": "Heure",
+    "schedule": "Horaire affiché",
+    "scheduleHint": "Ex. « Samedi 09:30 – 11:30 »",
+    "color": "Couleur",
+    "icon": "Icône",
+    "previewName": "Nom du groupe"
+  },
+  "members": {
+    "title": "{count, plural, =0 {Enfants} one {# enfant} other {# enfants}}",
+    "add": "Ajouter un enfant",
+    "addTitle": "Ajouter un enfant au groupe",
+    "addHint": "Un enfant ne peut appartenir qu'à un seul groupe : il sera déplacé.",
+    "searchChild": "Nom de l'enfant…",
+    "onlyAge": "Seulement la tranche d'âge du groupe",
+    "noGroup": "sans groupe",
+    "added": "Enfant ajouté au groupe",
+    "fullHint": "Le groupe est complet ({capacity} places). Augmentez la capacité pour ajouter des enfants.",
+    "medical": "Informations médicales",
+    "rate": "{rate}% présent",
+    "removeTitle": "Retirer du groupe ?",
+    "removeText": "{name} restera inscrit(e) à l'ONET mais sans groupe.",
+    "empty": "Aucun enfant dans ce groupe",
+    "emptyHint": "Ajoutez des enfants avec le bouton ci-dessus."
+  },
+  "monitors": {
+    "title": "Équipe d'encadrement",
+    "assign": "Ajouter un moniteur",
+    "assignButton": "Assigner",
+    "lead": "Responsable",
+    "leadBadge": "Responsable",
+    "message": "Message",
+    "makeLead": "Nommer responsable",
+    "removeTitle": "Retirer ce moniteur ?",
+    "removeText": "{name} n'encadrera plus ce groupe.",
+    "empty": "Aucun moniteur assigné"
+  },
+  "schedule": {
+    "week": "Semaine type",
+    "meeting": "Réunion du groupe",
+    "next": "Prochains rendez-vous",
+    "noMeeting": "Aucun jour de réunion défini."
+  },
+  "attendance": {
+    "empty": "Pas encore de présences enregistrées",
+    "emptyHint": "Les statistiques apparaîtront après le premier appel.",
+    "takeFirst": "Faire le premier appel",
+    "overall": "Taux de présence",
+    "sessions": "Séances",
+    "lastWeeks": "{count} dernières semaines",
+    "lastSession": "Dernière séance",
+    "perSession": "Présences par séance",
+    "history": "Historique",
+    "watchList": "À suivre de près"
+  },
+  "activities": {
+    "title": "Activités du groupe",
+    "new": "Nouvelle activité",
+    "empty": "Aucune activité liée à ce groupe"
+  },
+  "announcements": {
+    "title": "Annonces du groupe",
+    "all": "Toutes les annonces",
+    "pinned": "Épinglée",
+    "empty": "Aucune annonce pour ce groupe"
+  },
+  "tasks": {
+    "title": "Tâches du groupe",
+    "progress": "{done}/{total} terminées",
+    "cycle": "Changer le statut",
+    "empty": "Aucune tâche pour l'instant",
+    "newTitle": "Nouvelle tâche",
+    "placeholder": "Ex. préparer le matériel de samedi",
+    "due": "Échéance",
+    "assignee": "Assignée à",
+    "me": "Moi",
+    "add": "Ajouter"
+  }
+}

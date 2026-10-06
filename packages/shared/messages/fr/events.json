@@ -1,0 +1,205 @@
+{
+  "titles": {
+    "events": "Événements",
+    "new": "Nouvel événement",
+    "edit": "Modifier l'événement",
+    "registrations": "Inscriptions",
+    "myRegistrations": "Mes inscriptions"
+  },
+  "descriptions": {
+    "events": "Fêtes, spectacles, concours et ateliers : inscrivez vos enfants en quelques clics.",
+    "registrations": "Toutes les inscriptions aux événements et sorties, leur paiement et leur suivi.",
+    "myRegistrations": "Les inscriptions de votre famille : statut, paiement et annulation."
+  },
+  "actions": {
+    "new": "Créer un événement",
+    "confirm": "Confirmer",
+    "waitlist": "Liste d'attente",
+    "cancelRegistration": "Annuler l'inscription"
+  },
+  "tabs": {
+    "upcoming": "À venir",
+    "past": "Passés",
+    "drafts": "Brouillons"
+  },
+  "searchPlaceholder": "Rechercher un événement, un lieu…",
+  "empty": {
+    "upcoming": "Aucun événement à venir pour le moment",
+    "past": "Aucun événement passé",
+    "drafts": "Aucun brouillon",
+    "hint": "Revenez bientôt : de belles surprises se préparent !"
+  },
+  "card": {
+    "internal": "Interne",
+    "registered": "Inscrit(s) : {names}"
+  },
+  "detail": {
+    "tabs": {
+      "overview": "Aperçu",
+      "participants": "Participants",
+      "checkin": "Pointage du jour"
+    },
+    "deleteTitle": "Supprimer cet événement ?",
+    "deleteText": "Les inscriptions seront supprimées et les factures impayées annulées. Impossible si des paiements ont été reçus.",
+    "about": "À propos",
+    "practical": "Infos pratiques",
+    "when": "Date",
+    "noDeadline": "Jusqu'au jour J",
+    "payment": "Paiement",
+    "paymentRequired": "En ligne, avant l'événement",
+    "paymentOnSite": "Sur place ou plus tard",
+    "activities": "Activités liées",
+    "deadlineOn": "Inscriptions jusqu'au {date}"
+  },
+  "form": {
+    "general": "L'événement",
+    "statusHint": "« Brouillon » reste invisible pour les familles.",
+    "when": "Date et lieu",
+    "startAt": "Début",
+    "endAt": "Fin",
+    "organizer": "Organisateur",
+    "registration": "Inscriptions et tarif",
+    "deadlineHint": "Laisser vide pour accepter les inscriptions jusqu'au début.",
+    "priceTnd": "Prix par participant (TND)",
+    "priceHint": "0 = gratuit. Une facture est créée automatiquement à l'inscription.",
+    "requiresPayment": "Paiement requis pour confirmer",
+    "requiresPaymentHint": "Sinon l'inscription est confirmée tout de suite et payée plus tard.",
+    "publicHint": "Décochez pour un événement interne (équipe, moniteurs)."
+  },
+  "kid": {
+    "title": "Ça te tente ?",
+    "text": "Parle-en à tes parents : ce sont eux qui peuvent t'inscrire !"
+  },
+  "panel": {
+    "title": "Inscrire ma famille",
+    "pricePer": "{price} par participant",
+    "closedHint": "Les inscriptions ne sont plus ouvertes pour cet événement.",
+    "me": "moi",
+    "willWaitlist": "liste d'attente",
+    "waitlistHint": "Nous vous prévenons dès qu'une place se libère.",
+    "total": "{count, plural, =0 {Choisissez un ou plusieurs participants} one {Total pour # participant} other {Total pour # participants}}",
+    "register": "{count, plural, =0 {S'inscrire} one {Inscrire # participant} other {Inscrire # participants}}",
+    "joinWaitlist": "Rejoindre la liste d'attente",
+    "invoiceHint": "Une facture sera créée : vous pourrez la payer en ligne juste après."
+  },
+  "eligibility": {
+    "closed": "Inscriptions fermées",
+    "deadline": "Date limite dépassée",
+    "tooYoung": "Trop jeune pour cette activité",
+    "tooOld": "Au-dessus de la tranche d'âge",
+    "registered": "Déjà inscrit"
+  },
+  "errors": {
+    "closed": "Les inscriptions sont fermées",
+    "deadline": "La date limite d'inscription est dépassée",
+    "tooYoung": "Cet enfant est trop jeune pour cette sortie",
+    "tooOld": "Cet enfant dépasse la tranche d'âge prévue",
+    "registered": "Déjà inscrit",
+    "consent": "L'autorisation parentale est obligatoire"
+  },
+  "cancel": {
+    "title": "Annuler l'inscription ?",
+    "text": "La place sera libérée et la facture non payée annulée.",
+    "paidText": "La place sera libérée. Le paiement déjà effectué sera traité par la comptabilité pour remboursement.",
+    "staffText": "La place sera libérée, la facture impayée annulée et la famille prévenue. Le premier inscrit en liste d'attente sera promu.",
+    "confirm": "Oui, annuler",
+    "refund": "Inscription annulée — la comptabilité est prévenue pour le remboursement"
+  },
+  "register": {
+    "success": "{count, plural, one {Inscription enregistrée !} other {# inscriptions enregistrées !}}",
+    "waitlisted": "C'est complet : inscription placée en liste d'attente",
+    "partial": "{ok} inscription(s) enregistrée(s), {failed} refusée(s)"
+  },
+  "bulk": {
+    "selectAll": "Tout sélectionner",
+    "selected": "{count, plural, one {# sélectionnée} other {# sélectionnées}}",
+    "action": "Action groupée",
+    "done": "{count, plural, =0 {Aucune inscription modifiée} one {# inscription mise à jour} other {# inscriptions mises à jour}}"
+  },
+  "participants": {
+    "member": "Participant",
+    "payment": "Paiement",
+    "followUp": "Suivi",
+    "registeredBy": "Inscrit par",
+    "medical": "Informations médicales",
+    "empty": "Aucun participant pour l'instant",
+    "emptyHint": "Les inscriptions des familles apparaîtront ici.",
+    "add": "Ajouter un participant",
+    "addHint": "Inscription manuelle (au guichet, par téléphone…). La capacité est respectée : liste d'attente si complet.",
+    "consentReceived": "Autorisation parentale reçue",
+    "collected": "Encaissé",
+    "summary": "{active} place(s) occupée(s) sur {capacity}"
+  },
+  "rollCall": {
+    "allPresent": "Tous présents",
+    "progress": "{done}/{total} pointés",
+    "eventTitle": "Pointage — {date}"
+  },
+  "registrations": {
+    "scope": {
+      "upcoming": "À venir",
+      "past": "Passées",
+      "all": "Toutes"
+    },
+    "kind": {
+      "event": "Événement",
+      "trip": "Sortie"
+    },
+    "target": "Événement / sortie",
+    "registeredAt": "Inscrit le",
+    "registeredShort": "inscrit le {date}",
+    "consentOk": "Autorisation OK",
+    "consentMissing": "Autorisation manquante",
+    "docs": "Documents",
+    "kpi": {
+      "active": "Inscriptions actives",
+      "unpaid": "Non payées"
+    },
+    "searchPlaceholder": "Rechercher un participant…",
+    "filters": {
+      "allKinds": "Événements et sorties",
+      "allStatuses": "Tous les statuts",
+      "allPayments": "Tous les paiements",
+      "allTargets": "Tous les événements / sorties"
+    },
+    "payment": {
+      "PAID": "Payées",
+      "UNPAID": "À payer",
+      "FREE": "Gratuites"
+    },
+    "familyEmpty": "Aucune inscription ici",
+    "familyEmptyHint": "Découvrez les prochaines sorties et fêtes, et inscrivez vos enfants en deux clics.",
+    "browseTrips": "Voir les sorties",
+    "browseEvents": "Voir les événements"
+  },
+  "invoice": {
+    "event": "Événement : {title} — {name}",
+    "trip": "Sortie : {title} — {name}",
+    "cancelledNote": "Annulée suite à l'annulation de l'inscription.",
+    "refundNote": "Inscription annulée après paiement (facture {number}) : remboursement à traiter par la comptabilité."
+  },
+  "notify": {
+    "registered": {
+      "PENDING": "{name} est inscrit(e) à « {title} »",
+      "CONFIRMED": "Inscription confirmée : {name} — « {title} »",
+      "WAITLIST": "{name} est en liste d'attente pour « {title} »"
+    },
+    "payBody": "Une facture vous attend : réglez-la en ligne pour confirmer la place.",
+    "registeredBody": "Retrouvez toutes les infos pratiques sur la page « {title} ».",
+    "staffNew": "Nouvelle inscription : {name} — « {title} »",
+    "staffStatus": {
+      "PENDING": "En attente de paiement",
+      "CONFIRMED": "Confirmée",
+      "WAITLIST": "Placée en liste d'attente"
+    },
+    "promoted": "Bonne nouvelle : une place s'est libérée pour {name} (« {title} »)",
+    "cancelled": "Inscription annulée : {name} — « {title} »",
+    "refund": "Remboursement à traiter : {name} — « {title} »",
+    "statusChanged": {
+      "CONFIRMED": "Inscription confirmée : {name} — « {title} »",
+      "WAITLIST": "{name} passe en liste d'attente pour « {title} »",
+      "PENDING": "Inscription de {name} en attente de paiement (« {title} »)"
+    },
+    "monitorAssigned": "Vous encadrez la sortie « {title} »"
+  }
+}

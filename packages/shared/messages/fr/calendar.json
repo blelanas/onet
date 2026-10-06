@@ -1,0 +1,42 @@
+{
+  "title": "Calendrier",
+  "description": "Activités, réunions de groupe, événements, sorties et dates importantes au même endroit.",
+  "descriptionMine": "Votre agenda : les groupes, activités et sorties qui vous concernent.",
+  "previous": "Période précédente",
+  "next": "Période suivante",
+  "today": "Aujourd'hui",
+  "scope": {
+    "label": "Portée",
+    "mine": "Mon agenda",
+    "all": "Tout"
+  },
+  "views": {
+    "label": "Affichage",
+    "month": "Mois",
+    "week": "Semaine",
+    "agenda": "Liste"
+  },
+  "kinds": {
+    "activity": "Activités",
+    "group": "Réunions de groupe",
+    "event": "Événements",
+    "trip": "Sorties",
+    "conference": "Conférences",
+    "entry": "Réunions & dates"
+  },
+  "allGroups": "Tous les groupes",
+  "more": "+{count} de plus",
+  "free": "Libre",
+  "emptyPeriod": "Rien de prévu sur cette période.",
+  "nothingToday": "Rien de prévu aujourd'hui.",
+  "entry": {
+    "new": "Nouvelle entrée",
+    "edit": "Modifier l'entrée",
+    "type": "Type",
+    "audience": "Visible par",
+    "allDay": "Toute la journée",
+    "start": "Début",
+    "end": "Fin",
+    "deleteTitle": "Supprimer cette entrée ?"
+  }
+}

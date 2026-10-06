@@ -1,0 +1,91 @@
+{
+  "title": "Reports",
+  "description": "The branch's key figures to steer and report.",
+  "generatedAt": "Data as of {date}",
+  "tabs": {
+    "members": "Members",
+    "activities": "Activities",
+    "events": "Events",
+    "trips": "Trips",
+    "finance": "Finance"
+  },
+  "members": {
+    "total": "Registered members",
+    "children": "Children",
+    "active": "Active memberships",
+    "inactiveHint": "{count} inactive or pending",
+    "newThisMonth": "New this month",
+    "perMonth": "New memberships per month",
+    "perMonthHint": "Last 12 months, by membership date",
+    "byAge": "Children by age bracket",
+    "byGroup": "Children by group",
+    "byGender": "Children by gender",
+    "byType": "Members by profile",
+    "byStatus": "Membership status",
+    "childrenSeries": "Children",
+    "othersSeries": "Adults",
+    "years": "{range} yrs",
+    "unknown": "Not specified",
+    "noGroup": "No group",
+    "fill": "Fill rate",
+    "gender": {
+      "M": "Boys",
+      "F": "Girls",
+      "UNKNOWN": "Not specified"
+    }
+  },
+  "activities": {
+    "participants": "Activity enrolments",
+    "count": "Tracked activities",
+    "rate": "Overall attendance rate",
+    "popular": "Most popular activities",
+    "popularHint": "Number of enrolled children",
+    "byGroup": "Attendance by group",
+    "table": "Breakdown by activity",
+    "sessions": "Check-ins",
+    "viaGroup": "from the group"
+  },
+  "events": {
+    "count": "Events",
+    "participants": "Confirmed participants",
+    "revenue": "Revenue collected",
+    "chart": "Participants per event",
+    "table": "Breakdown by event",
+    "attended": "Attended"
+  },
+  "trips": {
+    "count": "Trips",
+    "fill": "Fill rate",
+    "collected": "Collected",
+    "expected": "Expected",
+    "collection": "Collection rate",
+    "chart": "Participants vs capacity",
+    "payments": "Payments collected vs expected",
+    "table": "Breakdown by trip"
+  },
+  "finance": {
+    "title": "Financial summary",
+    "invoiced": "Total invoiced",
+    "collected": "Collected",
+    "outstanding": "Outstanding",
+    "expenses": "Expenses",
+    "balance": "Balance (collected − expenses)",
+    "overdue": "{count, plural, =0 {No overdue invoice} one {# overdue invoice} other {# overdue invoices}}",
+    "detailed": "Detailed financial report",
+    "detailedHint": "Monthly trends, expenses by category, accounting exports.",
+    "restricted": "Amounts are only shown to people with finance access."
+  },
+  "columns": {
+    "name": "Name",
+    "date": "Date",
+    "participants": "Participants",
+    "capacity": "Capacity",
+    "rate": "Attendance",
+    "revenue": "Revenue",
+    "status": "Status",
+    "group": "Group",
+    "category": "Category",
+    "pending": "Pending"
+  },
+  "empty": "No data for this report yet."
+}

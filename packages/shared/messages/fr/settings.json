@@ -1,0 +1,270 @@
+{
+  "title": "Paramètres",
+  "description": "Configuration de la plateforme et administration.",
+  "nav": {
+    "label": "Sections des paramètres",
+    "organization": "Organisation",
+    "users": "Utilisateurs",
+    "roles": "Rôles & permissions",
+    "notifications": "Notifications",
+    "payments": "Paiements",
+    "categories": "Catégories & types",
+    "audit": "Journal d'audit",
+    "contact": "Messages de contact"
+  },
+  "navHints": {
+    "organization": "Identité, coordonnées, réseaux",
+    "users": "Comptes et accès",
+    "roles": "Qui peut faire quoi",
+    "notifications": "Canaux d'envoi",
+    "payments": "Moyens, banque, cotisation",
+    "categories": "Couleurs et libellés",
+    "audit": "Traçabilité des actions",
+    "contact": "Formulaire du site public"
+  },
+  "organization": {
+    "identity": "Identité",
+    "contact": "Coordonnées",
+    "social": "Réseaux sociaux & web",
+    "logo": "Logo",
+    "name": "Nom court",
+    "fullName": "Nom complet (français)",
+    "fullNameAr": "Nom complet (arabe)",
+    "foundedYear": "Année de création",
+    "email": "E-mail de contact",
+    "phone": "Téléphone",
+    "address": "Adresse",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "youtube": "YouTube",
+    "website": "Site web",
+    "logoNote": "Le logo officiel affiché partout est le fichier /brand/onet-mark.svg : remplacez-le dans le dépôt pour changer l'identité visuelle. Vous pouvez aussi téléverser ici une version (PNG/JPG) utilisée pour les documents et le partage.",
+    "currentMark": "Logo officiel actuel",
+    "uploadLogo": "Logo téléversé (facultatif)"
+  },
+  "users": {
+    "title": "Utilisateurs",
+    "new": "Nouvel utilisateur",
+    "edit": "Modifier les rôles",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "resetHint": "L'utilisateur sera déconnecté de tous ses appareils.",
+    "newPassword": "Nouveau mot de passe",
+    "initialPassword": "Mot de passe initial",
+    "passwordHint": "8 caractères min., une lettre et un chiffre. Communiquez-le de façon sûre.",
+    "generate": "Générer",
+    "name": "Nom complet",
+    "roles": "Rôles",
+    "rolesHint": "Seuls les détenteurs de « roles.manage » peuvent attribuer les rôles Super admin et Administrateur.",
+    "lockedRole": "Réservé aux gestionnaires des rôles",
+    "activate": "Activer",
+    "deactivate": "Désactiver",
+    "deactivateConfirm": "Le compte ne pourra plus se connecter et ses sessions seront fermées.",
+    "active": "Actif",
+    "inactive": "Désactivé",
+    "allRoles": "Tous les rôles",
+    "allStatuses": "Tous les statuts",
+    "lastLogin": "Dernière connexion",
+    "never": "Jamais",
+    "you": "Vous",
+    "linkedMember": "Fiche membre",
+    "count": "{count, plural, =0 {Aucun utilisateur} one {# utilisateur} other {# utilisateurs}}",
+    "empty": "Aucun utilisateur ne correspond.",
+    "columns": {
+      "user": "Utilisateur",
+      "roles": "Rôles",
+      "status": "Statut",
+      "lastLogin": "Dernière connexion",
+      "actions": "Actions"
+    }
+  },
+  "roles": {
+    "title": "Rôles & permissions",
+    "intro": "Cochez une case pour accorder une permission à un rôle. Les changements s'appliquent immédiatement et sont tracés dans le journal d'audit.",
+    "new": "Nouveau rôle",
+    "key": "Identifiant",
+    "keyHint": "Minuscules, chiffres et _ (ex. benevole)",
+    "name": "Nom",
+    "color": "Couleur",
+    "description": "Description",
+    "copyFrom": "Copier les permissions de",
+    "none": "Aucune (vide)",
+    "system": "Système",
+    "custom": "Personnalisé",
+    "users": "{count, plural, =0 {aucun compte} one {# compte} other {# comptes}}",
+    "permissions": "{count, plural, one {# permission} other {# permissions}}",
+    "locked": "Le rôle Super admin dispose toujours de toutes les permissions.",
+    "deleteRole": "Supprimer le rôle",
+    "deleteHint": "Seuls les rôles personnalisés sans utilisateurs peuvent être supprimés.",
+    "permission": "Permission",
+    "pickRole": "Rôle à configurer",
+    "granted": "Accordée"
+  },
+  "modules": {
+    "dashboard": "Tableau de bord",
+    "users": "Utilisateurs & accès",
+    "people": "Personnes",
+    "groups": "Groupes",
+    "activities": "Activités",
+    "attendance": "Présences",
+    "calendar": "Calendrier",
+    "events": "Événements",
+    "trips": "Sorties",
+    "content": "Contenus",
+    "finance": "Finances",
+    "reports": "Rapports",
+    "communication": "Communication",
+    "documents": "Documents",
+    "tasks": "Tâches",
+    "settings": "Paramètres"
+  },
+  "perms": {
+    "dashboard": {
+      "view": "Voir le tableau de bord"
+    },
+    "users": {
+      "read": "Voir les utilisateurs",
+      "manage": "Gérer les comptes utilisateurs"
+    },
+    "roles": {
+      "manage": "Gérer les rôles et permissions"
+    },
+    "members": {
+      "read": "Voir les membres (limité à son périmètre)",
+      "read_all": "Voir tous les membres",
+      "manage": "Créer et modifier les membres",
+      "export": "Exporter les membres"
+    },
+    "groups": {
+      "read": "Voir les groupes",
+      "manage": "Gérer les groupes"
+    },
+    "activities": {
+      "read": "Voir les activités",
+      "manage": "Gérer les activités"
+    },
+    "attendance": {
+      "read": "Voir les présences (périmètre)",
+      "manage": "Faire l'appel"
+    },
+    "calendar": {
+      "read": "Voir le calendrier",
+      "manage": "Gérer le calendrier"
+    },
+    "events": {
+      "read": "Voir les événements",
+      "manage": "Gérer les événements",
+      "register": "S'inscrire aux événements"
+    },
+    "trips": {
+      "read": "Voir les sorties",
+      "manage": "Gérer les sorties",
+      "register": "S'inscrire aux sorties"
+    },
+    "registrations": {
+      "manage": "Gérer toutes les inscriptions"
+    },
+    "content": {
+      "read": "Voir les contenus",
+      "manage": "Gérer les contenus"
+    },
+    "finance": {
+      "read": "Voir les finances",
+      "manage": "Gérer les finances"
+    },
+    "invoices": {
+      "pay": "Payer ses factures"
+    },
+    "reports": {
+      "read": "Voir les rapports"
+    },
+    "announcements": {
+      "read": "Lire les annonces",
+      "manage": "Publier des annonces"
+    },
+    "messages": {
+      "use": "Utiliser la messagerie"
+    },
+    "notifications": {
+      "manage": "Diffuser des notifications"
+    },
+    "documents": {
+      "read": "Voir les documents (périmètre)",
+      "manage": "Gérer tous les documents"
+    },
+    "tasks": {
+      "manage": "Gérer les tâches"
+    },
+    "settings": {
+      "manage": "Modifier les paramètres"
+    },
+    "audit": {
+      "read": "Consulter le journal d'audit"
+    }
+  },
+  "notifications": {
+    "title": "Canaux de notification",
+    "intro": "Choisissez par quels canaux les notifications sont envoyées. Les notifications dans l'application sont toujours actives.",
+    "always": "Toujours actif",
+    "providerNote": "Les fournisseurs (SMTP, SMS, push) se branchent plus tard : en attendant, ces canaux sont journalisés côté serveur sans envoi réel.",
+    "descriptions": {
+      "IN_APP": "Cloche et page Notifications de la plateforme.",
+      "EMAIL": "Un e-mail est envoyé à l'adresse du compte.",
+      "SMS": "Un SMS est envoyé au numéro du compte.",
+      "PUSH": "Notification push sur mobile et navigateur."
+    },
+    "pending": "Fournisseur à configurer"
+  },
+  "payments": {
+    "title": "Paiements",
+    "methods": "Moyens de paiement acceptés",
+    "methodsHint": "Proposés aux familles et dans l'enregistrement des paiements.",
+    "bank": "Coordonnées bancaires",
+    "bankHint": "Affichées sur les factures pour les virements.",
+    "bankName": "Banque",
+    "holder": "Titulaire du compte",
+    "rib": "RIB",
+    "iban": "IBAN",
+    "fee": "Cotisation annuelle par défaut",
+    "feeHint": "En dinars (TND). Utilisée pour les nouvelles adhésions."
+  },
+  "categories": {
+    "title": "Catégories & types",
+    "intro": "Ces listes sont définies dans le code (src/lib/constants.ts) pour garantir des statistiques cohérentes. Les libellés sont traduits automatiquement ; pour en ajouter, contactez l'équipe technique.",
+    "activities": "Activités",
+    "events": "Événements",
+    "trips": "Sorties",
+    "expenses": "Dépenses",
+    "readOnly": "Lecture seule"
+  },
+  "audit": {
+    "title": "Journal d'audit",
+    "intro": "Toutes les opérations sensibles : créations, suppressions, paiements, exports, changements de droits.",
+    "allUsers": "Tous les utilisateurs",
+    "allActions": "Toutes les actions",
+    "allEntities": "Tous les objets",
+    "search": "Identifiant ou détail…",
+    "system": "Système",
+    "details": "Détails",
+    "noDetails": "Aucun détail",
+    "empty": "Aucune entrée ne correspond.",
+    "columns": {
+      "when": "Date",
+      "who": "Utilisateur",
+      "action": "Action",
+      "entity": "Objet"
+    }
+  },
+  "contact": {
+    "title": "Messages de contact",
+    "intro": "Messages envoyés depuis le formulaire « Contact » du site public.",
+    "all": "Tous",
+    "unread": "Non lus",
+    "read": "Lus",
+    "markRead": "Marquer comme lu",
+    "markUnread": "Marquer comme non lu",
+    "reply": "Répondre",
+    "noSubject": "(sans objet)",
+    "empty": "Aucun message pour le moment.",
+    "deleteConfirm": "Supprimer définitivement ce message ?"
+  }
+}
