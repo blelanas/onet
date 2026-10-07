@@ -33,7 +33,8 @@ router.post("/auth/signup", limited(10, 15 * 60_000), mutation((req) => signup(r
 // ─── Approvals (users.approve) ──────────────────────────────────────────────
 
 function pageOf(req: Request, size: number) {
-  const page = Math.max(1, Number(qs(req, "page")) || 1);
+  const n = Math.floor(Number(qs(req, "page")));
+  const page = Number.isFinite(n) && n >= 1 ? n : 1;
   return { page, pageSize: size, skip: (page - 1) * size, take: size };
 }
 

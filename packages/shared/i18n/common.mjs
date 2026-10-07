@@ -42,7 +42,7 @@ export default {
     inviteInvalid: T("Ce lien d'invitation n'est pas valide", "رابط الدعوة غير صالح", "This invitation link isn't valid"), inviteExpired: T("Ce lien d'invitation a expiré", "انتهت صلاحية رابط الدعوة", "This invitation link has expired"),
     inviteFull: T("Ce lien d'invitation est complet", "اكتمل عدد التسجيلات في رابط الدعوة", "This invitation link is full"), inviteRevoked: T("Ce lien d'invitation a été désactivé", "تمّ تعطيل رابط الدعوة", "This invitation link has been revoked"),
     inviteExpiry: T("La date d'expiration doit être dans le futur (un an au plus)", "يجب أن يكون تاريخ الانتهاء في المستقبل (سنة على الأكثر)", "The expiry date must be in the future (one year at most)"),
-    maxUses: T("500 inscriptions au maximum", "500 تسجيل كحدّ أقصى", "500 sign-ups at most"), listTooLong: T("Liste trop longue (2 000 lignes au maximum)", "القائمة طويلة جدًا (2000 سطر كحدّ أقصى)", "List too long (2,000 lines at most)"),
+    maxUses: T("500 inscriptions au maximum", "500 تسجيل كحدّ أقصى", "500 sign-ups at most"), listTooLong: T("Liste trop longue (2 000 lignes et 200 000 caractères au maximum)", "القائمة طويلة جدًا (2000 سطر و200000 حرف كحدّ أقصى)", "List too long (2,000 lines and 200,000 characters at most)"),
     phone: T("Numéro de téléphone invalide", "رقم الهاتف غير صالح", "Invalid phone number"),
     passwordMismatch: T("Les mots de passe ne correspondent pas", "كلمتا المرور غير متطابقتين", "Passwords do not match"), wrongPassword: T("Mot de passe actuel incorrect", "كلمة المرور الحالية غير صحيحة", "Current password is incorrect"),
   },

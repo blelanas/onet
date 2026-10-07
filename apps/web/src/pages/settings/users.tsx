@@ -3,7 +3,7 @@ import { Link } from "@/lib/router";
 import { IdCard, Lock, Power, PowerOff } from "lucide-react";
 import type { usersSettingsPage } from "@api/modules/settings/routes";
 import { relativeTime } from "@onet/shared";
-import { ROLE_KEYS } from "@onet/shared";
+import { ROLE_KEYS, STAFF_ROLE_KEYS } from "@onet/shared";
 import { useApi } from "@/lib/query";
 import { useSearchParamsObject } from "@/lib/router";
 import { usePageTitle } from "@/lib/title";
@@ -49,7 +49,7 @@ function UsersSettings({ data, sp }: { data: Data; sp: Record<string, string | u
   const me = { id: data.meId };
   const roleOptions = roles;
   const roleLabel = (r: { key: string; name: string }) => ((ROLE_KEYS as readonly string[]).includes(r.key) ? tc(`roles.${r.key}`) : r.name);
-  const manageable = (u: Row) => canPrivileged || !u.roles.some((r) => ["super_admin", "admin", "accountant"].includes(r.role.key));
+  const manageable = (u: Row) => canPrivileged || !u.roles.some((r) => (STAFF_ROLE_KEYS as readonly string[]).includes(r.role.key));
 
   const actions = (u: Row) => {
     const isSelf = u.id === me.id;

@@ -12,7 +12,7 @@ import { ConfirmButton } from "@/components/ui/confirm-button";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pagination } from "@/components/ui/pagination";
-import { ApprovalTabs, Intro, RoleBadge } from "./shared";
+import { ApprovalTabs, Intro, RoleBadge, useFirstPageWhenPastEnd } from "./shared";
 
 type Data = Loaded<typeof approvalsPendingPage>;
 type Row = Data["rows"][number];
@@ -41,6 +41,7 @@ function Pending({ data, sp }: { data: Data; sp: Record<string, string | undefin
       return n;
     });
   const count = selected.size;
+  const pastEnd = useFirstPageWhenPastEnd(data);
   const run = (fn: (ids: string[]) => ReturnType<typeof approveUsers>) => async () => {
     const res = await fn([...selected]);
     if (res.ok) setSelected(new Set());
@@ -103,10 +104,10 @@ function Pending({ data, sp }: { data: Data; sp: Record<string, string | undefin
   ];
 
   return (
-    <>
+    <div data-testid="approvals-pending">
       <ApprovalTabs active="pending" counts={data.counts} />
       <Intro>{t("intro")}</Intro>
-      {!data.rows.length ? (
+      {pastEnd ? null : !data.rows.length ? (
         <div className="card">
           <EmptyState title={t("empty")} description={t("emptyHint")} icon={<UserCheck className="size-4" />} />
         </div>
@@ -170,6 +171,6 @@ function Pending({ data, sp }: { data: Data; sp: Record<string, string | undefin
           <Pagination page={data.page} pageSize={data.pageSize} total={data.total} basePath="/dashboard/approvals" searchParams={sp} />
         </>
       )}
-    </>
+    </div>
   );
 }

@@ -17,20 +17,47 @@ import { MEMBER_TYPE_FOR_ROLE, invitationState, isSignupRole, normalizePhone, pa
 const APPROVERS = ["super_admin", "admin"];
 const DAY = 86400_000;
 
-/** Creates the Member record linked to a login (PARENT, MONITOR or MEMBER), inside the caller's transaction. */
+/** Member names are at most 80 characters per part (members form); sign-up names are capped at 80 too. */
+const NAME_MAX = 80;
+
+/**
+ * Gives a login (PARENT, MONITOR or MEMBER) its Member record, inside the caller's transaction.
+ * Monitors and members: when exactly one existing Member of that type without an account has the
+ * same e-mail (any case), that record is linked instead of creating a duplicate. Never for parents:
+ * linking a parent record would hand its children to whoever signed up with that e-mail, unverified.
+ */
 async function createLinkedMember(tx: Prisma.TransactionClient, u: { id: string; name: string; email: string; phone: string | null }, role: keyof typeof MEMBER_TYPE_FOR_ROLE) {
+  const type = MEMBER_TYPE_FOR_ROLE[role];
+  if (role !== "parent") {
+    const matches = await tx.$queryRaw<{ id: string }[]>`SELECT "id" FROM "Member" WHERE "type" = ${type} AND "userId" IS NULL AND "email" IS NOT NULL AND lower("email") = lower(${u.email}) LIMIT 2`;
+    if (matches.length === 1) {
+      const { count } = await tx.member.updateMany({ where: { id: matches[0].id, userId: null }, data: { userId: u.id } });
+      if (count) return { id: matches[0].id };
+    }
+  }
+  const { firstName, lastName } = splitName(u.name);
   return tx.member.create({
-    data: { type: MEMBER_TYPE_FOR_ROLE[role], ...splitName(u.name), email: u.email, phone: u.phone, userId: u.id, membershipNumber: await nextMembershipNumber(tx), membershipStatus: "ACTIVE" },
+    data: { type, firstName: firstName.slice(0, NAME_MAX), lastName: lastName.slice(0, NAME_MAX), email: u.email, phone: u.phone, userId: u.id, membershipNumber: await nextMembershipNumber(tx), membershipStatus: "ACTIVE" },
     select: { id: true },
   });
 }
 
 // ─── Public sign-up ─────────────────────────────────────────────────────────
 
+/**
+ * Consumes one use of an invitation, atomically: two sign-ups racing for the last place, or a
+ * revocation / expiry in between, can't let an extra sign-up through. Returns false when nothing was
+ * taken. Dates are stored as ISO-8601 UTC text and bound the same way, so the comparison is exact.
+ */
+export async function takeInvitationPlace(tx: Prisma.TransactionClient, id: string, now = new Date()) {
+  const taken = await tx.$executeRaw`UPDATE "Invitation" SET "uses" = "uses" + 1 WHERE "id" = ${id} AND "revokedAt" IS NULL AND "expiresAt" > ${now} AND "uses" < "maxUses"`;
+  return taken > 0;
+}
+
 const optToken = z.preprocess((v) => (typeof v === "string" && v.trim() !== "" ? v.trim() : undefined), z.string().max(200).optional());
 
 const signupSchema = z.object({
-  name: zs.reqStr(120),
+  name: zs.reqStr(NAME_MAX),
   email: z.string().trim().toLowerCase().max(160).email("errors.email"),
   phone: z
     .string()
@@ -77,8 +104,7 @@ export async function signup(input: unknown) {
         const state = invitationState(inv);
         if (state !== "valid") throw new ActionError(`errors.invite${state[0].toUpperCase()}${state.slice(1)}`);
         // Atomic: two sign-ups racing for the last place can't both get it.
-        const taken = await tx.$executeRaw`UPDATE "Invitation" SET "uses" = "uses" + 1 WHERE "id" = ${inv.id} AND "revokedAt" IS NULL AND "uses" < "maxUses"`;
-        if (!taken) throw new ActionError("errors.inviteFull");
+        if (!(await takeInvitationPlace(tx, inv.id))) throw new ActionError("errors.inviteFull");
         status = "PENDING";
         role = inv.role;
         invitation = { id: inv.id, label: inv.label };

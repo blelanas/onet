@@ -3,7 +3,7 @@ import { useTranslations } from "use-intl";
 import { useNavigate } from "react-router";
 import { Check, Hourglass, LogOut, RefreshCw, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { apiGet } from "@/lib/api";
+import { ApiError, apiGet } from "@/lib/api";
 import { signOut, useMe, type Me } from "@/lib/auth";
 import { queryClient } from "@/lib/query";
 import { usePageTitle } from "@/lib/title";
@@ -17,6 +17,7 @@ export function PendingApproval() {
   const me = useMe();
   const t = useTranslations("auth.pending");
   const tr = useTranslations("common.roles");
+  const tc = useTranslations("common");
   const navigate = useNavigate();
   const [checking, startCheck] = useTransition();
   const [leaving, startLeave] = useTransition();
@@ -70,9 +71,15 @@ export function PendingApproval() {
                 loading={checking}
                 onClick={() =>
                   startCheck(async () => {
-                    const fresh = await apiGet<Me | null>("/auth/me").catch(() => null);
-                    queryClient.setQueryData(["/auth/me"], fresh);
-                    if (fresh?.status === "PENDING") toast.info(t("stillPending"));
+                    try {
+                      const fresh = await apiGet<Me | null>("/auth/me");
+                      queryClient.setQueryData(["/auth/me"], fresh);
+                      if (fresh?.status === "PENDING") toast.info(t("stillPending"));
+                    } catch (e) {
+                      // Signed out (expired / revoked session): leave. Anything else (offline, 5xx): keep the user.
+                      if (e instanceof ApiError && e.status === 401) queryClient.setQueryData(["/auth/me"], null);
+                      else toast.error(tc("errors.unexpected"));
+                    }
                   })
                 }
               >

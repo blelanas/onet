@@ -23,11 +23,11 @@ export default {
     ),
     titleInvite: T("Créez votre compte", "أنشئ حسابك", "Create your account"),
     subtitleInvite: T("Vous avez reçu un lien d'invitation de l'ONET Teboulba.", "تلقّيت رابط دعوة من المنظمة بطبلبة.", "You received an invitation link from ONET Teboulba."),
-    inviteBanner: T("Vous rejoignez l'ONET en tant que {role}", "أنت تنضمّ إلى المنظمة بصفة {role}", "You're joining as {role}"),
+    inviteBanner: T("Invitation pour le rôle {role}", "دعوة لدور {role}", "Invitation for the {role} role"),
     inviteNote: T(
-      "Votre compte sera confirmé par l'association, sauf si vous figurez déjà sur sa liste : dans ce cas, il est actif tout de suite.",
-      "ستؤكّد المنظمة حسابك، إلا إذا كنت مدرجًا مسبقًا في قائمتها: عندها يكون حسابك نشطًا فورًا.",
-      "Your account will be confirmed by the association, unless you're already on its list: then it's active right away.",
+      "Votre compte sera confirmé par l'association. Si vous figurez déjà sur sa liste, il est actif tout de suite, avec le rôle prévu par la liste.",
+      "ستؤكّد المنظمة حسابك. إذا كنت مدرجًا مسبقًا في قائمتها، يكون حسابك نشطًا فورًا بالدور المحدّد في القائمة.",
+      "The association will confirm your account. If you're already on its list, it's active right away, with the role the list gives you.",
     ),
     checking: T("Vérification du lien…", "جارٍ التحقق من الرابط…", "Checking the link…"),
     inviteError: {

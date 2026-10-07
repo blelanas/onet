@@ -19,7 +19,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Input, Select, inputClasses } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Pagination } from "@/components/ui/pagination";
-import { ApprovalTabs, Intro, RoleBadge } from "./shared";
+import { ApprovalTabs, Intro, RoleBadge, useFirstPageWhenPastEnd } from "./shared";
 
 type Data = Loaded<typeof approvalsInvitationsPage>;
 type Row = Data["rows"][number];
@@ -40,6 +40,7 @@ function Invitations({ data, sp }: { data: Data; sp: Record<string, string | und
   const tr = useTranslations("common.roles");
   const locale = useLocale();
   const [created, setCreated] = useState<CreatedInvitation | null>(null);
+  const pastEnd = useFirstPageWhenPastEnd(data);
   const defaultExpiry = useState(() => toDateTimeInput(new Date(Date.now() + 7 * 86400_000)).slice(0, 16))[0];
 
   const columns: Column<Row>[] = [
@@ -89,7 +90,7 @@ function Invitations({ data, sp }: { data: Data; sp: Record<string, string | und
   ];
 
   return (
-    <>
+    <div data-testid="approvals-invitations">
       <ApprovalTabs active="invitations" counts={data.counts} />
       <Intro>{t("intro")}</Intro>
       <Card className="mb-5">
@@ -116,14 +117,16 @@ function Invitations({ data, sp }: { data: Data; sp: Record<string, string | und
         columns={columns}
         rowKey={(r) => r.id}
         empty={
-          <div className="card">
-            <EmptyState title={t("empty")} description={t("emptyHint")} icon={<Link2 className="size-4" />} />
-          </div>
+          pastEnd ? null : (
+            <div className="card">
+              <EmptyState title={t("empty")} description={t("emptyHint")} icon={<Link2 className="size-4" />} />
+            </div>
+          )
         }
       />
       <Pagination page={data.page} pageSize={data.pageSize} total={data.total} basePath="/dashboard/approvals" searchParams={sp} />
       <CreatedLinkModal created={created} onClose={() => setCreated(null)} />
-    </>
+    </div>
   );
 }
 

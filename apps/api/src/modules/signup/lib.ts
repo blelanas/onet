@@ -33,21 +33,58 @@ export type ParsedPerson = { line: number; name: string; email: string | null; p
 export type InvalidLine = { line: number; reason: "name" | "contact" | "email" | "phone" };
 
 /**
- * Pre-approved list: one person per line, `Name; email; phone`, separated by `;`, `,` or a tab.
- * Email or phone may be empty, not both. Blank lines and a header line are ignored.
+ * Splits one line on `sep`, CSV-style: separators inside double quotes are kept and `""` inside a
+ * quoted field is a literal quote. Fields are trimmed.
+ */
+export function splitFields(line: string, sep: string): string[] {
+  const fields: string[] = [];
+  let cur = "";
+  let quoted = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (quoted) {
+      if (c === '"' && line[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else if (c === '"') quoted = false;
+      else cur += c;
+    } else if (c === '"' && !cur.trim()) {
+      cur = "";
+      quoted = true;
+    } else if (c === sep) {
+      fields.push(cur.trim());
+      cur = "";
+    } else cur += c;
+  }
+  fields.push(cur.trim());
+  return fields;
+}
+
+/** The separator of a line: a tab, else `;`, else `,` (ignoring those inside double quotes). */
+function separatorOf(line: string) {
+  const outside = line.replace(/"(?:[^"]|"")*"/g, "");
+  return outside.includes("\t") ? "\t" : outside.includes(";") ? ";" : ",";
+}
+
+/**
+ * Pre-approved list: one person per line, `Name; email; phone`, separated by `;`, `,` or a tab
+ * (CSV quoting allowed). Email or phone may be empty, not both. Blank lines and a header line (the
+ * first non-blank one) are ignored.
  */
 export function parsePeopleList(text: string): { people: ParsedPerson[]; invalid: InvalidLine[] } {
   const people: ParsedPerson[] = [];
   const invalid: InvalidLine[] = [];
+  let first = true;
   text.split(/\r?\n/).forEach((raw, i) => {
     const line = i + 1;
     const s = raw.trim();
     if (!s) return;
-    const sep = s.includes("\t") ? "\t" : s.includes(";") ? ";" : ",";
-    const [name = "", email = "", phone = ""] = s.split(sep).map((f) => f.trim().replace(/^"(.*)"$/, "$1").trim());
+    const isFirst = first;
+    first = false;
+    const [name = "", email = "", phone = ""] = splitFields(s, separatorOf(s));
     // Header row exported by a spreadsheet ("Nom;E-mail;Téléphone", "name,email,phone"…).
-    if (line === 1 && !email.includes("@") && /mail/i.test(email) && !/\d/.test(phone)) return;
-    if (!name || name.length > 120) return invalid.push({ line, reason: "name" });
+    if (isFirst && !email.includes("@") && /mail/i.test(email) && !/\d/.test(phone)) return;
+    if (!name || name.length > 80) return invalid.push({ line, reason: "name" });
     if (!email && !phone) return invalid.push({ line, reason: "contact" });
     const e = email.toLowerCase();
     if (e && (!EMAIL_RE.test(e) || e.length > 160)) return invalid.push({ line, reason: "email" });

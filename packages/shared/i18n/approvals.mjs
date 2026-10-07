@@ -158,7 +158,7 @@ export default {
     ),
     existing: T(
       "{count, plural, one {# personne a déjà un compte (ligne {lines})} other {# personnes ont déjà un compte (lignes {lines})}} : attribuez-leur le rôle dans Paramètres → Utilisateurs.",
-      "{count, plural, one {شخص واحد لديه حساب بالفعل} two {شخصان لديهما حساب بالفعل} few {# أشخاص لديهم حسابات بالفعل} many {# شخصًا لديهم حسابات بالفعل} other {# شخص لديهم حسابات بالفعل}} (الأسطر {lines}): أسند لهم الدور من الإعدادات ← المستخدمون.",
+      "{count, plural, one {شخص واحد لديه حساب بالفعل (السطر {lines})} two {شخصان لديهما حساب بالفعل (السطران {lines})} few {# أشخاص لديهم حسابات بالفعل (الأسطر {lines})} many {# شخصًا لديهم حسابات بالفعل (الأسطر {lines})} other {# شخص لديهم حسابات بالفعل (الأسطر {lines})}}: أسند لهم الدور من الإعدادات ← المستخدمون.",
       "{count, plural, one {# person already has an account (line {lines})} other {# people already have an account (lines {lines})}}: give them the role in Settings → Users.",
     ),
     invalid: T(

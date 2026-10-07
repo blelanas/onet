@@ -93,7 +93,7 @@
     "inviteRevoked": "This invitation link has been revoked",
     "inviteExpiry": "The expiry date must be in the future (one year at most)",
     "maxUses": "500 sign-ups at most",
-    "listTooLong": "List too long (2,000 lines at most)",
+    "listTooLong": "List too long (2,000 lines and 200,000 characters at most)",
     "phone": "Invalid phone number",
     "passwordMismatch": "Passwords do not match",
     "wrongPassword": "Current password is incorrect"

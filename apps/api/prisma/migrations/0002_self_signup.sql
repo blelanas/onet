@@ -51,3 +51,10 @@ CREATE INDEX "PreapprovedPerson_email_idx" ON "PreapprovedPerson"("email");
 -- CreateIndex
 CREATE INDEX "PreapprovedPerson_phone_idx" ON "PreapprovedPerson"("phone");
 
+-- Data: the new "users.approve" permission, granted to the admin roles. Existing databases are only
+-- migrated (never re-seeded), so without this nobody could open the Approvals page. Idempotent; on a
+-- fresh database (no roles yet) only the Permission row is created, and the seed recreates it anyway.
+INSERT OR IGNORE INTO "Permission" ("id", "key", "module") VALUES (lower(hex(randomblob(12))), 'users.approve', 'users');
+INSERT OR IGNORE INTO "RolePermission" ("roleId", "permissionId")
+SELECT r."id", p."id" FROM "Role" r JOIN "Permission" p ON p."key" = 'users.approve'
+WHERE r."key" IN ('super_admin', 'admin');

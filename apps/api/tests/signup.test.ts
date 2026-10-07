@@ -5,6 +5,8 @@ import superjson from "superjson";
 import { createApp } from "@api/app";
 import { db } from "@api/lib/db";
 import { hashToken } from "@api/lib/auth/session";
+import { takeInvitationPlace } from "@api/modules/signup/actions";
+import { parsePeopleList, splitFields } from "@api/modules/signup/lib";
 
 let server: Server;
 let base = "";
@@ -131,9 +133,11 @@ describe("self sign-up", () => {
     expect((await signup(person({ invite: full.token }))).body).toMatchObject({ ok: false, error: "errors.inviteFull" });
 
     expect((await call("GET", "/auth/invitations/not-a-real-token")).body).toMatchObject({ valid: false, reason: "invalid" });
-    expect((await signup(person({ invite: "not-a-real-token" }))).body).toMatchObject({ ok: false, error: "errors.inviteInvalid" });
+    const unknown = person({ invite: "not-a-real-token" });
+    expect((await signup(unknown)).body).toMatchObject({ ok: false, error: "errors.inviteInvalid" });
     // A failed sign-up creates nothing.
     expect(await db.invitation.findFirst({ where: { tokenHash: hashToken("not-a-real-token") } })).toBeNull();
+    expect(await db.user.findUnique({ where: { email: unknown.email } })).toBeNull();
     expect((await call("POST", "/approvals/invitations", { token: adminToken, body: { role: "monitor", maxUses: 501 } })).status).toBe(400);
   });
 
@@ -230,5 +234,116 @@ describe("approvals", () => {
     const ids = Array.from({ length: 501 }, (_, i) => `id${i}`);
     expect((await call("POST", "/approvals/approve", { token: adminToken, body: { ids } })).status).toBe(400);
     expect((await call("POST", "/approvals/reject", { token: adminToken, body: { ids: [] } })).status).toBe(400);
+  });
+});
+
+describe("invitation places", () => {
+  it("an invitation that has just expired can't be used, even by the atomic update", async () => {
+    const created = await newInvitation(adminToken);
+    const now = new Date();
+    await db.invitation.update({ where: { id: created.id }, data: { expiresAt: new Date(now.getTime() - 1) } });
+    expect(await takeInvitationPlace(db, created.id, now)).toBe(false);
+    await db.invitation.update({ where: { id: created.id }, data: { expiresAt: now } });
+    expect(await takeInvitationPlace(db, created.id, now)).toBe(false);
+    await db.invitation.update({ where: { id: created.id }, data: { expiresAt: new Date(now.getTime() + 1) } });
+    expect(await takeInvitationPlace(db, created.id, now)).toBe(true);
+    expect((await db.invitation.findUniqueOrThrow({ where: { id: created.id } })).uses).toBe(1);
+  });
+
+  it("the invitations counter only counts usable links", async () => {
+    const counts = async () => ((await call("GET", "/approvals/invitations", { token: adminToken })).body!.counts as { invitations: number }).invitations;
+    const before = await counts();
+    const full = await newInvitation(adminToken, { maxUses: 1 });
+    expect(await counts()).toBe(before + 1);
+    await db.invitation.update({ where: { id: full.id }, data: { uses: 1 } });
+    expect(await counts()).toBe(before);
+  });
+});
+
+describe("existing member records", () => {
+  const unlinked = (type: "MONITOR" | "MEMBER" | "PARENT", email: string) =>
+    db.member.create({ data: { type, firstName: "Old", lastName: "Record", email, membershipNumber: `TST-${type}-${++seq}-${Date.now()}`, membershipStatus: "ACTIVE" } });
+  const approve = (id: string) => call("POST", "/approvals/approve", { token: adminToken, body: { ids: [id] } });
+  const memberOf = async (email: string) => {
+    const user = await db.user.findUniqueOrThrow({ where: { email } });
+    return db.member.findUniqueOrThrow({ where: { userId: user.id } });
+  };
+
+  it("approval links the one unlinked member of that type with the same e-mail", async () => {
+    const inv = await newInvitation(adminToken, { role: "monitor" });
+    const p = person({ invite: inv.token });
+    const existing = await unlinked("MONITOR", p.email.toUpperCase());
+    // Known by phone too, whatever its formatting.
+    const digits = p.phone.replace(/\D/g, "").slice(3);
+    const byPhone = await db.member.create({
+      data: { type: "PARENT", firstName: "Same", lastName: "Phone", phone: `00216 (${digits.slice(0, 2)}) ${digits.slice(2, 5)}-${digits.slice(5)}`, membershipNumber: `TST-P-${++seq}-${Date.now()}` },
+    });
+    await signup(p);
+    const user = await db.user.findUniqueOrThrow({ where: { email: p.email } });
+    const pending = await call("GET", "/approvals/pending", { token: adminToken });
+    const row = (pending.body!.rows as { id: string; known: { id: string }[] }[]).find((x) => x.id === user.id)!;
+    expect(row.known.map((k) => k.id).sort()).toEqual([existing.id, byPhone.id].sort());
+    expect((await approve(user.id)).body).toMatchObject({ ok: true, data: { count: 1 } });
+    expect((await memberOf(p.email)).id).toBe(existing.id);
+  });
+
+  it("a pre-approved activation links the existing record too", async () => {
+    const p = person();
+    const existing = await unlinked("MEMBER", p.email);
+    await call("POST", "/approvals/preapproved/import", { token: adminToken, body: { role: "member", text: `${p.name}; ${p.email};` } });
+    expect((await signup(p)).body).toMatchObject({ ok: true, data: { status: "ACTIVE" } });
+    expect((await memberOf(p.email)).id).toBe(existing.id);
+  });
+
+  it("creates a new record when the match is ambiguous, of another type, or for a parent", async () => {
+    // Two candidates: ambiguous.
+    const p = person({ invite: (await newInvitation(adminToken, { role: "member" })).token });
+    const a = await unlinked("MEMBER", p.email);
+    const b = await unlinked("MEMBER", p.email);
+    await signup(p);
+    await approve((await db.user.findUniqueOrThrow({ where: { email: p.email } })).id);
+    expect([a.id, b.id]).not.toContain((await memberOf(p.email)).id);
+
+    // Another type.
+    const q = person({ invite: (await newInvitation(adminToken, { role: "monitor" })).token });
+    const other = await unlinked("MEMBER", q.email);
+    await signup(q);
+    await approve((await db.user.findUniqueOrThrow({ where: { email: q.email } })).id);
+    expect((await memberOf(q.email)).id).not.toBe(other.id);
+
+    // A parent never takes over an existing record (its children would come with it).
+    const r = person();
+    const parent = await unlinked("PARENT", r.email);
+    expect((await signup(r)).body).toMatchObject({ ok: true, data: { status: "ACTIVE" } });
+    expect((await memberOf(r.email)).id).not.toBe(parent.id);
+    expect((await db.member.findUniqueOrThrow({ where: { id: parent.id } })).userId).toBeNull();
+  });
+
+  it("caps sign-up names so the member's name parts fit", async () => {
+    expect((await signup(person({ name: `A ${"b".repeat(80)}` }))).status).toBe(400);
+    expect((await signup(person({ name: `A ${"b".repeat(77)}` }))).body).toMatchObject({ ok: true });
+  });
+});
+
+describe("pre-approved list parsing", () => {
+  it('honours double quotes: separators inside them are kept and "" is a quote', () => {
+    expect(splitFields(`"Ben Ali, Sami", sami@x.tn, "22 345 678"`, ",")).toEqual(["Ben Ali, Sami", "sami@x.tn", "22 345 678"]);
+    expect(splitFields(`"Leila ""Lili"" Nasri";l@x.tn;`, ";")).toEqual([`Leila "Lili" Nasri`, "l@x.tn", ""]);
+    const { people, invalid } = parsePeopleList(`"Ben Ali, Sami",sami@x.tn,"22 345 678"\n"Nasri; Leila";leila@x.tn;`);
+    expect(invalid).toEqual([]);
+    expect(people).toEqual([
+      { line: 1, name: "Ben Ali, Sami", email: "sami@x.tn", phone: "21622345678" },
+      { line: 2, name: "Nasri; Leila", email: "leila@x.tn", phone: null },
+    ]);
+  });
+
+  it("skips a header on the first non-blank line only", () => {
+    const { people, invalid } = parsePeopleList(`\n\n"Nom";"E-mail";"Téléphone"\nA B;a@b.tn;\nNom;E-mail;Téléphone`);
+    expect(people.map((p) => p.line)).toEqual([4]);
+    expect(invalid).toEqual([{ line: 5, reason: "email" }]);
+  });
+
+  it("rejects names longer than 80 characters", () => {
+    expect(parsePeopleList(`${"x".repeat(81)};a@b.tn;`).invalid).toEqual([{ line: 1, reason: "name" }]);
   });
 });

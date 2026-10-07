@@ -1,12 +1,17 @@
+import { Prisma } from "@prisma/client";
 import { db } from "@api/lib/db";
 import { invitationState, normalizePhone } from "./lib";
+
+/** SQL: a Member's phone without the usual separators. */
+const PHONE_DIGITS = Prisma.raw(`replace(replace(replace(replace(replace(replace(replace("phone", ' ', ''), '-', ''), '.', ''), '(', ''), ')', ''), '+', ''), char(9), '')`);
 
 /** Tab counters of the Approvals page (also the nav badge for `pending`). */
 export async function approvalCounts() {
   const now = new Date();
   const [pending, invitations, preapproved] = await Promise.all([
     db.user.count({ where: { status: "PENDING" } }),
-    db.invitation.count({ where: { revokedAt: null, expiresAt: { gt: now } } }),
+    // Usable links only. Prisma can't compare two columns ("uses" < "maxUses"), hence the raw count.
+    db.$queryRaw<{ n: number | bigint }[]>`SELECT COUNT(*) AS "n" FROM "Invitation" WHERE "revokedAt" IS NULL AND "expiresAt" > ${now} AND "uses" < "maxUses"`.then((r) => Number(r[0]?.n ?? 0)),
     db.preapprovedPerson.count({ where: { usedById: null } }),
   ]);
   return { pending, invitations, preapproved };
@@ -26,13 +31,20 @@ export async function listPendingUsers(skip: number, take: number) {
   const invitations = invIds.length ? await db.invitation.findMany({ where: { id: { in: invIds } }, select: { id: true, label: true } }) : [];
   const labelOf = new Map(invitations.map((i) => [i.id, i.label]));
 
-  // Members already known with the same e-mail or phone (phones compared normalized).
-  const phones = new Set(rows.map((r) => normalizePhone(r.phone)).filter(Boolean));
-  const candidates = rows.length
+  // Members already known with the same e-mail (any case) or phone (compared normalized). Member
+  // phones are free text ("+216 22 345 678"): the database narrows them down on the last 8 digits (at
+  // most one page of pending phones), then normalizePhone() decides.
+  const tails = [...new Set(rows.map((r) => normalizePhone(r.phone)?.slice(-8)).filter((x): x is string => !!x))];
+  const matches = rows.length
+    ? await db.$queryRaw<{ id: string }[]>`SELECT "id" FROM "Member" WHERE lower("email") IN (${Prisma.join(rows.map((r) => r.email.toLowerCase()))})${
+        tails.length ? Prisma.sql` OR ("phone" IS NOT NULL AND (${Prisma.join(tails.map((t) => Prisma.sql`${PHONE_DIGITS} LIKE ${`%${t}%`}`), " OR ")}))` : Prisma.empty
+      }`
+    : [];
+  const candidates = matches.length
     ? await db.member.findMany({
-        where: { OR: [{ email: { in: rows.map((r) => r.email) } }, ...(phones.size ? [{ phone: { not: null } }] : [])] },
+        where: { id: { in: matches.map((m) => m.id) } },
+        orderBy: { createdAt: "asc" },
         select: { id: true, firstName: true, lastName: true, type: true, email: true, phone: true, membershipNumber: true, userId: true },
-        take: 5000,
       })
     : [];
   return {

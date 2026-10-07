@@ -70,6 +70,8 @@ function forgetOtherQueries() {
 export async function signIn(token: string) {
   tokenStore.set(token);
   const me = await apiGet<Me | null>("/auth/me");
+  // An in-flight /auth/me (started before the token changed) must not overwrite the new value.
+  await queryClient.cancelQueries({ queryKey: ["/auth/me"] });
   forgetOtherQueries();
   queryClient.setQueryData(["/auth/me"], me);
 }
@@ -77,6 +79,7 @@ export async function signIn(token: string) {
 export async function signOut() {
   await apiSend("POST", "/auth/logout");
   tokenStore.set(null);
+  await queryClient.cancelQueries({ queryKey: ["/auth/me"] });
   forgetOtherQueries();
   queryClient.setQueryData(["/auth/me"], null);
 }

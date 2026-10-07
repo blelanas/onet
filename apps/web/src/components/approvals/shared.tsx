@@ -1,7 +1,9 @@
+import { useEffect } from "react";
 import { useTranslations } from "use-intl";
 import { ROLE_COLORS, ROLE_KEYS, type RoleKey } from "@onet/shared";
 import { Badge } from "@/components/ui/badge";
 import { LinkTabs } from "@/components/ui/tabs";
+import { useLocation, useNavigate } from "@/lib/router";
 
 export type ApprovalCounts = { pending: number; invitations: number; preapproved: number };
 
@@ -37,4 +39,22 @@ export function RoleBadge({ role }: { role: string }) {
   const t = useTranslations("common.roles");
   const known = (ROLE_KEYS as readonly string[]).includes(role);
   return <Badge color={known ? ROLE_COLORS[role as RoleKey] : undefined}>{known ? t(role) : role}</Badge>;
+}
+
+/**
+ * A page number past the last page (rows deleted, stale link) would show the empty state although
+ * the list isn't empty: go back to page 1 instead. Returns true while that redirect is pending.
+ */
+export function useFirstPageWhenPastEnd(data: { rows: unknown[]; total: number; page: number }) {
+  const navigate = useNavigate();
+  const { pathname, search } = useLocation();
+  const pastEnd = data.rows.length === 0 && data.total > 0 && data.page > 1;
+  useEffect(() => {
+    if (!pastEnd) return;
+    const next = new URLSearchParams(search);
+    next.delete("page");
+    const q = next.toString();
+    void navigate(q ? `${pathname}?${q}` : pathname, { replace: true, preventScrollReset: true });
+  }, [pastEnd, search, pathname, navigate]);
+  return pastEnd;
 }

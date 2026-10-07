@@ -15,7 +15,7 @@ export function AuthLayout({ sideTitle, sideText, children, wide }: { sideTitle:
         <div className="relative mt-auto max-w-md">
           <div className="mb-8 flex gap-3" aria-hidden>
             {["#FFB400", "#1E9BD7", "#2BB673", "#7C4DFF"].map((c, i) => (
-              <span key={c} className="size-12 animate-[var(--animate-float)] rounded-2xl" style={{ background: c, animationDelay: `${i * 0.4}s`, transform: `rotate(${i * 8 - 12}deg)` }} />
+              <span key={c} className="size-12 animate-[var(--animate-float)] rounded-2xl" style={{ background: c, animationDelay: `${i * 0.4}s`, rotate: `${i * 8 - 12}deg` }} />
             ))}
           </div>
           <h2 className="text-4xl leading-tight font-extrabold">{sideTitle}</h2>

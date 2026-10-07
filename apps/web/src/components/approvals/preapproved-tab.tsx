@@ -19,7 +19,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Select, Textarea } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { FilterChips } from "@/components/ui/toolbar";
-import { ApprovalTabs, Intro, RoleBadge, formatPhone } from "./shared";
+import { ApprovalTabs, Intro, RoleBadge, useFirstPageWhenPastEnd, formatPhone } from "./shared";
 
 type Data = Loaded<typeof approvalsPreapprovedPage>;
 type Row = Data["rows"][number];
@@ -29,7 +29,8 @@ export function PreapprovedTab({ sp }: { sp: Record<string, string | undefined> 
   return <QueryView query={query}>{(data) => <Preapproved data={data} sp={sp} />}</QueryView>;
 }
 
-const MAX_FILE = 1024 * 1024;
+/** Same limit as the server (characters of the whole list). */
+const MAX_CHARS = 200_000;
 
 function Preapproved({ data, sp }: { data: Data; sp: Record<string, string | undefined> }) {
   const t = useTranslations("approvals.preapproved");
@@ -38,13 +39,17 @@ function Preapproved({ data, sp }: { data: Data; sp: Record<string, string | und
   const locale = useLocale();
   const [text, setText] = useState("");
   const [summary, setSummary] = useState<ImportSummary | null>(null);
+  const pastEnd = useFirstPageWhenPastEnd(data);
 
   // A .csv is read in the browser and pasted into the textarea: the user can review it before importing.
   const loadFile = async (file: File | undefined) => {
     if (!file) return;
-    if (file.size > MAX_FILE) return toast.error(tc("errors.listTooLong"));
+    // UTF-8 takes at most 4 bytes per character: a bigger file is too long without reading it.
+    if (file.size > MAX_CHARS * 4) return toast.error(tc("errors.listTooLong"));
     const content = await file.text();
-    setText((cur) => (cur.trim() ? `${cur.trimEnd()}\n${content}` : content));
+    const next = text.trim() ? `${text.trimEnd()}\n${content}` : content;
+    if (next.trim().length > MAX_CHARS) return toast.error(tc("errors.listTooLong"));
+    setText(next);
     toast.success(t("fileLoaded", { name: file.name }));
   };
 
@@ -109,7 +114,7 @@ function Preapproved({ data, sp }: { data: Data; sp: Record<string, string | und
   ];
 
   return (
-    <>
+    <div data-testid="approvals-preapproved">
       <ApprovalTabs active="preapproved" counts={data.counts} />
       <Intro>{t("intro")}</Intro>
       <Card className="mb-5">
@@ -121,7 +126,8 @@ function Preapproved({ data, sp }: { data: Data; sp: Record<string, string | und
             onSuccess={(d) => {
               if (!d) return;
               setSummary(d);
-              if (d.added) setText("");
+              // Keep the list when some lines were skipped, so they can be fixed and imported again.
+              if (d.added && !d.duplicates && !d.existingLines.length && !d.invalid.length) setText("");
             }}
             className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_260px]"
           >
@@ -132,6 +138,7 @@ function Preapproved({ data, sp }: { data: Data; sp: Record<string, string | und
                   label={t("list")}
                   hint={t("format")}
                   rows={6}
+                  maxLength={MAX_CHARS}
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   placeholder={"Hiba Mabrouk; hiba@exemple.tn; 97 300 411\nAnis Ben Amor;; +216 24 118 790"}
@@ -178,13 +185,15 @@ function Preapproved({ data, sp }: { data: Data; sp: Record<string, string | und
         columns={columns}
         rowKey={(r) => r.id}
         empty={
-          <div className="card">
-            <EmptyState title={t("empty")} description={t("emptyHint")} icon={<ListPlus className="size-4" />} />
-          </div>
+          pastEnd ? null : (
+            <div className="card">
+              <EmptyState title={t("empty")} description={t("emptyHint")} icon={<ListPlus className="size-4" />} />
+            </div>
+          )
         }
       />
       <Pagination page={data.page} pageSize={data.pageSize} total={data.total} basePath="/dashboard/approvals" searchParams={sp} />
-    </>
+    </div>
   );
 }
 

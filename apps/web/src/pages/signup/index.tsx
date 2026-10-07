@@ -110,7 +110,7 @@ function SignupForm({ invite }: { invite?: string }) {
     <ActionForm action={submit} successMessage={t("created")} redirectTo="/dashboard" className="mt-6 flex flex-col gap-4">
       {(pending) => (
         <>
-          <Input name="name" autoComplete="name" label={t("name")} icon={<User className="size-4" />} required maxLength={120} />
+          <Input name="name" autoComplete="name" label={t("name")} icon={<User className="size-4" />} required maxLength={80} />
           <div className="grid gap-4 sm:grid-cols-2">
             <Input name="email" type="email" autoComplete="email" label={t("email")} icon={<Mail className="size-4" />} required placeholder="nom@exemple.tn" />
             <Input name="phone" type="tel" autoComplete="tel" label={t("phone")} icon={<Phone className="size-4" />} required placeholder="+216 22 345 678" />
