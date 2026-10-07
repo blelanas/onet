@@ -16,6 +16,11 @@ export type Me = {
   memberType: string | null;
   points: number;
   unread: number;
+  /** ACTIVE, or PENDING while a self sign-up waits for approval (no roles, no permissions). */
+  status: "ACTIVE" | "PENDING";
+  requestedRole: RoleKey | null;
+  /** Pending sign-ups count, for approvers' nav badge (0 otherwise). */
+  pendingApprovals: number;
 };
 
 type AuthState = { me: Me | null; loading: boolean };
@@ -53,15 +58,25 @@ export function hasRole(me: Me | null | undefined, ...roles: RoleKey[]) {
   return !!me && roles.some((r) => me.roles.includes(r));
 }
 
+/** Drops every cached response except the current user (which is replaced in place, see below). */
+function forgetOtherQueries() {
+  queryClient.removeQueries({ predicate: (q) => q.queryKey[0] !== "/auth/me" });
+}
+
+/**
+ * The /auth/me query is updated in place rather than removed: `queryClient.clear()` would detach
+ * the AuthProvider's observer from it, leaving a stale (or null) user on screen until a reload.
+ */
 export async function signIn(token: string) {
   tokenStore.set(token);
-  queryClient.clear();
-  await queryClient.fetchQuery({ queryKey: ["/auth/me"], queryFn: () => apiGet<Me | null>("/auth/me") });
+  const me = await apiGet<Me | null>("/auth/me");
+  forgetOtherQueries();
+  queryClient.setQueryData(["/auth/me"], me);
 }
 
 export async function signOut() {
   await apiSend("POST", "/auth/logout");
   tokenStore.set(null);
-  queryClient.clear();
-  await queryClient.invalidateQueries({ queryKey: ["/auth/me"] });
+  forgetOtherQueries();
+  queryClient.setQueryData(["/auth/me"], null);
 }

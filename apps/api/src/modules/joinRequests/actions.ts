@@ -9,7 +9,7 @@ import { nextMembershipNumber } from "../members/actions";
 import { activeGroupsWithCapacity, groupForAge } from "./queries";
 
 /** "Fatma Ben Salah" → { firstName: "Fatma", lastName: "Ben Salah" } */
-function splitName(full: string) {
+export function splitName(full: string) {
   const parts = full.trim().split(/\s+/);
   if (parts.length === 1) return { firstName: parts[0], lastName: parts[0] };
   return { firstName: parts[0], lastName: parts.slice(1).join(" ") };

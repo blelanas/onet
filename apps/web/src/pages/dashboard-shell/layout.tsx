@@ -7,7 +7,7 @@ import { PageSkeleton } from "@/components/ui/skeleton";
 export default function DashboardLayout() {
   const me = useMe();
   return (
-    <AppShell user={{ name: me.name, email: me.email, avatarUrl: me.avatarUrl, roles: me.roles, perms: me.perms, points: me.points }} unread={me.unread}>
+    <AppShell user={{ name: me.name, email: me.email, avatarUrl: me.avatarUrl, roles: me.roles, perms: me.perms, points: me.points }} unread={me.unread} badges={{ approvals: me.pendingApprovals }}>
       <Suspense fallback={<PageSkeleton />}>
         <Outlet />
       </Suspense>

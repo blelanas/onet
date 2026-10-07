@@ -55,7 +55,7 @@ const ROLE_FOR_AUDIENCE: Record<string, string[]> = {
 
 /** Active user ids targeted by an announcement (used for notifications). */
 export async function audienceUserIds(audience: string, groupId?: string | null): Promise<string[]> {
-  if (audience === "ALL") return (await db.user.findMany({ where: { isActive: true }, select: { id: true } })).map((u) => u.id);
+  if (audience === "ALL") return (await db.user.findMany({ where: { isActive: true, status: "ACTIVE" }, select: { id: true } })).map((u) => u.id);
   if (audience === "GROUP") {
     if (!groupId) return [];
     const group = await db.group.findUnique({

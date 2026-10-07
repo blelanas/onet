@@ -14,7 +14,7 @@ async function loadUser(email: string): Promise<CurrentUser> {
     id: u.id, name: u.name, email: u.email, locale: u.locale, avatarUrl: null, points: 0,
     roles: u.roles.map((r) => r.role.key as RoleKey),
     permissions: new Set(u.roles.flatMap((r) => r.role.permissions.map((p) => p.permission.key as Permission))),
-    memberId: u.member?.id ?? null, memberType: u.member?.type ?? null,
+    memberId: u.member?.id ?? null, memberType: u.member?.type ?? null, status: u.status,
   };
 }
 

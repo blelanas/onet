@@ -8,6 +8,7 @@ export const PERMISSIONS = {
 
   "users.read": "users",
   "users.manage": "users",
+  "users.approve": "users", // approve self sign-ups, invitation links, pre-approved list
   "roles.manage": "users",
 
   "members.read": "people", // scoped: own children / own groups unless members.read_all
@@ -118,6 +119,14 @@ export const ROLE_COLORS: Record<RoleKey, string> = {
   member: "#00A3A3",
   kid: "#FFB400",
 };
+
+/** Roles staff only (super admins) may grant: never obtainable through sign-up, invitations or the pre-approved list. */
+export const STAFF_ROLE_KEYS = ["super_admin", "admin", "accountant"] as const satisfies readonly RoleKey[];
+/** Roles that invitation links and the pre-approved list may grant (confirmed by the organisation). */
+export const SIGNUP_ROLE_KEYS = ["monitor", "member"] as const satisfies readonly RoleKey[];
+export type SignupRole = (typeof SIGNUP_ROLE_KEYS)[number];
+export const USER_STATUSES = ["ACTIVE", "PENDING", "REJECTED"] as const;
+export type UserStatus = (typeof USER_STATUSES)[number];
 
 /** Which dashboard flavour a user sees (first match wins). */
 export const DASHBOARD_PRIORITY: RoleKey[] = ["super_admin", "admin", "accountant", "monitor", "parent", "kid", "member"];

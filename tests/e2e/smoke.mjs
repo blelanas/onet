@@ -7,25 +7,25 @@ import { chromium } from "playwright";
 const BASE = process.env.BASE_URL ?? "http://localhost:5173";
 const PASSWORD = "Onet2026!";
 
-const PUBLIC = ["/", "/about", "/activities", "/events", "/trips", "/news", "/gallery", "/songs", "/conferences", "/contact", "/join", "/login"];
+const PUBLIC = ["/", "/about", "/activities", "/events", "/trips", "/news", "/gallery", "/songs", "/conferences", "/contact", "/join", "/login", "/signup"];
 
 // Expected access per role: `allow` must render content, `deny` must show the forbidden page.
 const ROLES = {
   "admin@onet-teboulba.tn": {
-    allow: ["/dashboard", "/dashboard/members", "/dashboard/groups", "/dashboard/finance/invoices", "/dashboard/finance/reports", "/dashboard/reports", "/dashboard/settings/roles", "/dashboard/settings/audit"],
+    allow: ["/dashboard", "/dashboard/members", "/dashboard/groups", "/dashboard/finance/invoices", "/dashboard/finance/reports", "/dashboard/reports", "/dashboard/settings/roles", "/dashboard/settings/audit", "/dashboard/approvals"],
     deny: [],
   },
   "gestion@onet-teboulba.tn": {
-    allow: ["/dashboard", "/dashboard/members", "/dashboard/events", "/dashboard/finance/invoices", "/dashboard/settings/users"],
+    allow: ["/dashboard", "/dashboard/members", "/dashboard/events", "/dashboard/finance/invoices", "/dashboard/settings/users", "/dashboard/approvals", "/dashboard/approvals?tab=invitations", "/dashboard/approvals?tab=preapproved"],
     deny: ["/dashboard/finance/invoices/new", "/dashboard/settings/roles", "/dashboard/settings/audit"],
   },
   "comptable@onet-teboulba.tn": {
     allow: ["/dashboard", "/dashboard/finance/invoices", "/dashboard/finance/payments", "/dashboard/finance/expenses", "/dashboard/finance/reports"],
-    deny: ["/dashboard/groups", "/dashboard/activities", "/dashboard/attendance", "/dashboard/settings/users", "/dashboard/join-requests"],
+    deny: ["/dashboard/groups", "/dashboard/activities", "/dashboard/attendance", "/dashboard/settings/users", "/dashboard/join-requests", "/dashboard/approvals"],
   },
   "moniteur@onet-teboulba.tn": {
     allow: ["/dashboard", "/dashboard/children", "/dashboard/groups", "/dashboard/attendance", "/dashboard/calendar", "/dashboard/messages"],
-    deny: ["/dashboard/members", "/dashboard/finance/invoices", "/dashboard/reports", "/dashboard/settings/users"],
+    deny: ["/dashboard/members", "/dashboard/finance/invoices", "/dashboard/reports", "/dashboard/settings/users", "/dashboard/approvals"],
   },
   "parent@onet-teboulba.tn": {
     allow: ["/dashboard", "/dashboard/my-children", "/dashboard/events", "/dashboard/trips", "/dashboard/finance/invoices", "/dashboard/messages", "/dashboard/content/songs"],
@@ -97,7 +97,7 @@ try {
     }
     for (const p of allow) {
       const r = await visit(page, p);
-      if (r.status !== 200 || r.url !== p || r.forbidden || r.broken) fail(`${email} ${p} should be allowed (HTTP ${r.status}, ended on ${r.url}${r.forbidden ? ", forbidden" : ""}${r.broken ? ", error/not-found state" : ""})`);
+      if (r.status !== 200 || r.url !== p.split("?")[0] || r.forbidden || r.broken) fail(`${email} ${p} should be allowed (HTTP ${r.status}, ended on ${r.url}${r.forbidden ? ", forbidden" : ""}${r.broken ? ", error/not-found state" : ""})`);
       else if (r.errors.length) fail(`${email} ${p} → page error: ${r.errors[0]}`);
     }
     for (const p of deny) {

@@ -18,6 +18,7 @@ import { router as communication } from "./communication/routes";
 import { router as reports } from "./reports/routes";
 import { router as settings } from "./settings/routes";
 import { router as publicSite } from "./public/routes";
+import { router as signup } from "./signup/routes";
 
 /** Every feature module owns modules/<name>/routes.ts; this list only mounts them. */
 export function registerModules(api: Router) {
@@ -40,4 +41,5 @@ export function registerModules(api: Router) {
   api.use(reports);
   api.use(settings);
   api.use(publicSite);
+  api.use(signup);
 }
