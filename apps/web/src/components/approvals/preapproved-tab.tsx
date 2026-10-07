@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useLocale, useTranslations } from "use-intl";
 import { CheckCircle2, Clock, FileUp, ListPlus, Mail, Phone, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -38,6 +38,9 @@ function Preapproved({ data, sp }: { data: Data; sp: Record<string, string | und
   const tc = useTranslations("common");
   const locale = useLocale();
   const [text, setText] = useState("");
+  // Latest draft, read after the file is loaded: edits made while it was being read are kept.
+  const textRef = useRef(text);
+  textRef.current = text;
   const [summary, setSummary] = useState<ImportSummary | null>(null);
   const pastEnd = useFirstPageWhenPastEnd(data);
 
@@ -47,8 +50,10 @@ function Preapproved({ data, sp }: { data: Data; sp: Record<string, string | und
     // UTF-8 takes at most 4 bytes per character: a bigger file is too long without reading it.
     if (file.size > MAX_CHARS * 4) return toast.error(tc("errors.listTooLong"));
     const content = await file.text();
-    const next = text.trim() ? `${text.trimEnd()}\n${content}` : content;
+    const cur = textRef.current;
+    const next = cur.trim() ? `${cur.trimEnd()}\n${content}` : content;
     if (next.trim().length > MAX_CHARS) return toast.error(tc("errors.listTooLong"));
+    textRef.current = next;
     setText(next);
     toast.success(t("fileLoaded", { name: file.name }));
   };

@@ -276,7 +276,7 @@ describe("existing member records", () => {
     // Known by phone too, whatever its formatting.
     const digits = p.phone.replace(/\D/g, "").slice(3);
     const byPhone = await db.member.create({
-      data: { type: "PARENT", firstName: "Same", lastName: "Phone", phone: `00216 (${digits.slice(0, 2)}) ${digits.slice(2, 5)}-${digits.slice(5)}`, membershipNumber: `TST-P-${++seq}-${Date.now()}` },
+      data: { type: "PARENT", firstName: "Same", lastName: "Phone", phone: `00216 (${digits.slice(0, 2)}) ${digits.slice(2, 5)}/${digits.slice(5)}`, membershipNumber: `TST-P-${++seq}-${Date.now()}` },
     });
     await signup(p);
     const user = await db.user.findUniqueOrThrow({ where: { email: p.email } });
