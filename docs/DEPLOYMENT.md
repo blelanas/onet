@@ -18,7 +18,8 @@ Order: **1. database → 2. API → 3. website** (each step needs the previous o
 3. Open the database page:
    - copy the **URL** (`libsql://onet-teboulba-<your-name>.turso.io`);
    - **Generate token** (no expiration, read & write) → copy the token. Keep it secret.
-4. Create the tables and your administrator account, from a computer with this repository and Node 22:
+4. Nothing to run: the API creates the tables and your administrator account itself when it starts on Render (step 2).
+   Optional — to do it by hand from a computer with this repository and Node 22 instead:
    ```bash
    npm ci
    export DATABASE_URL="libsql://onet-teboulba-<your-name>.turso.io"
@@ -32,13 +33,18 @@ Order: **1. database → 2. API → 3. website** (each step needs the previous o
 
 1. Go to <https://render.com> → **Sign up with GitHub** (no card for the free plan) and allow access to the `onet` repository.
 2. **New + → Blueprint** → choose the `onet` repository → Render reads `render.yaml` and proposes the `onet-api` service (free plan).
-3. Fill the 3 secret values:
+3. Fill the secret values:
    - `DATABASE_URL` = the Turso URL
    - `DATABASE_AUTH_TOKEN` = the Turso token
+   - `ADMIN_EMAIL`, `ADMIN_PASSWORD` (10+ characters), `ADMIN_NAME` = your first super-administrator account, created at
+     startup only when no active super administrator exists (so changing these values later is ignored while one exists;
+     add other accounts from the app). You can delete `ADMIN_PASSWORD` once you have logged in. Recovery, if every super
+     administrator is ever deactivated: set `ADMIN_PASSWORD` again and `ADMIN_EMAIL` to an address not used by any
+     account, then redeploy — a new super administrator is created.
    - `CORS_ORIGINS` = `https://<firebase-project-id>.web.app,https://<firebase-project-id>.firebaseapp.com,https://<firebase-project-id>--*.web.app`
      (you get the project id in step 3 — you can put a placeholder now and edit it later in **Environment**).
 4. **Apply**. When the deploy is green, open `https://onet-api.onrender.com/health` (the exact URL is shown at the top of the service page) → `{"json":{"ok":true}}`.
-   Every push to `main` redeploys; pending migrations run automatically at start.
+   Every push to `main` redeploys; pending migrations and the role/permission bootstrap run automatically at start.
 
 > The free instance sleeps when unused; the first request after a pause takes ~30–50 s.
 > A free monitor (e.g. UptimeRobot pinging `/health` every 10 min) keeps it awake during the day.
