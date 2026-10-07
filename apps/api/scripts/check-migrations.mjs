@@ -2,6 +2,7 @@
 // Builds a throwaway database from prisma/migrations/*.sql, then diffs it with the schema.
 import { createClient } from "@libsql/client";
 import { execFileSync } from "child_process";
+import { createRequire } from "module";
 import { mkdtempSync, readdirSync, readFileSync } from "fs";
 import os from "os";
 import path from "path";
@@ -14,12 +15,14 @@ client.close();
 // `migrate diff --to-schema-datamodel` doesn't connect to the datasource today, but the schema's
 // url = env("DATABASE_URL") must stay resolvable (and must never point at a real database here).
 const prismaEnv = { ...process.env, DATABASE_URL: `file:${file}` };
+// Prisma CLI run through Node itself (not `npx`) so this works the same on Windows.
+const prismaCli = createRequire(import.meta.url).resolve("prisma/build/index.js");
 try {
-  execFileSync("npx", ["prisma", "migrate", "diff", "--from-url", `file:${file}`, "--to-schema-datamodel", "prisma/schema.prisma", "--exit-code"], { stdio: "pipe", env: prismaEnv });
+  execFileSync(process.execPath, [prismaCli, "migrate", "diff", "--from-url", `file:${file}`, "--to-schema-datamodel", "prisma/schema.prisma", "--exit-code"], { stdio: "pipe", env: prismaEnv });
   console.log("✓ migrations match the Prisma schema");
 } catch (e) {
   if (e.status === 2) {
-    const sql = execFileSync("npx", ["prisma", "migrate", "diff", "--from-url", `file:${file}`, "--to-schema-datamodel", "prisma/schema.prisma", "--script"], { env: prismaEnv }).toString();
+    const sql = execFileSync(process.execPath, [prismaCli, "migrate", "diff", "--from-url", `file:${file}`, "--to-schema-datamodel", "prisma/schema.prisma", "--script"], { env: prismaEnv }).toString();
     console.error("✗ prisma/schema.prisma has changes without a migration. Add prisma/migrations/000N_<name>.sql with:\n\n" + sql);
     process.exit(1);
   }
