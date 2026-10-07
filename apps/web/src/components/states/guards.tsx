@@ -3,6 +3,7 @@ import type { Permission } from "@onet/shared";
 import { can, useAuth } from "@/lib/auth";
 import { PageSkeleton } from "@/components/ui/skeleton";
 import { Forbidden } from "./page-state";
+import { PendingApproval } from "./pending-approval";
 
 /** Redirects anonymous visitors to /login?next=… */
 export function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -10,6 +11,8 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   if (loading) return <div className="p-6"><PageSkeleton /></div>;
   if (!me) return <Navigate to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+  // A self sign-up awaiting approval has no permissions: a full-page waiting screen replaces the dashboard.
+  if (me.status === "PENDING") return <PendingApproval />;
   return <>{children}</>;
 }
 

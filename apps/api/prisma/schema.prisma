@@ -29,6 +29,14 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
+  // Self sign-up (public /signup). Accounts created by staff and approved sign-ups are ACTIVE.
+  // A PENDING account can sign in but holds no role until approved; a REJECTED one cannot sign in.
+  status        String    @default("ACTIVE") // ACTIVE | PENDING | REJECTED
+  requestedRole String? // role asked through an invitation (monitor | member)
+  invitationId  String? // Invitation used to sign up (plain id, no FK: see migration 0002)
+  approvedById  String? // User who approved / rejected the sign-up
+  approvedAt    DateTime?
+
   roles         UserRole[]
   sessions      Session[]
   member        Member?
@@ -47,6 +55,44 @@ model User {
   activityReports ActivityReport[]
   calendarEntries CalendarEntry[]
   tasks         Task[]
+  invitations   Invitation[]        @relation("InvitationCreatedBy")
+  preapprovedCreated PreapprovedPerson[] @relation("PreapprovedCreatedBy")
+  preapprovedUsed    PreapprovedPerson[] @relation("PreapprovedUsedBy")
+
+  @@index([status])
+}
+
+// Sign-up invitation link (/signup?invite=<token>). Only the SHA-256 of the token is stored.
+model Invitation {
+  id          String    @id @default(cuid())
+  tokenHash   String    @unique
+  role        String // monitor | member (staff roles can never be invited)
+  label       String?
+  expiresAt   DateTime
+  maxUses     Int       @default(50)
+  uses        Int       @default(0)
+  createdById String?
+  createdBy   User?     @relation("InvitationCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+// People the organisation already knows: signing up with this e-mail or phone grants the role at once.
+model PreapprovedPerson {
+  id          String    @id @default(cuid())
+  name        String
+  email       String? // lower-case
+  phone       String? // normalized digits, e.g. 21622345678
+  role        String // monitor | member
+  createdById String?
+  createdBy   User?     @relation("PreapprovedCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  usedById    String?
+  usedBy      User?     @relation("PreapprovedUsedBy", fields: [usedById], references: [id], onDelete: SetNull)
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([email])
+  @@index([phone])
 }
 
 model Session {

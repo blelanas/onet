@@ -5,7 +5,8 @@ import type { Permission, RoleKey } from "@onet/shared";
 
 const SESSION_TTL_DAYS = 14;
 
-function hashToken(token: string) {
+/** SHA-256 (hex) of a secret token: sessions and invitation links only store this. */
+export function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
@@ -52,6 +53,8 @@ export type CurrentUser = {
   memberId: string | null;
   memberType: string | null;
   points: number;
+  /** ACTIVE, or PENDING for a sign-up awaiting approval (no roles, so no permissions). */
+  status: string;
 };
 
 /** Resolves the authenticated user once per request. Returns null when anonymous/expired. */
@@ -69,7 +72,7 @@ export const getCurrentUser = requestCache("currentUser", async (): Promise<Curr
       },
     },
   });
-  if (!session || session.expiresAt < new Date() || !session.user.isActive) return null;
+  if (!session || session.expiresAt < new Date() || !session.user.isActive || session.user.status === "REJECTED") return null;
   const u = session.user;
   const permissions = new Set<Permission>();
   for (const ur of u.roles) for (const rp of ur.role.permissions) permissions.add(rp.permission.key as Permission);
@@ -84,5 +87,6 @@ export const getCurrentUser = requestCache("currentUser", async (): Promise<Curr
     memberId: u.member?.id ?? null,
     memberType: u.member?.type ?? null,
     points: u.member?.points ?? 0,
+    status: u.status,
   };
 });
