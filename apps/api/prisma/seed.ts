@@ -625,11 +625,11 @@ async function main() {
     data: { tokenHash: createHash("sha256").update(randomBytes(24).toString("base64url")).digest("hex"), role: "member", label: "Bénévoles rentrée", expiresAt: daysFromNow(-20), maxUses: 20, uses: 7, createdById: uSuper.id, createdAt: daysFromNow(-60) },
   });
   for (const p of [
-    { name: "Rania Ferchichi", email: "rania.ferchichi@example.tn", phone: "+216 55 410 220", ago: 1 },
-    { name: "Bilel Lassoued", email: "bilel.lassoued@example.tn", phone: "+216 29 870 113", ago: 0 },
+    { name: "Rania Ferchichi", email: "rania.ferchichi@example.tn", phone: "+216 55 410 220", hoursAgo: 26 },
+    { name: "Bilel Lassoued", email: "bilel.lassoued@example.tn", phone: "+216 29 870 113", hoursAgo: 3 },
   ]) {
     await db.user.create({
-      data: { name: p.name, email: p.email, phone: p.phone, passwordHash, status: "PENDING", requestedRole: "monitor", invitationId: invitation.id, createdAt: daysFromNow(-p.ago, 18, 30) },
+      data: { name: p.name, email: p.email, phone: p.phone, passwordHash, status: "PENDING", requestedRole: "monitor", invitationId: invitation.id, createdAt: new Date(Date.now() - p.hoursAgo * 3_600_000) },
     });
   }
   await db.preapprovedPerson.createMany({
