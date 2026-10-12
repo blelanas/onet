@@ -361,6 +361,8 @@
     "successNext": "En attendant, découvrez nos activités",
     "another": "Inscrire un autre enfant",
     "already": "Déjà membre ?",
+    "parentAccount": "Vos enfants sont déjà inscrits ?",
+    "parentAccountCta": "Créer un compte parent",
     "why": "Pourquoi nous rejoindre ?",
     "perks": {
       "a": "Des clubs chaque semaine encadrés par des moniteurs formés",

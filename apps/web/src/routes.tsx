@@ -44,6 +44,7 @@ const dashboardChildren: RouteObject[] = [
 
 export const router = createBrowserRouter([
   { path: "/login", lazy: () => import("@/pages/login") },
+  { path: "/signup", lazy: () => import("@/pages/signup") },
   {
     path: "/dashboard",
     element: (

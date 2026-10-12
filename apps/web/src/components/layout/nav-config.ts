@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   Sparkles,
   Trophy,
+  UserCheck,
   UserPlus,
   Users,
   UsersRound,
@@ -61,6 +62,7 @@ export const NAV: NavSection[] = [
       { key: "monitors", href: "/dashboard/monitors", icon: ShieldCheck, when: p("members.read_all") },
       { key: "groups", href: "/dashboard/groups", icon: Shapes, when: p("groups.read") },
       { key: "joinRequests", href: "/dashboard/join-requests", icon: UserPlus, when: p("members.manage") },
+      { key: "approvals", href: "/dashboard/approvals", icon: UserCheck, when: p("users.approve") },
     ],
   },
   {

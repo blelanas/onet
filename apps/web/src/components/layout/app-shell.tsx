@@ -25,7 +25,7 @@ function isActive(pathname: string, item: NavItem) {
   return item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + "/");
 }
 
-export function AppShell({ user, unread, children }: { user: ShellUser; unread: number; children: React.ReactNode }) {
+export function AppShell({ user, unread, badges = {}, children }: { user: ShellUser; unread: number; badges?: Record<string, number>; children: React.ReactNode }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const [drawer, setDrawer] = useState(false);
@@ -60,9 +60,10 @@ export function AppShell({ user, unread, children }: { user: ShellUser; unread: 
                   >
                     <Icon className={cn("size-[18px] shrink-0", !active && "text-muted group-hover:text-brand-600")} />
                     <span className="truncate">{t(`items.${item.key}`)}</span>
-                    {item.key === "notifications" && unread > 0 && (
-                      <span className={cn("ms-auto rounded-full px-1.5 text-[11px] font-extrabold", active ? "bg-white text-brand-700" : "bg-brand-600 text-white")}>{unread}</span>
-                    )}
+                    {(() => {
+                      const n = item.key === "notifications" ? unread : (badges[item.key] ?? 0);
+                      return n > 0 ? <span className={cn("ms-auto rounded-full px-1.5 text-[11px] font-extrabold", active ? "bg-white text-brand-700" : "bg-brand-600 text-white")}>{n > 99 ? "99+" : n}</span> : null;
+                    })()}
                   </Link>
                 </li>
               );

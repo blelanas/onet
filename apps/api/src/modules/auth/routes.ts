@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "@api/lib/db";
 import { verifyDummyPassword, verifyPassword } from "@api/lib/auth/password";
 import { createSession, destroySession, getCurrentUser } from "@api/lib/auth/session";
+import { can } from "@api/lib/auth/guards";
 import { audit } from "@api/lib/audit";
 import { mutation, query, sendData } from "@api/lib/http";
 import { isLocale } from "@onet/shared";
@@ -56,6 +57,11 @@ authRouter.post(
       return { ok: false, error: "errors.invalidCredentials" };
     }
     failures.delete(key);
+    // A declined sign-up: the password was right, so saying why is not an account-enumeration leak.
+    if (user.status === "REJECTED") {
+      await audit(user.id, "login_rejected", "User", user.id);
+      return { ok: false, error: "errors.accountRejected" };
+    }
     const session = await createSession(user.id);
     await db.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
     await audit(user.id, "login", "User", user.id);
@@ -79,7 +85,11 @@ authRouter.get(
   query(async () => {
     const user = await getCurrentUser();
     if (!user) return null;
-    const unread = await db.notification.count({ where: { userId: user.id, readAt: null } });
+    const [unread, pendingApprovals, requested] = await Promise.all([
+      db.notification.count({ where: { userId: user.id, readAt: null } }),
+      can(user, "users.approve") ? db.user.count({ where: { status: "PENDING" } }) : Promise.resolve(0),
+      user.status === "PENDING" ? db.user.findUnique({ where: { id: user.id }, select: { requestedRole: true } }) : Promise.resolve(null),
+    ]);
     return {
       id: user.id,
       name: user.name,
@@ -92,6 +102,11 @@ authRouter.get(
       memberType: user.memberType,
       points: user.points,
       unread,
+      /** ACTIVE, or PENDING while a sign-up awaits approval (the web app then shows a waiting screen). */
+      status: user.status,
+      requestedRole: requested?.requestedRole ?? null,
+      /** Nav badge for approvers (0 for everybody else). */
+      pendingApprovals,
     };
   }),
 );

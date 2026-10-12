@@ -1,0 +1,124 @@
+{
+  "title": "Validations",
+  "description": "Confirmez les comptes créés par les moniteurs et les membres, gérez les liens d'invitation et la liste des personnes pré-approuvées.",
+  "tabs": {
+    "pending": "En attente",
+    "invitations": "Liens d'invitation",
+    "preapproved": "Liste pré-approuvée"
+  },
+  "pending": {
+    "intro": "Ces personnes se sont inscrites avec un lien d'invitation. Elles peuvent se connecter mais n'ont accès à rien tant que vous n'avez pas confirmé leur rôle.",
+    "columns": {
+      "person": "Personne",
+      "role": "Rôle demandé",
+      "invitation": "Lien utilisé",
+      "signedUp": "Inscription",
+      "known": "Déjà connu ?"
+    },
+    "selectAll": "Tout sélectionner",
+    "selectRow": "Sélectionner {name}",
+    "selected": "{count, plural, =0 {Aucune sélection} one {# sélectionné} other {# sélectionnés}}",
+    "approve": "Approuver",
+    "reject": "Refuser",
+    "approveTitle": "{count, plural, one {Approuver ce compte ?} other {Approuver ces # comptes ?}}",
+    "approveText": "Chaque personne reçoit le rôle demandé et une fiche membre est créée pour elle.",
+    "rejectTitle": "{count, plural, one {Refuser ce compte ?} other {Refuser ces # comptes ?}}",
+    "rejectText": "Ces personnes ne pourront plus se connecter. Elles verront un message indiquant que leur demande a été refusée.",
+    "approved": "{count, plural, =0 {Aucun compte approuvé} one {# compte approuvé} other {# comptes approuvés}}",
+    "rejected": "{count, plural, =0 {Aucun compte refusé} one {# compte refusé} other {# comptes refusés}}",
+    "empty": "Aucun compte en attente",
+    "emptyHint": "Les inscriptions faites avec un lien d'invitation apparaîtront ici.",
+    "known": "Fiche existante : {name}",
+    "hasAccount": "a déjà un compte",
+    "unknown": "Aucune fiche avec cet e-mail ou ce téléphone",
+    "noInvitation": "—",
+    "noLabel": "Lien sans libellé"
+  },
+  "invitations": {
+    "intro": "Partagez un lien pour que les moniteurs ou les membres créent leur compte. Les comptes créés avec un lien restent en attente jusqu'à votre validation.",
+    "newTitle": "Nouveau lien d'invitation",
+    "role": "Rôle",
+    "label": "Libellé (facultatif)",
+    "labelPlaceholder": "ex. Moniteurs 2026",
+    "expiresAt": "Expire le",
+    "maxUses": "Inscriptions max.",
+    "maxUsesHint": "Entre 1 et 500",
+    "create": "Créer le lien",
+    "createdTitle": "Lien créé : copiez-le maintenant",
+    "createdText": "Pour votre sécurité, ce lien ne sera plus jamais affiché. Copiez-le maintenant et partagez-le (WhatsApp, e-mail…).",
+    "copy": "Copier le lien",
+    "copied": "Lien copié",
+    "copyFailed": "Copie impossible : sélectionnez le lien et copiez-le à la main.",
+    "done": "J'ai copié le lien",
+    "columns": {
+      "label": "Lien",
+      "role": "Rôle",
+      "uses": "Inscriptions",
+      "expires": "Expiration",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "usesValue": "{uses} / {max}",
+    "createdBy": "Créé par {name}, {when}",
+    "revoke": "Désactiver",
+    "revokeTitle": "Désactiver ce lien ?",
+    "revokeText": "Plus personne ne pourra s'inscrire avec ce lien. Les comptes déjà créés ne changent pas.",
+    "revoked": "Lien désactivé",
+    "state": {
+      "valid": "Actif",
+      "expired": "Expiré",
+      "full": "Complet",
+      "revoked": "Désactivé"
+    },
+    "empty": "Aucun lien d'invitation",
+    "emptyHint": "Créez un lien pour permettre aux moniteurs de s'inscrire."
+  },
+  "preapproved": {
+    "intro": "Quand une personne de cette liste crée son compte avec le même e-mail ou le même téléphone, elle reçoit son rôle immédiatement, sans validation.",
+    "importTitle": "Importer une liste",
+    "format": "Une personne par ligne : Nom; e-mail; téléphone. Séparateur : point-virgule, virgule ou tabulation. L'e-mail ou le téléphone peut être vide, mais pas les deux.",
+    "role": "Rôle attribué",
+    "list": "Liste",
+    "file": "Charger un fichier .csv",
+    "fileLoaded": "{name} chargé dans la liste",
+    "import": "Importer",
+    "resultTitle": "Résultat de l'import",
+    "added": "{count, plural, =0 {Aucune personne ajoutée} one {# personne ajoutée} other {# personnes ajoutées}}",
+    "duplicates": "{count, plural, one {# doublon ignoré (ligne {lines})} other {# doublons ignorés (lignes {lines})}}",
+    "existing": "{count, plural, one {# personne a déjà un compte (ligne {lines})} other {# personnes ont déjà un compte (lignes {lines})}} : attribuez-leur le rôle dans Paramètres → Utilisateurs.",
+    "invalid": "{count, plural, one {# ligne invalide} other {# lignes invalides}}",
+    "invalidLine": "Ligne {line} : {reason}",
+    "reasons": {
+      "name": "nom manquant ou trop long",
+      "contact": "ni e-mail ni téléphone",
+      "email": "e-mail invalide",
+      "phone": "téléphone invalide"
+    },
+    "filters": {
+      "all": "Toutes",
+      "waiting": "En attente",
+      "used": "Activées"
+    },
+    "columns": {
+      "person": "Personne",
+      "role": "Rôle",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "waiting": "En attente d'inscription",
+    "activated": "Activé",
+    "activatedBy": "par {name}, {when}",
+    "deleteTitle": "Retirer cette personne de la liste ?",
+    "deleteText": "Si elle s'inscrit plus tard, elle obtiendra un compte parent (ou en attente avec un lien d'invitation).",
+    "remove": "Retirer",
+    "empty": "La liste est vide",
+    "emptyHint": "Importez les moniteurs et membres que vous connaissez déjà."
+  },
+  "notify": {
+    "pendingTitle": "Inscription à valider : {name}",
+    "pendingBody": "Demande le rôle {role}.",
+    "pendingBodyLabel": "Demande le rôle {role} (lien « {label} »).",
+    "approvedTitle": "Votre compte est confirmé !",
+    "approvedBody": "Bienvenue dans l'équipe de l'ONET Teboulba : votre espace est maintenant accessible."
+  }
+}

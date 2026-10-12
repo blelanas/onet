@@ -1,0 +1,124 @@
+{
+  "title": "Approvals",
+  "description": "Confirm accounts created by monitors and members, manage invitation links and the pre-approved list.",
+  "tabs": {
+    "pending": "Pending",
+    "invitations": "Invitation links",
+    "preapproved": "Pre-approved list"
+  },
+  "pending": {
+    "intro": "These people signed up with an invitation link. They can sign in but can't access anything until you confirm their role.",
+    "columns": {
+      "person": "Person",
+      "role": "Requested role",
+      "invitation": "Link used",
+      "signedUp": "Signed up",
+      "known": "Already known?"
+    },
+    "selectAll": "Select all",
+    "selectRow": "Select {name}",
+    "selected": "{count, plural, =0 {Nothing selected} one {# selected} other {# selected}}",
+    "approve": "Approve",
+    "reject": "Reject",
+    "approveTitle": "{count, plural, one {Approve this account?} other {Approve these # accounts?}}",
+    "approveText": "Each person gets the requested role and a member record is created for them.",
+    "rejectTitle": "{count, plural, one {Reject this account?} other {Reject these # accounts?}}",
+    "rejectText": "These people won't be able to sign in any more. They will see a message saying their request was declined.",
+    "approved": "{count, plural, =0 {No account approved} one {# account approved} other {# accounts approved}}",
+    "rejected": "{count, plural, =0 {No account rejected} one {# account rejected} other {# accounts rejected}}",
+    "empty": "No pending accounts",
+    "emptyHint": "Sign-ups made with an invitation link will show up here.",
+    "known": "Existing record: {name}",
+    "hasAccount": "already has an account",
+    "unknown": "No record with this e-mail or phone",
+    "noInvitation": "—",
+    "noLabel": "Unlabelled link"
+  },
+  "invitations": {
+    "intro": "Share a link so monitors or members can create their account. Accounts created with a link stay pending until you approve them.",
+    "newTitle": "New invitation link",
+    "role": "Role",
+    "label": "Label (optional)",
+    "labelPlaceholder": "e.g. Monitors 2026",
+    "expiresAt": "Expires on",
+    "maxUses": "Max sign-ups",
+    "maxUsesHint": "Between 1 and 500",
+    "create": "Create link",
+    "createdTitle": "Link created: copy it now",
+    "createdText": "For security, this link will never be shown again. Copy it now and share it (WhatsApp, e-mail…).",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "copyFailed": "Couldn't copy: select the link and copy it by hand.",
+    "done": "I've copied the link",
+    "columns": {
+      "label": "Link",
+      "role": "Role",
+      "uses": "Sign-ups",
+      "expires": "Expiry",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "usesValue": "{uses} / {max}",
+    "createdBy": "Created by {name}, {when}",
+    "revoke": "Revoke",
+    "revokeTitle": "Revoke this link?",
+    "revokeText": "Nobody will be able to sign up with this link any more. Accounts already created are not affected.",
+    "revoked": "Link revoked",
+    "state": {
+      "valid": "Active",
+      "expired": "Expired",
+      "full": "Full",
+      "revoked": "Revoked"
+    },
+    "empty": "No invitation links",
+    "emptyHint": "Create a link so monitors can sign up."
+  },
+  "preapproved": {
+    "intro": "When someone on this list creates their account with the same e-mail or phone, they get their role immediately, without approval.",
+    "importTitle": "Import a list",
+    "format": "One person per line: Name; email; phone. Separator: semicolon, comma or tab. Email or phone may be empty, but not both.",
+    "role": "Role granted",
+    "list": "List",
+    "file": "Load a .csv file",
+    "fileLoaded": "{name} loaded into the list",
+    "import": "Import",
+    "resultTitle": "Import result",
+    "added": "{count, plural, =0 {Nobody added} one {# person added} other {# people added}}",
+    "duplicates": "{count, plural, one {# duplicate skipped (line {lines})} other {# duplicates skipped (lines {lines})}}",
+    "existing": "{count, plural, one {# person already has an account (line {lines})} other {# people already have an account (lines {lines})}}: give them the role in Settings → Users.",
+    "invalid": "{count, plural, one {# invalid line} other {# invalid lines}}",
+    "invalidLine": "Line {line}: {reason}",
+    "reasons": {
+      "name": "missing or too long name",
+      "contact": "neither e-mail nor phone",
+      "email": "invalid e-mail",
+      "phone": "invalid phone"
+    },
+    "filters": {
+      "all": "All",
+      "waiting": "Waiting",
+      "used": "Activated"
+    },
+    "columns": {
+      "person": "Person",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "waiting": "Waiting for sign-up",
+    "activated": "Activated",
+    "activatedBy": "by {name}, {when}",
+    "deleteTitle": "Remove this person from the list?",
+    "deleteText": "If they sign up later, they'll get a parent account (or a pending one with an invitation link).",
+    "remove": "Remove",
+    "empty": "The list is empty",
+    "emptyHint": "Import the monitors and members you already know."
+  },
+  "notify": {
+    "pendingTitle": "Sign-up to approve: {name}",
+    "pendingBody": "Requests the {role} role.",
+    "pendingBodyLabel": "Requests the {role} role (link “{label}”).",
+    "approvedTitle": "Your account is confirmed!",
+    "approvedBody": "Welcome to the ONET Teboulba team: your space is now available."
+  }
+}

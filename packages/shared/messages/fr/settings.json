@@ -123,7 +123,8 @@
     },
     "users": {
       "read": "Voir les utilisateurs",
-      "manage": "Gérer les comptes utilisateurs"
+      "manage": "Gérer les comptes utilisateurs",
+      "approve": "Valider les inscriptions (liens d'invitation, liste pré-approuvée)"
     },
     "roles": {
       "manage": "Gérer les rôles et permissions"

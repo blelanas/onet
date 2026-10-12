@@ -119,7 +119,7 @@ export default {
   },
   perms: {
     dashboard: { view: T("Voir le tableau de bord", "عرض لوحة القيادة", "View the dashboard") },
-    users: { read: T("Voir les utilisateurs", "عرض المستخدمين", "View users"), manage: T("Gérer les comptes utilisateurs", "إدارة حسابات المستخدمين", "Manage user accounts") },
+    users: { read: T("Voir les utilisateurs", "عرض المستخدمين", "View users"), manage: T("Gérer les comptes utilisateurs", "إدارة حسابات المستخدمين", "Manage user accounts"), approve: T("Valider les inscriptions (liens d'invitation, liste pré-approuvée)", "الموافقة على التسجيلات (روابط الدعوة، القائمة المعتمدة مسبقًا)", "Approve sign-ups (invitation links, pre-approved list)") },
     roles: { manage: T("Gérer les rôles et permissions", "إدارة الأدوار والصلاحيات", "Manage roles and permissions") },
     members: {
       read: T("Voir les membres (limité à son périmètre)", "عرض الأعضاء (في حدود نطاقه)", "View members (own scope)"),

@@ -61,6 +61,12 @@ export function Component() {
               {tn("login")}
             </Link>
           </div>
+          <div className="rounded-3xl border border-line bg-surface p-6 text-center shadow-[var(--shadow-soft)]">
+            <p className="font-bold text-ink">{t("parentAccount")}</p>
+            <Link href="/signup" className="mt-2 inline-flex font-extrabold text-brand-600 hover:underline">
+              {t("parentAccountCta")}
+            </Link>
+          </div>
         </aside>
       </div>
     </>

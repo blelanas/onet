@@ -290,6 +290,8 @@ export default {
     successNext: T("En attendant, découvrez nos activités", "في الأثناء، اكتشف أنشطتنا", "Meanwhile, discover our activities"),
     another: T("Inscrire un autre enfant", "تسجيل طفل آخر", "Sign up another child"),
     already: T("Déjà membre ?", "عضو بالفعل؟", "Already a member?"),
+    parentAccount: T("Vos enfants sont déjà inscrits ?", "أطفالك مسجّلون بالفعل؟", "Already have children registered?"),
+    parentAccountCta: T("Créer un compte parent", "أنشئ حساب وليّ", "Create a parent account"),
     why: T("Pourquoi nous rejoindre ?", "لماذا تنضمّ إلينا؟", "Why join us?"),
     perks: {
       a: T("Des clubs chaque semaine encadrés par des moniteurs formés", "نوادٍ أسبوعية يؤطّرها منشّطون مكوَّنون", "Weekly clubs led by trained monitors"),

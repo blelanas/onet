@@ -10,4 +10,5 @@ export const routes: RouteObject[] = [
   { path: "members/new", lazy: () => import("./member-new") },
   { path: "members/:id", lazy: () => import("./member-profile") },
   { path: "members/:id/edit", lazy: () => import("./member-edit") },
+  { path: "approvals", lazy: () => import("./approvals") },
 ];

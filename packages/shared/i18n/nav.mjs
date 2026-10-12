@@ -9,7 +9,7 @@ export default {
   items: {
     dashboard: T("Tableau de bord", "لوحة القيادة", "Dashboard"), myChildren: T("Mes enfants", "أطفالي", "My children"), achievements: T("Mes badges", "شاراتي", "My badges"),
     members: T("Membres", "الأعضاء", "Members"), children: T("Enfants", "الأطفال", "Children"), parents: T("Parents", "الأولياء", "Parents"), monitors: T("Moniteurs", "المنشطون", "Monitors"),
-    groups: T("Groupes", "المجموعات", "Groups"), joinRequests: T("Demandes d'adhésion", "طلبات الانخراط", "Join requests"),
+    groups: T("Groupes", "المجموعات", "Groups"), joinRequests: T("Demandes d'adhésion", "طلبات الانخراط", "Join requests"), approvals: T("Validations", "الموافقات", "Approvals"),
     activities: T("Activités", "الأنشطة", "Activities"), attendance: T("Présences", "الحضور", "Attendance"), calendar: T("Calendrier", "الرزنامة", "Calendar"),
     events: T("Événements", "التظاهرات", "Events"), trips: T("Sorties", "الرحلات", "Trips"), registrations: T("Inscriptions", "التسجيلات", "Registrations"),
     songs: T("Chansons", "الأناشيد", "Songs"), games: T("Jeux", "الألعاب", "Games"), conferences: T("Conférences", "المحاضرات", "Conferences"), resources: T("Ressources", "الموارد", "Resources"),

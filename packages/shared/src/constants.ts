@@ -7,6 +7,9 @@ export type MemberType = (typeof MEMBER_TYPES)[number];
 export const MEMBERSHIP_STATUSES = ["ACTIVE", "PENDING", "INACTIVE", "SUSPENDED"] as const;
 export const GENDERS = ["M", "F"] as const;
 export const GUARDIAN_RELATIONS = ["FATHER", "MOTHER", "GUARDIAN", "PARENT"] as const;
+/** What a member does besides ONET (asked at sign-up). */
+export const OCCUPATIONS = ["STUDENT", "WORKER", "OTHER"] as const;
+export type Occupation = (typeof OCCUPATIONS)[number];
 
 export const ACTIVITY_CATEGORIES = [
   "SPORTS",
@@ -26,6 +29,9 @@ export type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[number];
 
 export const EVENT_CATEGORIES = ["CULTURAL", "CHILDREN", "COMPETITION", "CELEBRATION", "WORKSHOP", "PUBLIC", "MEETING"] as const;
 export const EVENT_STATUSES = ["DRAFT", "PUBLISHED", "CANCELLED", "COMPLETED"] as const;
+/** Recurring programmes: a yearly festival with numbered editions (تظاهرة الطفولة), a club with seasons, or other. */
+export const SERIES_KINDS = ["FESTIVAL", "CLUB", "OTHER"] as const;
+export type SeriesKind = (typeof SERIES_KINDS)[number];
 
 export const TRIP_CATEGORIES = ["EDUCATIONAL", "CAMPING", "CULTURAL", "OUTDOOR", "EXCURSION", "REGIONAL"] as const;
 export const TRIP_STATUSES = ["DRAFT", "OPEN", "FULL", "CLOSED", "COMPLETED", "CANCELLED"] as const;
@@ -36,6 +42,7 @@ export const DOCUMENTS_STATUSES = ["MISSING", "PARTIAL", "COMPLETE"] as const;
 
 export const SONG_CATEGORIES = ["ANTHEM", "CHILDREN", "EDUCATIONAL", "FOLK", "CAMP", "CELEBRATION"] as const;
 export const GAME_CATEGORIES = ["OUTDOOR", "INDOOR", "TEAM", "EDUCATIONAL", "ICEBREAKER", "ENERGIZER"] as const;
+export const DANCE_CATEGORIES = ["GROUP", "TRADITIONAL", "MODERN", "KIDS", "SHOW"] as const;
 export const CONFERENCE_CATEGORIES = [
   "EDUCATION",
   "HEALTH",
@@ -78,6 +85,8 @@ export const NOTIFICATION_TYPES = [
   "SYSTEM",
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+export const CONVERSATION_KINDS = ["DIRECT", "GROUP"] as const;
+export type ConversationKind = (typeof CONVERSATION_KINDS)[number];
 export const NOTIFICATION_CHANNELS = ["IN_APP", "EMAIL", "SMS", "PUSH"] as const;
 export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
 

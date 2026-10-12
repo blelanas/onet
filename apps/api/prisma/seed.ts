@@ -3,6 +3,7 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaLibSQL } from "@prisma/adapter-libsql";
 import bcrypt from "bcryptjs";
+import { createHash, randomBytes } from "crypto";
 import { ALL_PERMISSIONS, DEFAULT_ROLE_PERMISSIONS, PERMISSIONS, ROLE_COLORS, ROLE_KEYS } from "@onet/shared";
 import { CONFERENCE_TRACKS, SONG_TRACKS, galleryUrl, trackInfo } from "./demo-media";
 
@@ -51,7 +52,7 @@ async function reset() {
     "AuditLog", "Session", "Notification", "Message", "ConversationParticipant", "Conversation", "Announcement", "Document", "CalendarEntry", "Task",
     "Payment", "EventRegistration", "TripRegistration", "Invoice", "Expense", "Attendance", "ActivityParticipant", "ActivityReport", "Activity",
     "GalleryItem", "Event", "TripMonitor", "Trip", "MemberBadge", "Badge", "Guardianship", "GroupMonitor", "Member", "Group", "Song", "Game",
-    "Conference", "Resource", "NewsPost", "JoinRequest", "ContactMessage", "UserRole", "RolePermission", "Permission", "Role", "User", "Setting",
+    "Conference", "Resource", "NewsPost", "JoinRequest", "ContactMessage", "PreapprovedPerson", "Invitation", "UserRole", "RolePermission", "Permission", "Role", "User", "Setting",
   ];
   for (const t of tables) await db.$executeRawUnsafe(`DELETE FROM "${t}"`);
 }
@@ -615,6 +616,29 @@ async function main() {
       { parentName: "Olfa Nasri", email: "olfa.nasri@example.tn", phone: "+216 98 765 432", childName: "Tasnim Nasri", childDob: dob(9), createdAt: daysFromNow(-1) },
     ],
   });
+  // Self sign-ups: an invitation link for monitors, people waiting for approval, a pre-approved list.
+  const inviteToken = randomBytes(24).toString("base64url");
+  const invitation = await db.invitation.create({
+    data: { tokenHash: createHash("sha256").update(inviteToken).digest("hex"), role: "monitor", label: "Moniteurs 2026", expiresAt: daysFromNow(5, 23, 59), maxUses: 30, uses: 2, createdById: uAdmin.id, createdAt: daysFromNow(-2) },
+  });
+  await db.invitation.create({
+    data: { tokenHash: createHash("sha256").update(randomBytes(24).toString("base64url")).digest("hex"), role: "member", label: "Bénévoles rentrée", expiresAt: daysFromNow(-20), maxUses: 20, uses: 7, createdById: uSuper.id, createdAt: daysFromNow(-60) },
+  });
+  for (const p of [
+    { name: "Rania Ferchichi", email: "rania.ferchichi@example.tn", phone: "+216 55 410 220", hoursAgo: 26 },
+    { name: "Bilel Lassoued", email: "bilel.lassoued@example.tn", phone: "+216 29 870 113", hoursAgo: 3 },
+  ]) {
+    await db.user.create({
+      data: { name: p.name, email: p.email, phone: p.phone, passwordHash, status: "PENDING", requestedRole: "monitor", invitationId: invitation.id, createdAt: new Date(Date.now() - p.hoursAgo * 3_600_000) },
+    });
+  }
+  await db.preapprovedPerson.createMany({
+    data: [
+      { name: "Hiba Mabrouk", email: "hiba.mabrouk@example.tn", phone: "21697300411", role: "monitor", createdById: uAdmin.id },
+      { name: "Anis Ben Amor", email: null, phone: "21624118790", role: "member", createdById: uAdmin.id },
+    ],
+  });
+
   await db.contactMessage.create({ data: { name: "Mourad Khelifi", email: "mourad.k@example.tn", subject: "Bénévolat", body: "Bonjour, je souhaite proposer mon aide comme bénévole pour les sorties." } });
 
   // Settings
@@ -641,6 +665,7 @@ async function main() {
   console.log(`✓ seeded: ${counts[0]} members, ${counts[1]} invoices, ${counts[2]} payments, ${counts[3]} attendance rows`);
   console.log(`\nDemo accounts (password: ${PASSWORD})`);
   for (const e of ["admin", "gestion", "comptable", "moniteur", "parent", "enfant", "membre"]) console.log(`  ${e}@onet-teboulba.tn`);
+  console.log(`\nDemo monitor invitation: /signup?invite=${inviteToken}`);
 }
 
 main()
