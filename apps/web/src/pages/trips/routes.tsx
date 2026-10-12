@@ -6,4 +6,5 @@ export const routes: RouteObject[] = [
   { path: "trips/new", lazy: () => import("./trip-new") },
   { path: "trips/:id", lazy: () => import("./trip-detail") },
   { path: "trips/:id/edit", lazy: () => import("./trip-edit") },
+  { path: "trips/:id/report", lazy: () => import("./trip-report") },
 ];

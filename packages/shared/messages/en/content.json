@@ -1,6 +1,6 @@
 {
   "hub": {
-    "title": "Content"
+    "title": "Baggage"
   },
   "common": {
     "newItem": "Add",
@@ -150,6 +150,38 @@
       "videoUrl": "…or video link (YouTube, etc.)",
       "isPublic": "Publish on the public website",
       "maxLtMin": "Maximum must be greater than minimum"
+    }
+  },
+  "dances": {
+    "title": "Dances",
+    "description": "The animator's dances: step by step, with music and video.",
+    "searchPlaceholder": "Title, description, steps…",
+    "results": "{count, plural, =0 {No dances} one {# dance} other {# dances}}",
+    "category": "Category",
+    "ageGroup": "Age",
+    "duration": "Duration",
+    "steps": "Steps",
+    "music": "Music",
+    "video": "Video",
+    "openVideo": "Watch the video",
+    "noSteps": "The steps haven't been written down yet.",
+    "hasMusic": "With music",
+    "hasVideo": "With video",
+    "new": "New dance",
+    "editTitle": "Edit dance",
+    "emptyTitle": "No dances yet",
+    "emptyText": "Add the team's dances, with their steps, music and a video.",
+    "form": {
+      "title": "Dance title",
+      "description": "Description",
+      "steps": "Steps",
+      "stepsHint": "One step per line: shown as numbered steps.",
+      "durationMin": "Duration (minutes)",
+      "image": "Image",
+      "audio": "Music (audio file)",
+      "videoUpload": "Video (file)",
+      "videoUrl": "…or video link (YouTube, etc.)",
+      "isPublic": "Publish on the public website"
     }
   },
   "conferences": {

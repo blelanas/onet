@@ -1,26 +1,117 @@
+import type { Prisma } from "@prisma/client";
 import { db } from "@api/lib/db";
 import type { CurrentUser } from "@api/lib/auth/session";
-import { addDays, startOfDay } from "@api/lib/dates";
-import { activitySessions, announcementsFor, eventsAndTrips, latestNotifications, sortAgenda } from "./common";
+import { can } from "@api/lib/auth/guards";
+import { announcementWhere } from "@api/modules/communication/audience";
+import { unreadMessagesCount } from "@api/modules/communication/messages";
+import { getOrgProfile } from "@api/modules/public/queries";
+import { getSetting } from "@api/modules/settings/store";
+import { ANNOUNCEMENT_SELECT } from "./common";
+import { canManageEditions, onTeamWhere } from "@api/modules/events/access";
+import { KIDS_OF_EDITION } from "@api/modules/events/series";
 
+const NONE = "__none__";
+
+/**
+ * Member home (members = monitors / animators): the ONET Teboulba hero, then the editions running or
+ * coming up, the member's edition teams, the trips they manage, the latest announcements they may see,
+ * unread chat messages and the size of the "baggage" (songs, dances, games).
+ */
 export async function memberDashboard(user: CurrentUser) {
-  const today = startOfDay();
   const now = new Date();
-  const memberId = user.memberId ?? "__none__";
-  const [upcoming, sessions, registrations, announcements, songs, notifications] = await Promise.all([
-    eventsAndTrips(now, addDays(today, 60), { publicOnly: true, calendarAudiences: ["ALL"] }),
-    activitySessions({ isPublic: true }, now, addDays(today, 7)),
-    db.eventRegistration.findMany({ where: { memberId, status: { not: "CANCELLED" }, event: { startAt: { gte: now } } }, select: { eventId: true, status: true } }),
-    announcementsFor(["ALL"], [], 4),
-    db.song.findMany({ orderBy: [{ featured: "desc" }, { plays: "desc" }], take: 4, select: { id: true, title: true, category: true, coverUrl: true, durationSec: true, author: true } }),
-    latestNotifications(user.id, 4),
+  const memberId = user.memberId ?? NONE;
+  const manage = canManageEditions(user);
+  // Drafts only for those who manage them.
+  const eventStatuses: Prisma.EventWhereInput["status"] = manage ? { not: "CANCELLED" } : { in: ["PUBLISHED", "COMPLETED"] };
+  // Internal (non-public) editions: admins, and the members on one of their teams.
+  const editionScope: Prisma.EventWhereInput = manage ? {} : { OR: [{ isPublic: true }, { teams: { some: onTeamWhere(memberId) } }] };
+  const tripStatuses: Prisma.TripWhereInput["status"] = { notIn: can(user, "trips.manage") ? ["CANCELLED"] : ["DRAFT", "CANCELLED"] };
+
+  const [org, logoUrl, me, editions, teams, trips, announcementScope, unreadMessages, songs, dances, games] = await Promise.all([
+    getOrgProfile(),
+    getSetting<string | null>("organization.logoUrl", null),
+    user.memberId ? db.member.findUnique({ where: { id: user.memberId }, select: { firstName: true, firstNameAr: true } }) : Promise.resolve(null),
+    // Editions (events of a series) still running or to come.
+    db.event.findMany({
+      where: { seriesId: { not: null }, endAt: { gte: now }, status: eventStatuses, ...editionScope },
+      orderBy: { startAt: "asc" },
+      take: 6,
+      select: {
+        id: true,
+        title: true,
+        startAt: true,
+        endAt: true,
+        location: true,
+        coverUrl: true,
+        editionNumber: true,
+        seasonYear: true,
+        series: { select: { id: true, name: true, nameAr: true, color: true, kind: true } },
+      },
+    }),
+    // Teams of editions not over yet that the member leads or belongs to.
+    db.eventTeam.findMany({
+      where: { ...onTeamWhere(memberId), event: { endAt: { gte: now }, status: eventStatuses } },
+      orderBy: [{ event: { startAt: "asc" } }, { name: "asc" }],
+      take: 8,
+      select: {
+        id: true,
+        name: true,
+        color: true,
+        leaderId: true,
+        conversationId: true,
+        event: { select: { id: true, title: true, startAt: true, endAt: true, series: { select: { name: true, nameAr: true, color: true } } } },
+        members: { select: { memberId: true } },
+        // Kids = active CHILD registrations (as in the edition's teams).
+        _count: { select: { kids: { where: KIDS_OF_EDITION } } },
+      },
+    }),
+    // Trips the member manages (TripMonitor).
+    db.trip.findMany({
+      where: { monitors: { some: { memberId } }, returnAt: { gte: now }, status: tripStatuses },
+      orderBy: { departAt: "asc" },
+      take: 6,
+      select: {
+        id: true,
+        title: true,
+        destination: true,
+        departAt: true,
+        returnAt: true,
+        coverUrl: true,
+        category: true,
+        status: true,
+        capacity: true,
+        _count: { select: { registrations: { where: { status: { in: ["CONFIRMED", "PENDING"] } } } } },
+      },
+    }),
+    announcementWhere(user),
+    unreadMessagesCount(user),
+    db.song.count(),
+    db.dance.count(),
+    db.game.count(),
   ]);
-  const regs = new Map(registrations.map((r) => [r.eventId, r.status]));
+
+  const announcements = await db.announcement.findMany({
+    where: { AND: [announcementScope, { publishedAt: { lte: now } }] },
+    orderBy: [{ isPinned: "desc" }, { publishedAt: "desc" }],
+    take: 5,
+    select: ANNOUNCEMENT_SELECT,
+  });
+
   return {
-    upcoming: sortAgenda(upcoming, 6).map((u) => ({ ...u, registration: u.kind === "event" ? (regs.get(u.id.slice(4)) ?? null) : null })),
-    sessions: sortAgenda(sessions, 6),
+    org: { name: org.name, fullName: org.fullName ?? null, fullNameAr: org.fullNameAr ?? null, logoUrl },
+    firstName: me?.firstName ?? user.name.split(" ")[0] ?? user.name,
+    firstNameAr: me?.firstNameAr ?? null,
+    editions: editions.map((e) => ({ ...e, ongoing: e.startAt <= now })),
+    teams: teams.map(({ leaderId, members, _count, ...t }) => ({
+      ...t,
+      isLeader: !!leaderId && leaderId === user.memberId,
+      // Animators of the team: its members and its leader (counted once).
+      animators: new Set([...members.map((m) => m.memberId), ...(leaderId ? [leaderId] : [])]).size,
+      kids: _count.kids,
+    })),
+    trips,
     announcements,
-    songs,
-    notifications,
+    unreadMessages,
+    counts: { songs, dances, games },
   };
 }

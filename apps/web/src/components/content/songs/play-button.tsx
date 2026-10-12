@@ -67,7 +67,7 @@ export function NowPlayingMark({ trackId, className }: { trackId: string; classN
   if (track?.id !== trackId || !playing) return null;
   return (
     <span className={cn("grid size-7 place-items-center rounded-full bg-white/95 shadow", className)}>
-      <Equalizer color="#E30613" />
+      <Equalizer color="#0F7A3E" />
     </span>
   );
 }

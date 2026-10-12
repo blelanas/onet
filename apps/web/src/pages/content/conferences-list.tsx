@@ -56,7 +56,7 @@ function ConferencesPage({ data, params }: { data: Data; params: Record<string, 
       <ContentHero
         theme="conferences"
         icon={<Mic2 />}
-        eyebrow={tn("sections.content")}
+        eyebrow={tn("sections.baggage")}
         title={t("conferences.title")}
         description={t("conferences.description")}
         breadcrumbs={[{ label: tn("items.dashboard"), href: "/dashboard" }, { label: t("conferences.title") }]}

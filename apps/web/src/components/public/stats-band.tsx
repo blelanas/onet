@@ -5,7 +5,7 @@ import { intlLocale } from "@onet/shared";
 type Stats = { children: number; monitors: number; activities: number; events: number; trips: number; songs: number };
 
 const ITEMS = [
-  { key: "children", icon: Smile, color: "#E30613" },
+  { key: "children", icon: Smile, color: "#0F7A3E" },
   { key: "activities", icon: Palette, color: "#2BB673" },
   { key: "events", icon: CalendarDays, color: "#FF6B4A" },
   { key: "trips", icon: Tent, color: "#1E9BD7" },

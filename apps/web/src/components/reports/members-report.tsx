@@ -16,7 +16,7 @@ import { KpiCard } from "@/components/ui/kpi-card";
 import { Progress } from "@/components/ui/progress";
 import { ChartCard, monthLabel } from "./chart-card";
 
-const TYPE_COLORS: Record<string, string> = { CHILD: "#D98B00", PARENT: "#7C4DFF", MONITOR: "#1683C0", MEMBER: "#1E9460", STAFF: "#E30613" };
+const TYPE_COLORS: Record<string, string> = { CHILD: "#D98B00", PARENT: "#7C4DFF", MONITOR: "#1683C0", MEMBER: "#0F7A3E", STAFF: "#E8457C" };
 const STATUS_COLORS: Record<string, string> = { ACTIVE: "#1E9460", PENDING: "#D98B00", INACTIVE: "#94A3B8", SUSPENDED: "#E30613" };
 
 function MembersReportView({ r }: { r: Data }) {

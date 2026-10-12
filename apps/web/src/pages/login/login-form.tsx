@@ -41,7 +41,7 @@ export function LoginForm({ next }: { next?: string }) {
 
   return (
     <>
-      <ActionForm action={login} successMessage="toast.welcome" redirectTo={(d) => d?.next ?? "/dashboard"} className="mt-8 space-y-4">
+      <ActionForm action={login} successMessage="toast.welcome" redirectTo={(d) => d?.next ?? "/dashboard"} className="mt-8 flex flex-col gap-4">
         {(pending) => (
           <>
             <input type="hidden" name="next" value={next ?? ""} />
@@ -61,7 +61,7 @@ export function LoginForm({ next }: { next?: string }) {
       </ActionForm>
       <p className="mt-6 text-center text-sm text-ink-2">
         {t("noAccount")}{" "}
-        <Link href="/join" className="font-bold text-brand-600 hover:underline">
+        <Link href="/signup" className="font-bold text-brand-600 hover:underline">
           {t("join")}
         </Link>
       </p>

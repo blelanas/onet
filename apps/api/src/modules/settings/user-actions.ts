@@ -6,10 +6,11 @@ import type { CurrentUser } from "@api/lib/auth/session";
 import { hashPassword, isStrongPassword } from "@api/lib/auth/password";
 import { ActionError, formToObject, runAction, zs } from "@api/lib/actions";
 import { audit } from "@api/lib/audit";
+import { STAFF_ROLE_KEYS } from "@onet/shared";
 
-/** Roles only holders of roles.manage may grant, revoke, or manage the users of. */
+/** Roles only holders of roles.manage may grant, revoke, or manage the users of (STAFF_ROLE_KEYS). */
 // accountant carries finance.manage, which admins (users.manage) must not be able to grant themselves.
-const PRIVILEGED = ["super_admin", "admin", "accountant"];
+const PRIVILEGED: readonly string[] = STAFF_ROLE_KEYS;
 
 const email = z.string().trim().toLowerCase().email("errors.email");
 const roleKeys = z.array(z.string().min(1)).min(1, "errors.required");

@@ -1,7 +1,7 @@
 import { T } from "./_lib.mjs";
 
 export default {
-  hub: { title: T("Contenus", "المحتوى", "Content") },
+  hub: { title: T("Bagage", "الحقيبة", "Baggage") },
   common: {
     newItem: T("Ajouter", "إضافة", "Add"),
     edit: T("Modifier", "تعديل", "Edit"),
@@ -132,6 +132,38 @@ export default {
       videoUrl: T("…ou lien vidéo (YouTube, etc.)", "…أو رابط فيديو (يوتيوب…)", "…or video link (YouTube, etc.)"),
       isPublic: T("Publier sur le site public", "نشرها على الموقع العمومي", "Publish on the public website"),
       maxLtMin: T("Le maximum doit être supérieur au minimum", "يجب أن يكون الحد الأقصى أكبر من الأدنى", "Maximum must be greater than minimum"),
+    },
+  },
+  dances: {
+    title: T("Danses", "الرقصات", "Dances"),
+    description: T("Les danses de l'animateur : pas à pas, en musique et en vidéo.", "رقصات المنشّط: خطوة بخطوة، بالموسيقى والفيديو.", "The animator's dances: step by step, with music and video."),
+    searchPlaceholder: T("Titre, description, pas…", "العنوان، الوصف، الخطوات…", "Title, description, steps…"),
+    results: T("{count, plural, =0 {Aucune danse} one {# danse} other {# danses}}", "{count, plural, =0 {لا توجد رقصات} one {رقصة واحدة} two {رقصتان} few {# رقصات} many {# رقصة} other {# رقصة}}", "{count, plural, =0 {No dances} one {# dance} other {# dances}}"),
+    category: T("Catégorie", "الصنف", "Category"),
+    ageGroup: T("Âge", "العمر", "Age"),
+    duration: T("Durée", "المدة", "Duration"),
+    steps: T("Les pas", "الخطوات", "Steps"),
+    music: T("La musique", "الموسيقى", "Music"),
+    video: T("Vidéo", "فيديو", "Video"),
+    openVideo: T("Voir la vidéo", "مشاهدة الفيديو", "Watch the video"),
+    noSteps: T("Les pas ne sont pas encore décrits.", "لم تُوصف الخطوات بعد.", "The steps haven't been written down yet."),
+    hasMusic: T("Avec musique", "مع موسيقى", "With music"),
+    hasVideo: T("Avec vidéo", "مع فيديو", "With video"),
+    new: T("Nouvelle danse", "رقصة جديدة", "New dance"),
+    editTitle: T("Modifier la danse", "تعديل الرقصة", "Edit dance"),
+    emptyTitle: T("Pas encore de danses", "لا توجد رقصات بعد", "No dances yet"),
+    emptyText: T("Ajoutez les danses de l'équipe, avec leurs pas, leur musique et une vidéo.", "أضف رقصات الفريق مع خطواتها وموسيقاها وفيديو.", "Add the team's dances, with their steps, music and a video."),
+    form: {
+      title: T("Titre de la danse", "عنوان الرقصة", "Dance title"),
+      description: T("Description", "الوصف", "Description"),
+      steps: T("Les pas", "الخطوات", "Steps"),
+      stepsHint: T("Un pas par ligne : ils s'affichent en étapes numérotées.", "خطوة في كل سطر: تُعرض كخطوات مرقّمة.", "One step per line: shown as numbered steps."),
+      durationMin: T("Durée (minutes)", "المدة (بالدقائق)", "Duration (minutes)"),
+      image: T("Image", "صورة", "Image"),
+      audio: T("Musique (fichier audio)", "الموسيقى (ملف صوتي)", "Music (audio file)"),
+      videoUpload: T("Vidéo (fichier)", "فيديو (ملف)", "Video (file)"),
+      videoUrl: T("…ou lien vidéo (YouTube, etc.)", "…أو رابط فيديو (يوتيوب…)", "…or video link (YouTube, etc.)"),
+      isPublic: T("Publier sur le site public", "نشرها على الموقع العمومي", "Publish on the public website"),
     },
   },
   conferences: {

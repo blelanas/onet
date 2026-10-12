@@ -12,14 +12,14 @@
   },
   "tabs": {
     "upcoming": "Upcoming",
-    "supervised": "I supervise",
+    "supervised": "I manage",
     "past": "Past",
     "drafts": "Drafts"
   },
   "searchPlaceholder": "Search a trip or a destination…",
   "empty": {
     "upcoming": "No trips planned yet",
-    "supervised": "You don't supervise any trip",
+    "supervised": "You don't manage any trip",
     "past": "No past trips",
     "drafts": "No drafts",
     "hint": "The next adventures are coming soon!"
@@ -27,7 +27,7 @@
   "card": {
     "days": "{count, plural, one {# day} other {# days}}",
     "ages": "Ages {min}–{max}",
-    "monitors": "{count, plural, one {# monitor} other {# monitors}}",
+    "monitors": "{count, plural, one {# manager} other {# managers}}",
     "registered": "Registered: {names}"
   },
   "detail": {
@@ -36,7 +36,7 @@
       "participants": "Participants",
       "rollcall": "Departure roll-call"
     },
-    "youSupervise": "You supervise",
+    "youSupervise": "You manage this trip",
     "deleteTitle": "Delete this trip?",
     "deleteText": "Registrations will be deleted and unpaid invoices cancelled. Not possible once payments were received.",
     "about": "About the trip",
@@ -48,8 +48,9 @@
     "departure": "Departure",
     "return": "Return",
     "duration": "Duration",
-    "monitors": "Monitors in charge",
-    "noMonitors": "Supervision being organised."
+    "monitors": "Trip managers",
+    "noMonitors": "Supervision being organised.",
+    "report": "Report"
   },
   "form": {
     "general": "The trip",
@@ -68,8 +69,8 @@
     "ageMin": "Minimum age",
     "ageMax": "Maximum age",
     "statusHint": "\"Full\" is set automatically from capacity.",
-    "monitors": "Supervision",
-    "monitorsHint": "Choose the monitors in charge: they'll see the trip and take the roll-call."
+    "monitors": "Trip managers",
+    "monitorsHint": "Choose the managers: they handle the participant list and payments, take the roll-call and send the report to the accountant."
   },
   "kid": {
     "title": "An adventure awaits!",
@@ -137,19 +138,159 @@
     "consent": "Consent",
     "documents": "Documents status",
     "docs": "Docs",
-    "placesLeft": "Places left",
-    "consentOverview": "Consents received",
-    "docsOverview": "Complete files",
-    "paymentsOverview": "Payments collected",
     "empty": "No participants yet"
-  },
-  "monitors": {
-    "assign": "Assign a monitor",
-    "remove": "Remove {name}",
-    "removeText": "This monitor will no longer be in charge of the trip."
   },
   "rollCall": {
     "title": "Departure roll-call — {date}",
     "noConsent": "No consent"
+  },
+  "managers": {
+    "title": "Trip managers",
+    "hint": "Managers build the participant list, collect payments and send the report to the accountant.",
+    "assign": "Add a manager",
+    "remove": "Remove {name}",
+    "removeText": "This person will no longer manage the trip's list and payments.",
+    "none": "No manager assigned yet."
+  },
+  "manage": {
+    "kpi": {
+      "participants": "Participants",
+      "expected": "Expected",
+      "collected": "Collected",
+      "outstanding": "Outstanding"
+    },
+    "capacity": "{count} / {capacity} places",
+    "waitlist": "{count, plural, =0 {} one {# on the waitlist} other {# on the waitlist}}",
+    "columns": {
+      "participant": "Participant",
+      "age": "Age",
+      "phone": "Phone",
+      "type": "Type",
+      "due": "Due",
+      "paid": "Paid",
+      "remaining": "Remaining",
+      "status": "Status",
+      "followUp": "Follow-up"
+    },
+    "types": {
+      "kid": "Kid",
+      "member": "Member"
+    },
+    "years": "{count} y",
+    "guardian": "Parent: {name}",
+    "viaGuardian": "(parent)",
+    "free": "Free",
+    "settled": "Paid up",
+    "empty": "Nobody on the list yet",
+    "emptyHint": "Add the kids and members who are going, then collect their payments.",
+    "showCancelled": "{count, plural, one {# cancelled registration} other {# cancelled registrations}}",
+    "add": "Add a participant",
+    "addHint": "A kid or member already known, or a new person.",
+    "existing": "Existing person",
+    "newPerson": "New person",
+    "search": "Name, member number or phone…",
+    "searchHint": "Type at least 2 letters.",
+    "noCandidates": "Nobody found. Add them as a new person.",
+    "choose": "Add",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "dateOfBirth": "Date of birth",
+    "phone": "Phone (optional)",
+    "parentSection": "Parent / guardian (optional)",
+    "parentHint": "A contact card is created for the parent (no account); a known number is reused.",
+    "parentName": "Parent's name",
+    "parentPhone": "Parent's phone",
+    "parentRelation": "Relation",
+    "notes": "Note",
+    "newHint": "The person is saved as one of the association's kids, then registered to the trip.",
+    "added": "Participant added to the list",
+    "addedWaitlist": "Trip full: participant put on the waitlist",
+    "recordPayment": "Record payment",
+    "recordPaymentTitle": "Record payment — {name}",
+    "remainingHint": "Remaining: {amount}",
+    "amount": "Amount (TND)",
+    "payAll": "Whole balance",
+    "method": "Payment method",
+    "note": "Note (optional)",
+    "remove": "Remove",
+    "removeTitle": "Remove {name} from the list?",
+    "removeText": "The registration is cancelled. An unpaid invoice is cancelled; money already received will be refunded by the accountant.",
+    "actions": "Actions for {name}",
+    "finalize": "Finalize and send to the accountant",
+    "finalizeShort": "Finalize list",
+    "finalizeTitle": "Finalize the participant list?",
+    "finalizeText": "The list will be frozen and the accountant automatically receives the detailed report ({count} participants, {collected} collected).",
+    "finalizeUnpaid": "Warning: {count, plural, one {# participant hasn't paid in full} other {# participants haven't paid in full}} ({amount} outstanding).",
+    "finalizeConfirm": "Finalize and send",
+    "finalized": "List finalized: the accountant received the report",
+    "lockedTitle": "List finalized on {date}",
+    "lockedBy": "by {name}",
+    "lockedText": "The list is frozen: no more additions or removals. Payments can still be recorded.",
+    "lockedAdmin": "Reopen it to edit it.",
+    "reopen": "Reopen the list",
+    "reopenTitle": "Reopen the list?",
+    "reopenText": "Managers will be able to edit the list again, then finalize it.",
+    "report": "View report"
+  },
+  "report": {
+    "title": "Trip report",
+    "back": "Back to the trip",
+    "print": "Print",
+    "exportCsv": "Export CSV",
+    "document": "Participant list",
+    "dates": "Dates",
+    "destination": "Destination",
+    "meeting": "Meeting point",
+    "price": "Price",
+    "managers": "Managers",
+    "finalized": "Finalized on {date} by {name}",
+    "notFinalized": "List not finalized: provisional state",
+    "generated": "Generated on {date}",
+    "byMethod": "By payment method",
+    "noPayments": "No payment received",
+    "refunds": "Refunds to handle",
+    "refundsHint": "Registrations cancelled after payment.",
+    "waitlist": "On the waitlist: {count}",
+    "total": "Total",
+    "empty": "No participants",
+    "signature": "Accountant's approval",
+    "csv": {
+      "name": "Name",
+      "type": "Type",
+      "age": "Age",
+      "phone": "Phone",
+      "guardian": "Parent",
+      "amountDue": "Due (TND)",
+      "paid": "Paid (TND)",
+      "remaining": "Remaining (TND)",
+      "methods": "Payment methods",
+      "status": "Status",
+      "membershipNumber": "Member no.",
+      "totalParticipants": "Participants",
+      "expected": "Expected (TND)",
+      "collected": "Collected (TND)",
+      "outstanding": "Outstanding (TND)",
+      "types": {
+        "kid": "Kid",
+        "member": "Member"
+      },
+      "refunds": "Refunds to make",
+      "refundAmount": "To refund (TND)",
+      "totalRefunds": "Total to refund (TND)"
+    }
+  },
+  "notify": {
+    "finalizedTitle": "List finalized: {title}",
+    "finalizedBody": "{count, plural, one {# participant} other {# participants}} · collected {collected} · outstanding {outstanding} — by {name}",
+    "managerAssigned": "You manage the trip \"{title}\"",
+    "managerAssignedBody": "Build the participant list, collect payments, then send the report to the accountant."
+  },
+  "errors": {
+    "listClosed": "This trip's list is finalized: an administrator must reopen it to edit it.",
+    "notClosed": "The list isn't finalized.",
+    "notParticipant": "This person isn't on the list.",
+    "noInvoice": "Nothing to collect: this registration has no invoice (free trip).",
+    "memberType": "Only kids and members can be added to the list.",
+    "memberInactive": "This person isn't active (pending, inactive or suspended): they can't be added to the list."
   }
 }

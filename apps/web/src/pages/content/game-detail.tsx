@@ -32,7 +32,7 @@ function GamePage({ data }: { data: Data }) {
   const t = useTranslations("content");
   const tc = useTranslations("common");
   const tn = useTranslations("nav");
-  const color = CATEGORY_COLORS[game.category] ?? "#E30613";
+  const color = CATEGORY_COLORS[game.category] ?? "#0F7A3E";
   const AgeIcon = AGE_ICONS[game.ageGroup] ?? AGE_ICONS.ALL;
 
   return (

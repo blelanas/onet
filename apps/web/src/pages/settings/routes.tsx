@@ -15,6 +15,7 @@ export const routes: RouteObject[] = [
       { path: "categories", lazy: () => import("./categories") },
       { path: "audit", lazy: () => import("./audit") },
       { path: "contact", lazy: () => import("./contact") },
+      { path: "bureau", lazy: () => import("./bureau") },
     ],
   },
 ];

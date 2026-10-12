@@ -2,8 +2,10 @@ import { Breadcrumbs, type Crumb } from "@/components/ui/page-header";
 import { cn } from "@/lib/utils";
 
 const THEMES = {
-  songs: "from-[#E30613] via-[#E8457C] to-[#7C4DFF]",
+  // Starts on brand-700 so the white/80 eyebrow and white/85 description stay ≥ 4.5:1 where the text sits.
+  songs: "from-[#0C6534] via-[#E8457C] to-[#7C4DFF]",
   games: "from-[#FFB400] via-[#FF6B4A] to-[#E8457C]",
+  dances: "from-[#7C4DFF] via-[#E8457C] to-[#FFB400]",
   conferences: "from-[#1E9BD7] via-[#7C4DFF] to-[#E8457C]",
   resources: "from-[#00A3A3] via-[#2BB673] to-[#1E9BD7]",
 } as const;

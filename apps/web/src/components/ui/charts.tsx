@@ -15,12 +15,14 @@ import {
   YAxis,
 } from "recharts";
 
-// Categorical order validated for CVD separation (see dataviz validator): sky, red, amber, green, violet.
+// Categorical order validated for CVD separation (see dataviz validator; worst adjacent pair ΔE 12.9,
+// all pairs ≥ 9.8): sky, brand green, amber, pink, violet. One green only — red stays reserved for
+// danger series (expenses, absences) passed explicitly.
 export const CHART_COLORS = [
   "#1683C0",
-  "#E30613",
+  "#0F7A3E",
   "#D98B00",
-  "#1E9460",
+  "#E8457C",
   "#7C4DFF",
 ];
 
@@ -34,7 +36,7 @@ const tooltipStyle = {
     fontFamily: "inherit",
   },
   labelStyle: { fontWeight: 800, color: "#221b33" },
-  cursor: { fill: "rgb(227 6 19 / 0.05)" },
+  cursor: { fill: "rgb(15 122 62 / 0.05)" },
 };
 
 type Series = { key: string; label: string; color?: string };

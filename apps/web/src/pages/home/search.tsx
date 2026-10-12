@@ -21,7 +21,7 @@ const ICONS: Record<SearchSection, { icon: LucideIcon; color: string }> = {
   activities: { icon: Sparkles, color: "#2BB673" },
   events: { icon: PartyPopper, color: "#E8457C" },
   trips: { icon: Bus, color: "#1E9BD7" },
-  songs: { icon: Music, color: "#E30613" },
+  songs: { icon: Music, color: "#0F7A3E" },
   games: { icon: Gamepad2, color: "#FF6B4A" },
   conferences: { icon: Mic2, color: "#00A3A3" },
   resources: { icon: BookOpen, color: "#5CAE2E" },

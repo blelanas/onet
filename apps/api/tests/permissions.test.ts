@@ -28,6 +28,10 @@ describe("default role grants", () => {
     expect(parent).not.toContain("members.read_all");
   });
 
+  it("only super admins and admins approve sign-ups by default", () => {
+    for (const r of ROLE_KEYS) expect(DEFAULT_ROLE_PERMISSIONS[r].includes("users.approve")).toBe(r === "super_admin" || r === "admin");
+  });
+
   it("admin cannot edit roles or post accounting entries", () => {
     expect(DEFAULT_ROLE_PERMISSIONS.admin).not.toContain("roles.manage");
     expect(DEFAULT_ROLE_PERMISSIONS.admin).not.toContain("finance.manage");

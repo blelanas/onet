@@ -7,7 +7,7 @@ export function PersonalHero({ kid, parent, name, count }: { kid: boolean; paren
   const t = useTranslations("activities.personal");
   return (
     <section
-      className={cn("relative overflow-hidden rounded-3xl p-6 text-white shadow-[var(--shadow-lift)] sm:p-8", kid ? "bg-[linear-gradient(120deg,#7C4DFF,#E8457C_55%,#FFB400)]" : "bg-[linear-gradient(120deg,#E30613,#FF6B4A_60%,#FFB400)]")}
+      className={cn("relative overflow-hidden rounded-3xl p-6 text-white shadow-[var(--shadow-lift)] sm:p-8", kid ? "bg-[linear-gradient(120deg,#7C4DFF,#E8457C_55%,#FFB400)]" : "bg-[linear-gradient(120deg,#0F7A3E,#FF6B4A_60%,#FFB400)]")}
     >
       <div className="bg-confetti absolute inset-0 opacity-60" />
       <div className="pointer-events-none absolute end-6 bottom-6 hidden gap-3 opacity-90 lg:flex" aria-hidden>

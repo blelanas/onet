@@ -85,6 +85,19 @@
     "alreadyRegistered": "Déjà inscrit",
     "inUse": "Impossible : cet élément est utilisé ailleurs",
     "amountTooHigh": "Le montant dépasse le reste à payer",
+    "accountRejected": "Votre demande d'inscription a été refusée par l'association. Contactez-la pour en savoir plus.",
+    "signupEmailTaken": "Un compte existe déjà avec cette adresse e-mail. Connectez-vous, ou contactez l'association si vous avez oublié votre mot de passe.",
+    "birthDate": "Date de naissance invalide",
+    "ageMin": "Il faut avoir au moins 12 ans pour devenir membre",
+    "ageMax": "Vérifiez la date de naissance (100 ans au maximum)",
+    "inviteInvalid": "Ce lien d'invitation n'est pas valide",
+    "inviteExpired": "Ce lien d'invitation a expiré",
+    "inviteFull": "Ce lien d'invitation est complet",
+    "inviteRevoked": "Ce lien d'invitation a été désactivé",
+    "inviteExpiry": "La date d'expiration doit être dans le futur (un an au plus)",
+    "maxUses": "500 inscriptions au maximum",
+    "listTooLong": "Liste trop longue (2 000 lignes et 200 000 caractères au maximum)",
+    "phone": "Numéro de téléphone invalide",
     "passwordMismatch": "Les mots de passe ne correspondent pas",
     "wrongPassword": "Mot de passe actuel incorrect"
   },
@@ -176,6 +189,11 @@
       "GUARDIAN": "Tuteur",
       "PARENT": "Parent"
     },
+    "OCCUPATIONS": {
+      "STUDENT": "Élève / étudiant·e",
+      "WORKER": "En activité",
+      "OTHER": "Autre"
+    },
     "activityCategory": {
       "SPORTS": "Sport",
       "MUSIC": "Musique",
@@ -219,6 +237,13 @@
       "EDUCATIONAL": "Éducatif",
       "ICEBREAKER": "Brise-glace",
       "ENERGIZER": "Dynamiseur"
+    },
+    "DANCE_CATEGORIES": {
+      "GROUP": "Danse de groupe",
+      "TRADITIONAL": "Traditionnelle",
+      "MODERN": "Moderne",
+      "KIDS": "Pour les petits",
+      "SHOW": "Spectacle"
     },
     "conferenceCategory": {
       "EDUCATION": "Éducation",
@@ -307,6 +332,11 @@
       "MEETING": "Réunion",
       "HOLIDAY": "Vacances",
       "IMPORTANT": "Date importante",
+      "OTHER": "Autre"
+    },
+    "SERIES_KINDS": {
+      "FESTIVAL": "Festival",
+      "CLUB": "Club",
       "OTHER": "Autre"
     },
     "weekday": {

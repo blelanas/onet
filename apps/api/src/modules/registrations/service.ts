@@ -144,12 +144,24 @@ async function assertCanRegister(user: CurrentUser, kind: RegKind, memberId: str
   return staff;
 }
 
-async function register(user: CurrentUser, kind: RegKind, targetId: string, memberId: string, opts: { parentConsent?: boolean; notes?: string } = {}): Promise<RegisterResult> {
-  const staff = await assertCanRegister(user, kind, memberId);
+/**
+ * `manager`: the caller already checked the user manages this trip (TripMonitor or trips.manage). The
+ * manager builds the list offline: no registration window, deadline or age range, and the parental
+ * consent is taken as collected by the manager.
+ */
+type RegisterOpts = { parentConsent?: boolean; notes?: string; manager?: boolean };
+
+/** Trip statuses where even a manager can't add anyone. */
+const MANAGER_CLOSED_TRIP = ["CANCELLED", "COMPLETED"];
+
+async function register(user: CurrentUser, kind: RegKind, targetId: string, memberId: string, opts: RegisterOpts = {}): Promise<RegisterResult> {
+  const manager = kind === "trip" && !!opts.manager;
+  const staff = manager ? true : await assertCanRegister(user, kind, memberId);
   const member = await db.member.findUnique({ where: { id: memberId }, select: { id: true, firstName: true, lastName: true, dateOfBirth: true, type: true } });
   if (!member) throw new AuthError("NOT_FOUND");
   // Parents must give consent for a trip; staff may record it later.
   if (kind === "trip" && !staff && !opts.parentConsent) await fail("consent");
+  const parentConsent = manager || !!opts.parentConsent;
 
   const memberName = `${member.firstName} ${member.lastName}`;
   const result = await db.$transaction(async (tx) => {
@@ -158,7 +170,15 @@ async function register(user: CurrentUser, kind: RegKind, targetId: string, memb
       kind === "event"
         ? await tx.eventRegistration.findUnique({ where: { eventId_memberId: { eventId: targetId, memberId } } })
         : await tx.tripRegistration.findUnique({ where: { tripId_memberId: { tripId: targetId, memberId } } });
-    const reason = eligibility(target, member, existing?.status ?? null, staff);
+    // Managers skip the window, deadline and age range, not the trip's end: nothing is added to a cancelled
+    // or completed trip.
+    const reason = manager
+      ? existing && existing.status !== "CANCELLED"
+        ? "registered"
+        : MANAGER_CLOSED_TRIP.includes(target.status)
+          ? "closed"
+          : null
+      : eligibility(target, member, existing?.status ?? null, staff);
     if (reason) await fail(reason);
 
     const full = (await countActive(tx, target)) >= target.capacity;
@@ -176,7 +196,7 @@ async function register(user: CurrentUser, kind: RegKind, targetId: string, memb
         ? await tx.eventRegistration.update({ where: { id: existing.id }, data: base })
         : await tx.eventRegistration.create({ data: { ...base, eventId: targetId, memberId } });
     } else {
-      const tripData = { ...base, parentConsent: !!opts.parentConsent };
+      const tripData = { ...base, parentConsent };
       reg = existing
         ? await tx.tripRegistration.update({ where: { id: existing.id }, data: tripData })
         : await tx.tripRegistration.create({ data: { ...tripData, tripId: targetId, memberId } });
@@ -188,17 +208,22 @@ async function register(user: CurrentUser, kind: RegKind, targetId: string, memb
 
   const { target } = result;
   await audit(user.id, "register", kind === "event" ? "EventRegistration" : "TripRegistration", result.reg.id, { targetId, memberId, status: result.status, invoiceId: result.invoiceId });
-  const guardians = await guardianUserIds(memberId);
-  await notifyLocalized(guardians, kind === "event" ? "EVENT_NEW" : "TRIP_REGISTRATION", target.link, (t) => ({
-    title: t(`notify.registered.${result.status}`, { name: member.firstName, title: target.title }),
-    body: t(result.invoiceId && result.status === "PENDING" ? "notify.payBody" : "notify.registeredBody", { title: target.title }),
-  }));
-  if (kind === "trip") {
-    const staffIds = (await roleUserIds(["admin", "super_admin"])).filter((id) => id !== user.id);
-    await notifyLocalized(staffIds, "TRIP_REGISTRATION", `${target.link}?tab=participants`, (t) => ({
-      title: t("notify.staffNew", { name: memberName, title: target.title }),
-      body: t(`notify.staffStatus.${result.status}`),
+  // The registration is saved: a notification failure must not report it as failed.
+  try {
+    const guardians = await guardianUserIds(memberId);
+    await notifyLocalized(guardians, kind === "event" ? "EVENT_NEW" : "TRIP_REGISTRATION", target.link, (t) => ({
+      title: t(`notify.registered.${result.status}`, { name: member.firstName, title: target.title }),
+      body: t(result.invoiceId && result.status === "PENDING" ? "notify.payBody" : "notify.registeredBody", { title: target.title }),
     }));
+    if (kind === "trip") {
+      const staffIds = (await roleUserIds(["admin", "super_admin"])).filter((id) => id !== user.id);
+      await notifyLocalized(staffIds, "TRIP_REGISTRATION", `${target.link}?tab=participants`, (t) => ({
+        title: t("notify.staffNew", { name: memberName, title: target.title }),
+        body: t(`notify.staffStatus.${result.status}`),
+      }));
+    }
+  } catch (e) {
+    console.error("[registrations] notification failed for registration", result.reg.id, e);
   }
   return { id: result.reg.id, status: result.status, invoiceId: result.invoiceId, memberId };
 }
@@ -207,7 +232,7 @@ export function registerForEvent(user: CurrentUser, eventId: string, memberId: s
   return register(user, "event", eventId, memberId, opts);
 }
 
-export function registerForTrip(user: CurrentUser, tripId: string, memberId: string, opts: { parentConsent?: boolean; notes?: string } = {}) {
+export function registerForTrip(user: CurrentUser, tripId: string, memberId: string, opts: RegisterOpts = {}) {
   return register(user, "trip", tripId, memberId, opts);
 }
 
@@ -269,9 +294,10 @@ async function notifyPromoted(target: RegTarget, promoted: { memberId: string; s
  * Cancels a registration. Unpaid invoices are cancelled; paid ones are kept (refund is handled by
  * finance, who get notified). Frees the place and promotes the waitlist.
  */
-export async function cancelRegistration(user: CurrentUser, kind: RegKind, registrationId: string) {
+export async function cancelRegistration(user: CurrentUser, kind: RegKind, registrationId: string, opts: { manager?: boolean } = {}) {
   const reg = await loadRegistration(kind, registrationId);
-  const staff = await assertCanEditRegistration(user, kind, reg.memberId);
+  // `manager`: the caller already checked the user manages this trip.
+  const staff = opts.manager && kind === "trip" ? true : await assertCanEditRegistration(user, kind, reg.memberId);
   if (reg.status === "CANCELLED") return { refundNeeded: false };
   const tFr = await getTranslations({ locale: "fr", namespace: "events" });
 

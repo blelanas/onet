@@ -13,7 +13,7 @@ export default {
     songs: { title: T("Chansons", "الأناشيد", "Songs"), description: T("Écoutez et chantez le répertoire de la chorale ONET Teboulba.", "استمعوا وغنّوا مع أناشيد كورال المنظمة بطبلبة.", "Listen and sing along with the ONET Teboulba choir.") },
     conferences: { title: T("Conférences", "المحاضرات", "Talks"), description: T("Rencontres et conférences pour les parents, les jeunes et les éducateurs.", "لقاءات ومحاضرات للأولياء والشباب والمربّين.", "Talks and meetups for parents, youth and educators.") },
     contact: { title: T("Contact", "اتصل بنا", "Contact"), description: T("Une question ? Écrivez-nous ou passez nous voir à la Maison de l'enfance.", "لديك سؤال؟ راسلنا أو زرنا في دار الطفل.", "A question? Write to us or visit us at the Children's House.") },
-    join: { title: T("Nous rejoindre", "انضمّ إلينا", "Join us"), description: T("Inscrivez votre enfant à l'ONET Teboulba en quelques minutes.", "سجّل طفلك في المنظمة بطبلبة في دقائق.", "Sign your child up to ONET Teboulba in a few minutes.") },
+    join: { title: T("Devenir membre", "كن عضوًا", "Become a member"), description: T("Rejoignez l'équipe des animateurs de l'ONET Teboulba : créez votre compte de membre en quelques minutes.", "انضمّ إلى فريق منشّطي المنظمة بطبلبة: أنشئ حسابك كعضو في دقائق.", "Join ONET Teboulba's team of animators: create your member account in a few minutes.") },
   },
 
   nav: {
@@ -87,10 +87,17 @@ export default {
     gallery: { title: T("Souvenirs en images", "ذكريات بالصور", "Memories in pictures"), subtitle: T("Sourires, découvertes et beaux moments partagés.", "ابتسامات واكتشافات ولحظات جميلة.", "Smiles, discoveries and great shared moments.") },
     cta: {
       title: T("Prêt à vivre l'aventure ONET ?", "مستعدّ لعيش مغامرة المنظمة؟", "Ready for the ONET adventure?"),
-      text: T("Inscrivez votre enfant en quelques minutes : nous vous rappelons pour finaliser l'adhésion.", "سجّل طفلك في دقائق، وسنتصل بك لإتمام الانخراط.", "Sign your child up in minutes — we'll call you back to complete the membership."),
-      join: T("Inscrire mon enfant", "سجّل طفلي", "Sign my child up"),
+      text: T("Vous avez envie d'animer, de chanter et de jouer avec les enfants ? Devenez membre de l'équipe en quelques minutes.", "ترغب في التنشيط والغناء واللعب مع الأطفال؟ كن عضوًا في الفريق في دقائق.", "Want to lead activities, sing and play with children? Become a member of the team in a few minutes."),
+      join: T("Devenir membre", "كن عضوًا", "Become a member"),
       contact: T("Poser une question", "اطرح سؤالًا", "Ask a question"),
     },
+  },
+
+  bureau: {
+    eyebrow: T("Notre équipe", "فريقنا", "Our team"),
+    title: T("Membres du bureau local", "أعضاء المكتب المحلي", "Local bureau members"),
+    subtitle: T("Les bénévoles élus qui font vivre l'ONET Teboulba au quotidien.", "المتطوّعون المنتخبون الذين يُحيون المنظمة بطبلبة يوميًا.", "The elected volunteers who keep ONET Teboulba going every day."),
+    list: T("Membres du bureau local", "أعضاء المكتب المحلي", "Local bureau members"),
   },
 
   common: {
@@ -265,38 +272,35 @@ export default {
 
   join: {
     eyebrow: T("Adhésion", "الانخراط", "Membership"),
-    title: T("Inscrivez votre enfant", "سجّل طفلك", "Sign your child up"),
-    subtitle: T("Remplissez ce formulaire : un membre de l'équipe vous rappelle pour finaliser l'inscription et répondre à vos questions.", "املأ هذه الاستمارة وسيتصل بك أحد أعضاء الفريق لإتمام التسجيل والإجابة عن أسئلتك.", "Fill in this form: a team member will call you back to complete the registration and answer your questions."),
+    title: T("Devenir membre", "كن عضوًا", "Become a member"),
+    subtitle: T(
+      "Les membres de l'ONET Teboulba sont ses animateurs et animatrices : des jeunes et des adultes qui donnent de leur temps pour les enfants. Créez votre compte, l'association le valide et vous rejoignez l'équipe.",
+      "أعضاء المنظمة بطبلبة هم منشّطوها ومنشّطاتها: شباب وكهول يمنحون من وقتهم للأطفال. أنشئ حسابك، تصادق عليه المنظمة، وتنضمّ إلى الفريق.",
+      "ONET Teboulba's members are its animators: young people and adults who give their time to children. Create your account, the association approves it and you join the team.",
+    ),
     steps: {
-      one: { title: T("Vous remplissez le formulaire", "تملأ الاستمارة", "You fill in the form"), text: T("2 minutes, sans créer de compte.", "دقيقتان، دون إنشاء حساب.", "2 minutes, no account needed.") },
-      two: { title: T("Nous vous rappelons", "نتصل بك", "We call you back"), text: T("Pour choisir le groupe et les activités.", "لاختيار المجموعة والأنشطة.", "To choose the group and activities.") },
-      three: { title: T("Bienvenue dans la famille !", "مرحبًا بك في العائلة!", "Welcome to the family!"), text: T("Votre espace famille est activé.", "يتم تفعيل فضاء العائلة.", "Your family space is activated.") },
+      one: { title: T("Vous créez votre compte", "تُنشئ حسابك", "You create your account"), text: T("2 minutes : identité, contact, activité.", "دقيقتان: الهوية، الاتصال، النشاط.", "2 minutes: identity, contact, occupation.") },
+      two: { title: T("L'association valide", "تصادق المنظمة", "The association approves"), text: T("Le bureau vérifie votre demande.", "يتحقّق المكتب من طلبك.", "The bureau checks your request.") },
+      three: { title: T("Bienvenue dans l'équipe !", "مرحبًا بك في الفريق!", "Welcome to the team!"), text: T("Événements, sorties, groupes et bagage.", "تظاهرات، رحلات، مجموعات وحقيبة.", "Events, trips, groups and baggage.") },
     },
-    parentSection: T("Le parent / tuteur", "الوليّ", "Parent / guardian"),
-    childSection: T("L'enfant", "الطفل", "The child"),
-    parentName: T("Nom complet", "الاسم واللقب", "Full name"),
-    email: T("E-mail", "البريد الإلكتروني", "Email"),
-    phone: T("Téléphone", "الهاتف", "Phone"),
-    phoneHint: T("Nous vous appellerons sur ce numéro.", "سنتصل بك على هذا الرقم.", "We'll call you on this number."),
-    childName: T("Prénom et nom de l'enfant", "اسم الطفل ولقبه", "Child's full name"),
-    childDob: T("Date de naissance", "تاريخ الولادة", "Date of birth"),
-    message: T("Centres d'intérêt, questions…", "الاهتمامات، أسئلة…", "Interests, questions…"),
-    messagePh: T("Ex. : elle adore chanter et aimerait rejoindre la chorale.", "مثال: تحبّ الغناء وتودّ الانضمام إلى الكورال.", "E.g. she loves singing and would like to join the choir."),
-    consent: T("J'accepte d'être contacté·e par l'ONET Teboulba au sujet de cette demande.", "أوافق على أن تتصل بي المنظمة بطبلبة بخصوص هذا الطلب.", "I agree to be contacted by ONET Teboulba about this request."),
-    submit: T("Envoyer la demande", "إرسال الطلب", "Send request"),
-    sent: T("Demande envoyée !", "تم إرسال الطلب!", "Request sent!"),
-    successTitle: T("Bienvenue dans l'aventure !", "مرحبًا بك في المغامرة!", "Welcome aboard!"),
-    successText: T("Votre demande est bien enregistrée. Nous vous appelons dans les prochains jours pour finaliser l'adhésion.", "تم تسجيل طلبك. سنتصل بك في الأيام القادمة لإتمام الانخراط.", "Your request is saved. We'll call you in the coming days to complete the membership."),
-    successNext: T("En attendant, découvrez nos activités", "في الأثناء، اكتشف أنشطتنا", "Meanwhile, discover our activities"),
-    another: T("Inscrire un autre enfant", "تسجيل طفل آخر", "Sign up another child"),
+    cta: T("Créer mon compte de membre", "أنشئ حسابي كعضو", "Create my member account"),
+    ctaHint: T("Gratuit · Validation par l'association", "مجاني · بموافقة المنظمة", "Free · Approved by the association"),
+    whoTitle: T("Qui peut devenir membre ?", "من يمكنه أن يصبح عضوًا؟", "Who can become a member?"),
+    who: T(
+      "Toute personne de 12 ans et plus, élève, étudiant·e, en activité ou non, qui a envie d'animer, de chanter, de jouer et de partager avec les enfants de Teboulba.",
+      "كل شخص يبلغ 12 سنة فما فوق، تلميذًا أو طالبًا، يعمل أو لا يعمل، يرغب في التنشيط والغناء واللعب والمشاركة مع أطفال طبلبة.",
+      "Anyone aged 12 and over, at school, studying, working or not, who wants to lead activities, sing, play and share with Teboulba's children.",
+    ),
     already: T("Déjà membre ?", "عضو بالفعل؟", "Already a member?"),
     why: T("Pourquoi nous rejoindre ?", "لماذا تنضمّ إلينا؟", "Why join us?"),
     perks: {
-      a: T("Des clubs chaque semaine encadrés par des moniteurs formés", "نوادٍ أسبوعية يؤطّرها منشّطون مكوَّنون", "Weekly clubs led by trained monitors"),
-      b: T("Sorties, camps et grandes fêtes toute l'année", "رحلات ومخيمات وحفلات كبيرة طوال السنة", "Trips, camps and big parties all year round"),
-      c: T("Un espace famille pour suivre présences, inscriptions et paiements", "فضاء للعائلة لمتابعة الحضور والتسجيلات والدفوعات", "A family space to follow attendance, registrations and payments"),
-      d: T("Une cotisation annuelle solidaire", "معلوم انخراط سنوي تضامني", "A fair annual membership fee"),
+      a: T("Animer des événements, des clubs et des sorties pour les enfants", "تنشيط التظاهرات والنوادي والرحلات للأطفال", "Lead events, clubs and trips for children"),
+      b: T("Rejoindre des groupes et discuter avec toute l'équipe", "الانضمام إلى مجموعات والتحاور مع كل الفريق", "Join groups and chat with the whole team"),
+      c: T("Un bagage partagé : chansons, danses et jeux", "حقيبة مشتركة: أناشيد ورقصات وألعاب", "A shared baggage: songs, dances and games"),
+      d: T("Se former et appartenir à une grande famille", "التكوّن والانتماء إلى عائلة كبيرة", "Get trained and belong to a big family"),
     },
+    contactTitle: T("Une question avant de vous inscrire ?", "لديك سؤال قبل التسجيل؟", "A question before signing up?"),
+    contactCta: T("Écrivez-nous", "راسلنا", "Write to us"),
   },
 
   form: {

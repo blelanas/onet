@@ -78,16 +78,65 @@
       "message": "Message",
       "noContacts": "No contacts available",
       "noMatch": "No matching contact",
-      "rules": "You only see people you may contact: the team and, depending on your role, your children's monitors or the parents in your groups.",
+      "rules": "You only see people you may contact: the team and, depending on your role, the other members and monitors, your children's monitors or the parents in your groups.",
       "notAllowed": "You cannot message this person."
     },
     "kinds": {
       "STAFF": "Team",
       "MONITOR": "Monitors",
+      "MEMBER": "Members",
       "PARENT": "Parents",
       "OTHER": "Others"
     },
-    "via": "Via: {names}"
+    "via": "Via: {names}",
+    "seenBy": "{count, plural, one {Seen by #} other {Seen by #}}",
+    "lastSender": "{name}: {text}",
+    "groups": {
+      "new": "New group",
+      "createTitle": "Create a chat group",
+      "createHint": "Bring members, monitors or the team together in one conversation.",
+      "name": "Group name",
+      "namePlaceholder": "E.g. Monitors' office",
+      "people": "Participants",
+      "searchPeople": "Search for someone…",
+      "selected": "{count, plural, =0 {Nobody selected} one {# person selected} other {# people selected}}",
+      "noContacts": "Nobody to add",
+      "limit": "Up to {max} people per group: remove someone to add another.",
+      "create": "Create group",
+      "created": "Group created",
+      "group": "Group",
+      "team": "Team",
+      "teamHint": "Chat of the \"{team}\" team ({edition}). Members are managed from the team.",
+      "members": "{count, plural, one {# member} other {# members}}",
+      "membersTitle": "Group members",
+      "showMembers": "Show members",
+      "admin": "Admin",
+      "you": "You",
+      "makeAdmin": "Make admin",
+      "remove": "Remove {name}",
+      "removeText": "{name} will no longer receive this group's messages.",
+      "add": "Add members",
+      "addButton": "Add",
+      "rename": "Rename",
+      "leave": "Leave group",
+      "leaveTitle": "Leave this group?",
+      "leaveText": "You'll no longer receive its messages. A group admin can add you back.",
+      "left": "You left the group",
+      "readOnly": "You're viewing this group as a platform administrator: you can manage it but not post in it.",
+      "mine": "My conversations",
+      "all": "All groups",
+      "allEmpty": "No groups yet",
+      "createdBy": "Created by {name}",
+      "messagesCount": "{count, plural, =0 {No messages} one {# message} other {# messages}}",
+      "errors": {
+        "teamManaged": "This chat belongs to a team: its name and members are managed from the team.",
+        "tooMany": "A group holds at most 200 participants besides its creator.",
+        "notMember": "Only a group member can be made admin."
+      },
+      "notify": {
+        "addedBody": "{name} added you to the group \"{title}\"."
+      }
+    }
   },
   "notifications": {
     "title": "Notifications",

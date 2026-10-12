@@ -6,6 +6,12 @@ import { myChildren, myGroupIds, visibleMemberIds } from "@api/lib/auth/scope";
 
 export type ActivityFilters = { q?: string; category?: string; status?: string; groupId?: string; mine?: boolean; excludeIds?: string[]; skip?: number; take?: number };
 
+/**
+ * Member types that may lead an activity: monitors, staff and members (members = animators; their
+ * self sign-ups are stored as MEMBER, and a member creating an activity is its default monitor).
+ */
+export const ACTIVITY_MONITOR_TYPES = ["MONITOR", "MEMBER", "STAFF"];
+
 /** Staff with activities.manage see drafts/cancelled; everyone else only live/finished ones. */
 export const canSeeDrafts = (user: CurrentUser) => can(user, "activities.manage");
 
@@ -154,7 +160,7 @@ export async function activityReports(activityId: string) {
 
 export async function activityFormOptions() {
   const [monitors, groups, events] = await Promise.all([
-    db.member.findMany({ where: { type: "MONITOR" }, orderBy: [{ firstName: "asc" }], select: { id: true, firstName: true, lastName: true } }),
+    db.member.findMany({ where: { type: { in: ACTIVITY_MONITOR_TYPES } }, orderBy: [{ firstName: "asc" }, { lastName: "asc" }], select: { id: true, firstName: true, lastName: true } }),
     db.group.findMany({ where: { isActive: true }, orderBy: { name: "asc" }, select: { id: true, name: true } }),
     db.event.findMany({ where: { endAt: { gte: new Date(Date.now() - 180 * 86400_000) } }, orderBy: { startAt: "asc" }, select: { id: true, title: true, startAt: true } }),
   ]);
