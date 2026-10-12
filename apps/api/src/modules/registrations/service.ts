@@ -144,12 +144,21 @@ async function assertCanRegister(user: CurrentUser, kind: RegKind, memberId: str
   return staff;
 }
 
-async function register(user: CurrentUser, kind: RegKind, targetId: string, memberId: string, opts: { parentConsent?: boolean; notes?: string } = {}): Promise<RegisterResult> {
-  const staff = await assertCanRegister(user, kind, memberId);
+/**
+ * `manager`: the caller already checked the user manages this trip (TripMonitor or trips.manage). The
+ * manager builds the list offline: no registration window, deadline or age range, and the parental
+ * consent is taken as collected by the manager.
+ */
+type RegisterOpts = { parentConsent?: boolean; notes?: string; manager?: boolean };
+
+async function register(user: CurrentUser, kind: RegKind, targetId: string, memberId: string, opts: RegisterOpts = {}): Promise<RegisterResult> {
+  const manager = kind === "trip" && !!opts.manager;
+  const staff = manager ? true : await assertCanRegister(user, kind, memberId);
   const member = await db.member.findUnique({ where: { id: memberId }, select: { id: true, firstName: true, lastName: true, dateOfBirth: true, type: true } });
   if (!member) throw new AuthError("NOT_FOUND");
   // Parents must give consent for a trip; staff may record it later.
   if (kind === "trip" && !staff && !opts.parentConsent) await fail("consent");
+  const parentConsent = manager || !!opts.parentConsent;
 
   const memberName = `${member.firstName} ${member.lastName}`;
   const result = await db.$transaction(async (tx) => {
@@ -158,7 +167,7 @@ async function register(user: CurrentUser, kind: RegKind, targetId: string, memb
       kind === "event"
         ? await tx.eventRegistration.findUnique({ where: { eventId_memberId: { eventId: targetId, memberId } } })
         : await tx.tripRegistration.findUnique({ where: { tripId_memberId: { tripId: targetId, memberId } } });
-    const reason = eligibility(target, member, existing?.status ?? null, staff);
+    const reason = manager ? (existing && existing.status !== "CANCELLED" ? "registered" : null) : eligibility(target, member, existing?.status ?? null, staff);
     if (reason) await fail(reason);
 
     const full = (await countActive(tx, target)) >= target.capacity;
@@ -176,7 +185,7 @@ async function register(user: CurrentUser, kind: RegKind, targetId: string, memb
         ? await tx.eventRegistration.update({ where: { id: existing.id }, data: base })
         : await tx.eventRegistration.create({ data: { ...base, eventId: targetId, memberId } });
     } else {
-      const tripData = { ...base, parentConsent: !!opts.parentConsent };
+      const tripData = { ...base, parentConsent };
       reg = existing
         ? await tx.tripRegistration.update({ where: { id: existing.id }, data: tripData })
         : await tx.tripRegistration.create({ data: { ...tripData, tripId: targetId, memberId } });
@@ -207,7 +216,7 @@ export function registerForEvent(user: CurrentUser, eventId: string, memberId: s
   return register(user, "event", eventId, memberId, opts);
 }
 
-export function registerForTrip(user: CurrentUser, tripId: string, memberId: string, opts: { parentConsent?: boolean; notes?: string } = {}) {
+export function registerForTrip(user: CurrentUser, tripId: string, memberId: string, opts: RegisterOpts = {}) {
   return register(user, "trip", tripId, memberId, opts);
 }
 
@@ -269,9 +278,10 @@ async function notifyPromoted(target: RegTarget, promoted: { memberId: string; s
  * Cancels a registration. Unpaid invoices are cancelled; paid ones are kept (refund is handled by
  * finance, who get notified). Frees the place and promotes the waitlist.
  */
-export async function cancelRegistration(user: CurrentUser, kind: RegKind, registrationId: string) {
+export async function cancelRegistration(user: CurrentUser, kind: RegKind, registrationId: string, opts: { manager?: boolean } = {}) {
   const reg = await loadRegistration(kind, registrationId);
-  const staff = await assertCanEditRegistration(user, kind, reg.memberId);
+  // `manager`: the caller already checked the user manages this trip.
+  const staff = opts.manager && kind === "trip" ? true : await assertCanEditRegistration(user, kind, reg.memberId);
   if (reg.status === "CANCELLED") return { refundNeeded: false };
   const tFr = await getTranslations({ locale: "fr", namespace: "events" });
 

@@ -10,7 +10,9 @@ export type TripTab = "upcoming" | "past" | "drafts" | "supervised";
 export type TripFilters = { tab: TripTab; category?: string; q?: string; skip?: number; take?: number };
 
 function visibilityWhere(user: CurrentUser): Prisma.TripWhereInput {
-  return isStaffish(user) ? {} : { isPublic: true };
+  if (isStaffish(user)) return {};
+  // Internal trips stay visible to the members who manage them.
+  return user.memberId ? { OR: [{ isPublic: true }, { monitors: { some: { memberId: user.memberId } } }] } : { isPublic: true };
 }
 
 function tabWhere(user: CurrentUser, tab: TripTab): Prisma.TripWhereInput {
@@ -78,8 +80,10 @@ export async function getTrip(user: CurrentUser, id: string) {
     },
   });
   if (!t) throw new AuthError("NOT_FOUND");
-  if (t.status === "DRAFT" && !can(user, "trips.manage")) throw new AuthError("NOT_FOUND");
-  if (!t.isPublic && !isStaffish(user)) throw new AuthError("NOT_FOUND");
+  // The trip's managers see it even while it is a draft or internal.
+  const manager = isTripMonitor(user, t);
+  if (t.status === "DRAFT" && !can(user, "trips.manage") && !manager) throw new AuthError("NOT_FOUND");
+  if (!t.isPublic && !isStaffish(user) && !manager) throw new AuthError("NOT_FOUND");
   return t;
 }
 
@@ -93,9 +97,10 @@ export async function getTripForEdit(id: string) {
   return t;
 }
 
+/** Trip manager candidates: active members, monitors and staff. */
 export async function monitorOptions() {
   return db.member.findMany({
-    where: { type: { in: ["MONITOR", "STAFF"] }, membershipStatus: "ACTIVE" },
+    where: { type: { in: ["MEMBER", "MONITOR", "STAFF"] }, membershipStatus: "ACTIVE" },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
     select: { id: true, firstName: true, lastName: true, photoUrl: true },
   });

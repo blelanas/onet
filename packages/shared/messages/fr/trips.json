@@ -12,14 +12,14 @@
   },
   "tabs": {
     "upcoming": "À venir",
-    "supervised": "Que j'encadre",
+    "supervised": "Que je gère",
     "past": "Passées",
     "drafts": "Brouillons"
   },
   "searchPlaceholder": "Rechercher une sortie, une destination…",
   "empty": {
     "upcoming": "Aucune sortie programmée pour le moment",
-    "supervised": "Vous n'encadrez aucune sortie",
+    "supervised": "Vous ne gérez aucune sortie",
     "past": "Aucune sortie passée",
     "drafts": "Aucun brouillon",
     "hint": "Les prochaines aventures arrivent bientôt !"
@@ -27,7 +27,7 @@
   "card": {
     "days": "{count, plural, one {# jour} other {# jours}}",
     "ages": "{min}–{max} ans",
-    "monitors": "{count, plural, one {# moniteur} other {# moniteurs}}",
+    "monitors": "{count, plural, one {# responsable} other {# responsables}}",
     "registered": "Inscrit(s) : {names}"
   },
   "detail": {
@@ -36,7 +36,7 @@
       "participants": "Participants",
       "rollcall": "Appel du départ"
     },
-    "youSupervise": "Vous encadrez",
+    "youSupervise": "Vous êtes responsable",
     "deleteTitle": "Supprimer cette sortie ?",
     "deleteText": "Les inscriptions seront supprimées et les factures impayées annulées. Impossible si des paiements ont été reçus.",
     "about": "La sortie",
@@ -48,8 +48,9 @@
     "departure": "Départ",
     "return": "Retour",
     "duration": "Durée",
-    "monitors": "Moniteurs responsables",
-    "noMonitors": "Encadrement en cours d'organisation."
+    "monitors": "Responsables de la sortie",
+    "noMonitors": "Encadrement en cours d'organisation.",
+    "report": "Rapport"
   },
   "form": {
     "general": "La sortie",
@@ -68,8 +69,8 @@
     "ageMin": "Âge minimum",
     "ageMax": "Âge maximum",
     "statusHint": "« Complet » passe automatiquement selon la capacité.",
-    "monitors": "Encadrement",
-    "monitorsHint": "Choisissez les moniteurs responsables : ils verront la sortie et feront l'appel."
+    "monitors": "Responsables de la sortie",
+    "monitorsHint": "Choisissez les responsables : ils gèrent la liste des participants et les paiements, font l'appel et envoient le rapport à la comptabilité."
   },
   "kid": {
     "title": "Une aventure t'attend !",
@@ -137,19 +138,155 @@
     "consent": "Autorisation",
     "documents": "Statut des documents",
     "docs": "Docs",
-    "placesLeft": "Places restantes",
-    "consentOverview": "Autorisations reçues",
-    "docsOverview": "Dossiers complets",
-    "paymentsOverview": "Paiements encaissés",
     "empty": "Aucun participant pour l'instant"
-  },
-  "monitors": {
-    "assign": "Affecter un moniteur",
-    "remove": "Retirer {name}",
-    "removeText": "Ce moniteur ne sera plus responsable de la sortie."
   },
   "rollCall": {
     "title": "Appel du départ — {date}",
     "noConsent": "Sans autorisation"
+  },
+  "managers": {
+    "title": "Responsables de la sortie",
+    "hint": "Les responsables construisent la liste des participants, encaissent les paiements et envoient le rapport à la comptabilité.",
+    "assign": "Ajouter un responsable",
+    "remove": "Retirer {name}",
+    "removeText": "Cette personne ne gérera plus la liste ni les paiements de la sortie.",
+    "none": "Aucun responsable désigné pour l'instant."
+  },
+  "manage": {
+    "kpi": {
+      "participants": "Participants",
+      "expected": "Montant attendu",
+      "collected": "Encaissé",
+      "outstanding": "Reste à encaisser"
+    },
+    "capacity": "{count} / {capacity} places",
+    "waitlist": "{count, plural, =0 {} one {# en liste d'attente} other {# en liste d'attente}}",
+    "columns": {
+      "participant": "Participant",
+      "age": "Âge",
+      "phone": "Téléphone",
+      "type": "Type",
+      "due": "Dû",
+      "paid": "Payé",
+      "remaining": "Reste",
+      "status": "Statut",
+      "followUp": "Suivi"
+    },
+    "types": {
+      "kid": "Enfant",
+      "member": "Membre"
+    },
+    "years": "{count} ans",
+    "guardian": "Parent : {name}",
+    "viaGuardian": "(parent)",
+    "free": "Gratuit",
+    "settled": "Réglé",
+    "empty": "Personne sur la liste pour l'instant",
+    "emptyHint": "Ajoutez les enfants et les membres qui partent, puis encaissez leurs paiements.",
+    "showCancelled": "{count, plural, one {# inscription annulée} other {# inscriptions annulées}}",
+    "add": "Ajouter un participant",
+    "addHint": "Un enfant ou un membre déjà connu, ou une nouvelle personne.",
+    "existing": "Personne existante",
+    "newPerson": "Nouvelle personne",
+    "search": "Nom, n° d'adhérent ou téléphone…",
+    "searchHint": "Tapez au moins 2 lettres.",
+    "noCandidates": "Aucune personne trouvée. Ajoutez-la comme nouvelle personne.",
+    "choose": "Ajouter",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "dateOfBirth": "Date de naissance",
+    "phone": "Téléphone (facultatif)",
+    "parentSection": "Parent / tuteur (facultatif)",
+    "parentHint": "Une fiche contact est créée pour le parent (sans compte) ; un numéro déjà connu est réutilisé.",
+    "parentName": "Nom du parent",
+    "parentPhone": "Téléphone du parent",
+    "parentRelation": "Lien",
+    "notes": "Remarque",
+    "newHint": "La personne est enregistrée comme enfant de l'association puis inscrite à la sortie.",
+    "added": "Participant ajouté à la liste",
+    "addedWaitlist": "Sortie complète : participant placé en liste d'attente",
+    "recordPayment": "Encaisser",
+    "recordPaymentTitle": "Encaisser — {name}",
+    "remainingHint": "Reste à payer : {amount}",
+    "amount": "Montant (TND)",
+    "payAll": "Tout le reste",
+    "method": "Mode de paiement",
+    "note": "Note (facultatif)",
+    "remove": "Retirer",
+    "removeTitle": "Retirer {name} de la liste ?",
+    "removeText": "L'inscription est annulée. Une facture impayée est annulée ; un paiement déjà reçu sera remboursé par la comptabilité.",
+    "actions": "Actions pour {name}",
+    "finalize": "Finaliser et envoyer à la comptabilité",
+    "finalizeShort": "Finaliser la liste",
+    "finalizeTitle": "Finaliser la liste des participants ?",
+    "finalizeText": "La liste sera figée et la comptabilité recevra automatiquement le rapport détaillé ({count} participants, {collected} encaissés).",
+    "finalizeUnpaid": "Attention : {count, plural, one {# participant n'a pas tout payé} other {# participants n'ont pas tout payé}} ({amount} restant).",
+    "finalizeConfirm": "Finaliser et envoyer",
+    "finalized": "Liste finalisée : la comptabilité a reçu le rapport",
+    "lockedTitle": "Liste finalisée le {date}",
+    "lockedBy": "par {name}",
+    "lockedText": "La liste est figée : plus d'ajout ni de retrait. Les paiements restent possibles.",
+    "lockedAdmin": "Rouvrez-la pour la modifier.",
+    "reopen": "Rouvrir la liste",
+    "reopenTitle": "Rouvrir la liste ?",
+    "reopenText": "Les responsables pourront à nouveau modifier la liste, puis la finaliser.",
+    "report": "Voir le rapport"
+  },
+  "report": {
+    "title": "Rapport de sortie",
+    "back": "Retour à la sortie",
+    "print": "Imprimer",
+    "exportCsv": "Exporter CSV",
+    "document": "Liste des participants",
+    "dates": "Dates",
+    "destination": "Destination",
+    "meeting": "Rendez-vous",
+    "price": "Prix",
+    "managers": "Responsables",
+    "finalized": "Finalisée le {date} par {name}",
+    "notFinalized": "Liste non finalisée : état provisoire",
+    "generated": "Édité le {date}",
+    "byMethod": "Par mode de paiement",
+    "noPayments": "Aucun paiement reçu",
+    "refunds": "Remboursements à traiter",
+    "refundsHint": "Inscriptions annulées après paiement.",
+    "waitlist": "En liste d'attente : {count}",
+    "total": "Total",
+    "empty": "Aucun participant",
+    "signature": "Visa de la comptabilité",
+    "csv": {
+      "name": "Nom",
+      "type": "Type",
+      "age": "Âge",
+      "phone": "Téléphone",
+      "guardian": "Parent",
+      "amountDue": "Dû (TND)",
+      "paid": "Payé (TND)",
+      "remaining": "Reste (TND)",
+      "methods": "Modes de paiement",
+      "status": "Statut",
+      "membershipNumber": "N° adhérent",
+      "totalParticipants": "Participants",
+      "expected": "Attendu (TND)",
+      "collected": "Encaissé (TND)",
+      "outstanding": "Reste à encaisser (TND)",
+      "types": {
+        "kid": "Enfant",
+        "member": "Membre"
+      }
+    }
+  },
+  "notify": {
+    "finalizedTitle": "Liste finalisée : {title}",
+    "finalizedBody": "{count, plural, one {# participant} other {# participants}} · encaissé {collected} · reste {outstanding} — par {name}",
+    "managerAssigned": "Vous êtes responsable de la sortie « {title} »",
+    "managerAssignedBody": "Construisez la liste des participants, encaissez les paiements puis envoyez le rapport à la comptabilité."
+  },
+  "errors": {
+    "listClosed": "La liste de cette sortie est finalisée : un administrateur doit la rouvrir pour la modifier.",
+    "notClosed": "La liste n'est pas finalisée.",
+    "notParticipant": "Cette personne ne fait pas partie de la liste.",
+    "noInvoice": "Rien à encaisser : cette inscription n'a pas de facture (sortie gratuite).",
+    "memberType": "Seuls les enfants et les membres peuvent être ajoutés à la liste."
   }
 }
