@@ -1,37 +1,31 @@
 import { useLocale, useTranslations } from "use-intl";
-import { Backpack, Baby, Bus, CalendarClock, CheckCircle2, ClipboardCheck, Download, Edit, FileCheck2, FileSignature, Hourglass, MapPin, Phone, Smile, Trash2, Users, Wallet } from "lucide-react";
+import { Backpack, Baby, Bus, CalendarClock, Edit, FileCheck2, FileText, Hourglass, Lock, MapPin, Smile, Trash2, Wallet } from "lucide-react";
 import type { tripPage, tripParticipantsPage, tripRollCallPage } from "@api/modules/trips/routes";
 import { formatDate, formatMoney } from "@onet/shared";
-import { download } from "@/lib/api";
 import { useApi } from "@/lib/query";
 import { useParams, useSearchParams } from "@/lib/router";
 import { usePageTitle } from "@/lib/title";
 import type { Loaded } from "@/lib/types";
-import { ageFrom } from "@/lib/utils";
 import { deleteTrip, saveTripRollCall } from "@/api/trips";
 import { RequirePerm } from "@/components/states/guards";
 import { QueryView } from "@/components/states/page-state";
-import { Avatar } from "@/components/ui/avatar";
-import { Button, LinkButton } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/button";
 import { ConfirmButton } from "@/components/ui/confirm-button";
 import { CoverArt } from "@/components/ui/cover-art";
 import { EmptyState } from "@/components/ui/empty-state";
-import { KpiCard } from "@/components/ui/kpi-card";
 import { Breadcrumbs } from "@/components/ui/page-header";
-import { Progress } from "@/components/ui/progress";
 import { InfoList, Section } from "@/components/ui/section";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { LinkTabs } from "@/components/ui/tabs";
 import { EntityDocuments } from "@/components/documents/entity-documents";
-import { AddParticipantButton } from "@/components/registrations/add-participant";
-import { ParticipantsTable } from "@/components/registrations/participants-table";
 import { RollCallForm } from "@/components/registrations/roll-call-form";
 import { CategoryIcon, DateTile, PlacesMeter, categoryColor } from "@/components/registrations/visuals";
-import { AddMonitorForm, RemoveMonitorButton } from "@/components/trips/monitors-manager";
 import { ProgramTimeline } from "@/components/trips/program-timeline";
 import { tripDays } from "@/components/trips/trip-card";
 import { TripFamilyFlow } from "@/components/trips/trip-family-flow";
+import { TripManagers } from "@/components/trips/trip-managers";
+import { TripParticipantsPanel } from "@/components/trips/trip-participants";
 import { dateTime, hm } from "@/components/registrations/format";
 
 type Data = Loaded<typeof tripPage>;
@@ -54,7 +48,7 @@ function TripDetail({ id, data }: { id: string; data: Data }) {
   const sp = useSearchParams();
   const tabParam = sp.get("tab");
   const child = sp.get("child") ?? undefined;
-  const { trip, manage, monitor, staff, canRollCall, showMoney, isKid, open, late, entries, steps, docs, showShared, monitorChoices } = data;
+  const { trip, manage, isManager, staff, canRollCall, showMoney, isKid, open, late, entries, steps, docs, showShared, monitorChoices, managers, listClosedAt, canReport } = data;
   usePageTitle(trip.title);
 
   const color = categoryColor(trip.category);
@@ -87,7 +81,12 @@ function TripDetail({ id, data }: { id: string; data: Data }) {
                   {tc(`enums.tripCategory.${trip.category}`)}
                 </span>
                 <StatusBadge status={trip.status} className="bg-white/90" />
-                {monitor && <span className="rounded-full bg-sky px-2.5 py-0.5 text-xs font-bold">{t("detail.youSupervise")}</span>}
+                {isManager && <span className="rounded-full bg-sky px-2.5 py-0.5 text-xs font-bold">{t("detail.youSupervise")}</span>}
+                {listClosedAt && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-0.5 text-xs font-bold text-ink">
+                    <Lock className="size-3" /> {t("manage.lockedTitle", { date: formatDate(listClosedAt, locale) })}
+                  </span>
+                )}
               </div>
               <h1 className="text-2xl leading-tight font-extrabold drop-shadow sm:text-4xl">{trip.title}</h1>
               <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-semibold text-white/90 sm:text-base">
@@ -99,14 +98,23 @@ function TripDetail({ id, data }: { id: string; data: Data }) {
             </div>
           </div>
         </CoverArt>
-        {manage && (
+        {(manage || canReport) && (
           <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line px-4 py-3">
-            <LinkButton href={`${base}/edit`} variant="outline" size="sm">
-              <Edit className="size-4" /> {tc("actions.edit")}
-            </LinkButton>
-            <ConfirmButton action={deleteTrip.bind(null, id)} variant="outline" size="sm" title={t("detail.deleteTitle")} description={t("detail.deleteText")} redirectTo="/dashboard/trips" ariaLabel={tc("actions.delete")}>
-              <Trash2 className="size-4 text-red-600" /> {tc("actions.delete")}
-            </ConfirmButton>
+            {canReport && (
+              <LinkButton href={`${base}/report`} variant="outline" size="sm">
+                <FileText className="size-4" /> {t("detail.report")}
+              </LinkButton>
+            )}
+            {manage && (
+              <>
+                <LinkButton href={`${base}/edit`} variant="outline" size="sm">
+                  <Edit className="size-4" /> {tc("actions.edit")}
+                </LinkButton>
+                <ConfirmButton action={deleteTrip.bind(null, id)} variant="outline" size="sm" title={t("detail.deleteTitle")} description={t("detail.deleteText")} redirectTo="/dashboard/trips" ariaLabel={tc("actions.delete")}>
+                  <Trash2 className="size-4 text-red-600" /> {tc("actions.delete")}
+                </ConfirmButton>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -185,31 +193,8 @@ function TripDetail({ id, data }: { id: string; data: Data }) {
                 </Section>
               </div>
               <div id="monitors" className="scroll-mt-24">
-                <Section title={t("detail.monitors")}>
-                  {trip.monitors.length ? (
-                    <ul className="space-y-2">
-                      {trip.monitors.map((m) => (
-                        <li key={m.memberId} className="flex items-center gap-3 rounded-2xl border border-line p-2.5">
-                          <Avatar firstName={m.member.firstName} lastName={m.member.lastName} src={m.member.photoUrl} />
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate font-bold text-ink">
-                              {m.member.firstName} {m.member.lastName}
-                            </p>
-                            {/* The API only sends phone numbers to staff and families with a confirmed child. */}
-                            {m.member.phone && (
-                              <a href={`tel:${m.member.phone}`} className="flex items-center gap-1 text-xs font-semibold text-brand-700" dir="ltr">
-                                <Phone className="size-3" /> {m.member.phone}
-                              </a>
-                            )}
-                          </div>
-                          {manage && <RemoveMonitorButton tripId={id} memberId={m.memberId} name={`${m.member.firstName} ${m.member.lastName}`} />}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-muted">{t("detail.noMonitors")}</p>
-                  )}
-                  {manage && <AddMonitorForm tripId={id} options={monitorChoices} />}
+                <Section title={t("managers.title")}>
+                  <TripManagers tripId={id} managers={managers} options={monitorChoices} canEdit={manage} />
                 </Section>
               </div>
             </aside>
@@ -224,49 +209,10 @@ function TripDetail({ id, data }: { id: string; data: Data }) {
 }
 
 function ParticipantsSection({ id }: { id: string }) {
-  const t = useTranslations("trips");
-  const tc = useTranslations("common");
-  const locale = useLocale();
   const query = useApi<Loaded<typeof tripParticipantsPage>>(`/trips/${id}/participants`);
   return (
     <QueryView query={query} skeleton={<Skeleton className="h-64 rounded-3xl" />}>
-      {({ rows, stats, addable, capacity, consent, docsOk, activeCount, expected, collected, showMoney, regManage }) => (
-        <div className="space-y-5">
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <KpiCard label={tc("status.CONFIRMED")} value={stats.confirmed} icon={<ClipboardCheck className="size-5" />} accent="leaf" />
-            <KpiCard label={tc("status.PENDING")} value={stats.pending} icon={<Hourglass className="size-5" />} accent="sun" />
-            <KpiCard label={tc("status.WAITLIST")} value={stats.waitlist} icon={<Users className="size-5" />} accent="grape" />
-            <KpiCard label={t("participants.placesLeft")} value={Math.max(0, capacity - stats.active)} icon={<Bus className="size-5" />} accent="sky" hint={`${stats.active}/${capacity}`} />
-          </div>
-          <section className="card grid gap-5 p-5 sm:grid-cols-3">
-            <Meter icon={<FileSignature className="size-4" />} label={t("participants.consentOverview")} value={consent} total={activeCount} color="#2BB673" />
-            <Meter icon={<FileCheck2 className="size-4" />} label={t("participants.docsOverview")} value={docsOk} total={activeCount} color="#1E9BD7" />
-            {showMoney ? (
-              <div>
-                <p className="mb-1 flex items-center justify-between gap-2 text-sm font-bold text-ink-2">
-                  <span className="flex items-center gap-2">
-                    <Wallet className="size-4" /> {t("participants.paymentsOverview")}
-                  </span>
-                  <span className="text-xs text-muted tabular-nums">{expected ? Math.round((collected / expected) * 100) : 0}%</span>
-                </p>
-                <Progress value={collected} max={expected || 1} color="#FFB400" />
-                <p className="mt-1.5 text-xs text-muted tabular-nums">
-                  {formatMoney(collected, locale)} / {formatMoney(expected, locale)}
-                </p>
-              </div>
-            ) : (
-              <Meter icon={<CheckCircle2 className="size-4" />} label={tc("fields.capacity")} value={stats.active} total={capacity} color="#7C4DFF" />
-            )}
-          </section>
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <Button variant="outline" onClick={() => void download(`/trips/${id}/participants/export.csv`)}>
-              <Download className="size-4" /> <span className="hidden sm:inline">{tc("actions.exportCsv")}</span>
-            </Button>
-            {regManage && <AddParticipantButton kind="trip" targetId={id} members={addable.map((m) => ({ ...m, age: ageFrom(m.dateOfBirth) }))} />}
-          </div>
-          <ParticipantsTable kind="trip" rows={rows} canManage={regManage} canFollowUp showMoney={showMoney} />
-        </div>
-      )}
+      {(data) => <TripParticipantsPanel tripId={id} data={data} />}
     </QueryView>
   );
 }
@@ -299,21 +245,5 @@ function RollCallSection({ id }: { id: string }) {
         </Section>
       )}
     </QueryView>
-  );
-}
-
-function Meter({ icon, label, value, total, color }: { icon: React.ReactNode; label: string; value: number; total: number; color: string }) {
-  return (
-    <div>
-      <p className="mb-1 flex items-center justify-between gap-2 text-sm font-bold text-ink-2">
-        <span className="flex items-center gap-2">
-          {icon} {label}
-        </span>
-        <span className="text-xs text-muted tabular-nums" dir="ltr">
-          {value}/{total}
-        </span>
-      </p>
-      <Progress value={value} max={total || 1} color={color} />
-    </div>
   );
 }

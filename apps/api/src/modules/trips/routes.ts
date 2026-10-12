@@ -7,8 +7,13 @@ import { slugify } from "@api/lib/utils";
 import { toCsv, toDateInput } from "@onet/shared";
 import { familyTripRegistrations, getTrip, getTripForEdit, isTripMonitor, listTrips, monitorOptions, parseLines, parseProgram, tripDocumentCount, tripTabCounts, type TripTab } from "./queries";
 import { addTripMonitor, deleteTrip, removeTripMonitor, saveTrip, saveTripRollCall } from "./actions";
-import { addableMembers, canSeeMoney, familyEntries, hideInvoiceMoney, hidePrice, paymentState, registrationStats, rollCall, tripParticipants } from "@api/modules/registrations/queries";
-import { deadlinePassed, isOpen, loadTarget } from "@api/modules/registrations/service";
+import { canManageTrip, requireTripManager } from "./access";
+import { participantCandidates, tripParticipantRows, tripTotals } from "./participants";
+import { addTripParticipant, finalizeTripList, recordTripPayment, removeTripParticipant, reopenTripList } from "./participant-actions";
+import { requireReportAccess, tripReport, tripReportCsv } from "./report";
+import { orgProfile } from "@api/modules/finance/queries";
+import { canSeeMoney, familyEntries, hidePrice, paymentState, registrationStats, rollCall, tripParticipants } from "@api/modules/registrations/queries";
+import { ACTIVE_STATUSES, deadlinePassed, isOpen, loadTarget } from "@api/modules/registrations/service";
 
 /** trips module routes (mounted under /api). */
 export const router = Router();
@@ -44,15 +49,22 @@ async function loadTripForStaff(req: Request) {
   return { user, id, trip, monitor: isTripMonitor(user, trip) };
 }
 
-/** Trip detail: trip + flags + parent stepper entries + program / documents / monitors. */
+/**
+ * Trip detail: trip + flags + parent stepper entries + program / documents / managers.
+ * `isManager`: the user is one of the trip's managers (TripMonitor); `canManage`: manager or admin
+ * (trips.manage) — they build the participant list, record payments and finalize it.
+ */
 export async function tripPage(req: Request) {
   const { user, id, trip, monitor } = await loadTripForStaff(req);
   const manage = can(user, "trips.manage");
   const regManage = can(user, "registrations.manage");
-  const staff = regManage || manage || monitor;
-  const showMoney = canSeeMoney(user);
+  const canManage = manage || monitor;
+  const staff = regManage || canManage;
+  const showMoney = canSeeMoney(user) || canManage;
   const target = await loadTarget("trip", id);
-  const entries = await familyEntries(user, target);
+  // The family stepper (consent + register + pay) is for parents only.
+  const entries = user.roles.includes("parent") ? await familyEntries(user, target) : [];
+  const closedBy = trip.listClosedById ? await db.user.findUnique({ where: { id: trip.listClosedById }, select: { name: true } }) : null;
   const familyConfirmed = entries.some((e) => e.registration?.status === "CONFIRMED");
   const showPhones = staff || familyConfirmed;
   const showShared = can(user, "documents.manage") || (await tripDocumentCount(id)) > 0;
@@ -63,7 +75,14 @@ export async function tripPage(req: Request) {
     manage,
     regManage,
     monitor,
+    isManager: monitor,
+    canManage,
     staff,
+    listClosedAt: trip.listClosedAt,
+    listClosedBy: closedBy?.name ?? null,
+    /** Trip managers (= the trip's TripMonitor members). */
+    managers: trip.monitors.map((m) => ({ memberId: m.memberId, firstName: m.member.firstName, lastName: m.member.lastName, photoUrl: m.member.photoUrl, phone: showPhones ? m.member.phone : null })),
+    canReport: canManage || can(user, "finance.read"),
     canRollCall: manage || (monitor && can(user, "attendance.manage")),
     showMoney,
     isKid: user.roles.includes("kid") && !can(user, "trips.register"),
@@ -77,29 +96,53 @@ export async function tripPage(req: Request) {
   };
 }
 
-/** Participants tab: staff and the trip's monitors. */
+/**
+ * Participants tab (trip managers and staff): every registration with age, phone (own or guardian's),
+ * type, amount due / paid / remaining and payment methods, plus totals and the list state.
+ */
 export async function tripParticipantsPage(req: Request) {
   const { user, id, trip, monitor } = await loadTripForStaff(req);
   const regManage = can(user, "registrations.manage");
-  if (!regManage && !can(user, "trips.manage") && !monitor) throw new AuthError("FORBIDDEN");
-  const showMoney = canSeeMoney(user);
-  const [rows, stats, addable] = await Promise.all([tripParticipants(id), registrationStats("trip", id), regManage ? addableMembers("trip", id) : Promise.resolve([])]);
-  const active = rows.filter((r) => r.status === "CONFIRMED" || r.status === "PENDING");
-  const expected = active.reduce((s, r) => s + (r.invoice && r.invoice.status !== "CANCELLED" ? r.invoice.amount : 0), 0);
-  const collected = active.reduce((s, r) => s + (r.invoice?.status === "PAID" ? r.invoice.amount : 0), 0);
+  const admin = can(user, "trips.manage");
+  const canManage = admin || monitor;
+  if (!regManage && !canManage) throw new AuthError("FORBIDDEN");
+  const [rows, stats] = await Promise.all([tripParticipantRows(id), registrationStats("trip", id)]);
+  const totals = tripTotals(rows);
+  const active = rows.filter((r) => ACTIVE_STATUSES.includes(r.status));
+  const closedBy = trip.listClosedById ? await db.user.findUnique({ where: { id: trip.listClosedById }, select: { name: true } }) : null;
   return {
-    rows: rows.map((r) => hideInvoiceMoney(r, showMoney)),
+    rows,
     stats,
-    addable,
+    totals,
     capacity: trip.capacity,
+    price: trip.price,
     consent: active.filter((r) => r.parentConsent).length,
     docsOk: active.filter((r) => r.documentsStatus === "COMPLETE").length,
     activeCount: active.length,
-    expected: showMoney ? expected : 0,
-    collected: showMoney ? collected : 0,
-    showMoney,
+    /** Unpaid balances still open on the active list (warned about before finalizing). */
+    unpaidCount: active.filter((r) => r.remaining > 0).length,
+    closed: trip.listClosedAt ? { at: trip.listClosedAt, by: closedBy?.name ?? null } : null,
+    canManage,
+    canReopen: admin,
     regManage,
   };
+}
+
+/** Kids / members a manager can add (search). */
+export async function tripCandidatesPage(req: Request) {
+  const user = await requireUser();
+  const id = param(req, "id");
+  await requireTripManager(user, id);
+  return { rows: await participantCandidates(id, qs(req, "q")) };
+}
+
+/** Report for the accountants: managers (and admins) of the trip, or finance.read. */
+export async function tripReportPage(req: Request) {
+  const user = await requireUser();
+  const id = param(req, "id");
+  await requireReportAccess(user, id);
+  const [report, org, canManage] = await Promise.all([tripReport(id), orgProfile(), canManageTrip(user, id)]);
+  return { ...report, org, canManage, canReopen: can(user, "trips.manage") };
 }
 
 /** Departure roll-call tab. */
@@ -170,6 +213,20 @@ router.get(
   }),
 );
 router.get("/trips/:id/participants", query(tripParticipantsPage));
+router.get("/trips/:id/candidates", query(tripCandidatesPage));
+router.get(
+  "/trips/:id/report.csv",
+  query(async (req, res) => {
+    const user = await requireUser();
+    const id = param(req, "id");
+    await requireReportAccess(user, id);
+    const report = await tripReport(id);
+    await audit(user.id, "export", "TripReport", id, { count: report.participants.length });
+    const { filename, csv } = await tripReportCsv(report);
+    sendCsv(res, filename, csv);
+  }),
+);
+router.get("/trips/:id/report", query(tripReportPage));
 router.get("/trips/:id/rollcall", query(tripRollCallPage));
 router.get("/trips/:id/form", query(tripFormPage));
 router.get("/trips/:id", query(tripPage));
@@ -193,4 +250,26 @@ router.delete(
 router.post(
   "/trips/:id/rollcall",
   mutation((req) => saveTripRollCall({ ...req.body, id: param(req, "id") })),
+);
+
+// ─── Trip managers: participant list, payments, finalization ─────────────────
+router.post(
+  "/trips/:id/participants",
+  mutation((req) => addTripParticipant({ ...req.body, tripId: param(req, "id") })),
+);
+router.delete(
+  "/trips/:id/participants/:registrationId",
+  mutation((req) => removeTripParticipant(param(req, "id"), param(req, "registrationId"))),
+);
+router.post(
+  "/trips/:id/participants/:registrationId/payments",
+  mutation((req) => recordTripPayment({ ...req.body, tripId: param(req, "id"), registrationId: param(req, "registrationId") })),
+);
+router.post(
+  "/trips/:id/finalize",
+  mutation((req) => finalizeTripList(param(req, "id"))),
+);
+router.post(
+  "/trips/:id/reopen",
+  mutation((req) => reopenTripList(param(req, "id"))),
 );

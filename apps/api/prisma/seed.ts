@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { createHash, randomBytes } from "crypto";
 import { ALL_PERMISSIONS, DEFAULT_ROLE_PERMISSIONS, PERMISSIONS, ROLE_COLORS, ROLE_KEYS } from "@onet/shared";
 import { CONFERENCE_TRACKS, SONG_TRACKS, galleryUrl, trackInfo } from "./demo-media";
+import { seedTripsAndChats } from "./seed-trips-chats";
 
 const db = new PrismaClient({ adapter: new PrismaLibSQL({ url: process.env.DATABASE_URL ?? "file:./prisma/dev.db", authToken: process.env.DATABASE_AUTH_TOKEN }) });
 const PASSWORD = "Onet2026!";
@@ -660,6 +661,8 @@ async function main() {
     "finance.membershipFee": 60000,
   };
   for (const [key, value] of Object.entries(settings)) await db.setting.create({ data: { key, value: JSON.stringify(value) } });
+
+  await seedTripsAndChats(db);
 
   const counts = await Promise.all([db.member.count(), db.invoice.count(), db.payment.count(), db.attendance.count()]);
   console.log(`✓ seeded: ${counts[0]} members, ${counts[1]} invoices, ${counts[2]} payments, ${counts[3]} attendance rows`);
