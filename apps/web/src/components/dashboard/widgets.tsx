@@ -27,7 +27,7 @@ export function useDayLabel() {
 }
 
 /** Calendar-style date tile (day number + short month). */
-export function DateTile({ date, color = "#12924A", className }: { date: Date; color?: string; className?: string }) {
+export function DateTile({ date, color = "#0F7A3E", className }: { date: Date; color?: string; className?: string }) {
   const locale = useLocale();
   const fmt = (o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(intlLocale(locale), o).format(date);
   return (

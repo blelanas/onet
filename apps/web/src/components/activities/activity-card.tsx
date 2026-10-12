@@ -88,7 +88,7 @@ export function ActivityCard({ a, variant = "default", highlight }: { a: Activit
             </span>
           )}
         </div>
-        {!kid && <Progress value={a._count.participants} max={a.capacity} color={full ? "#12924A" : color} className="mt-2 h-1.5" />}
+        {!kid && <Progress value={a._count.participants} max={a.capacity} color={full ? "#E30613" : color} className="mt-2 h-1.5" />}
       </div>
     </Link>
   );

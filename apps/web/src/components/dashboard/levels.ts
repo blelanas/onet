@@ -1,6 +1,6 @@
 // Gamification levels for kids. Pure helpers shared by dashboards and the achievements page.
 export const POINTS_PER_LEVEL = 100;
-export const LEVEL_COLORS = ["#2BB673", "#1E9BD7", "#7C4DFF", "#FF6B4A", "#12924A", "#FFB400"];
+export const LEVEL_COLORS = ["#2BB673", "#1E9BD7", "#7C4DFF", "#FF6B4A", "#0F7A3E", "#FFB400"];
 export const MAX_NAMED_LEVEL = 6;
 
 export function levelFor(points: number) {

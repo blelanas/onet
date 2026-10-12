@@ -103,6 +103,7 @@ export default {
       searchPeople: T("Rechercher une personne…", "ابحث عن شخص…", "Search for someone…"),
       selected: T("{count, plural, =0 {Personne sélectionnée} one {# personne sélectionnée} other {# personnes sélectionnées}}", "{count, plural, =0 {لم يُختر أحد} one {شخص واحد مختار} two {شخصان مختاران} few {# أشخاص مختارون} many {# شخصًا مختارًا} other {# شخص مختار}}", "{count, plural, =0 {Nobody selected} one {# person selected} other {# people selected}}"),
       noContacts: T("Aucune personne à ajouter", "لا يوجد أشخاص للإضافة", "Nobody to add"),
+      limit: T("{max} personnes au maximum par groupe : retirez quelqu'un pour en ajouter un autre.", "الحد الأقصى {max} شخص في المجموعة: أزل أحدهم لإضافة شخص آخر.", "Up to {max} people per group: remove someone to add another."),
       create: T("Créer le groupe", "إنشاء المجموعة", "Create group"),
       created: T("Groupe créé", "تم إنشاء المجموعة", "Group created"),
       group: T("Groupe", "مجموعة", "Group"),

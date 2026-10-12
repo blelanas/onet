@@ -181,7 +181,7 @@ function SignupForm({ invite }: { invite?: string }) {
               )}
               data-testid="signup-age"
             >
-              {age == null ? t("ageEmpty") : t("age", { age })}
+              {age == null ? t("ageEmpty") : age < MIN_AGE ? t("ageTooYoung", { min: MIN_AGE }) : t("age", { age })}
             </p>
           </div>
 

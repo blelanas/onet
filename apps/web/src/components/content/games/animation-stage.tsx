@@ -121,7 +121,8 @@ export function AnimationStage({ minutes, color, title, children }: { minutes: n
   const R = 120;
   const C = 2 * Math.PI * R;
   const low = status !== "idle" && ratio <= 0.1;
-  const ringColor = status === "done" ? "#12924A" : low ? "#FF6B4A" : color;
+  // Light brand green: the stage is dark, so the darker brand-600 would not read here.
+  const ringColor = status === "done" ? "#36BF73" : low ? "#FF6B4A" : color;
   const label = { idle: t("ready"), running: t("running"), paused: t("paused"), done: t("done") }[status];
 
   const ctrl = "grid size-12 place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-30";

@@ -126,7 +126,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<RoleKey, Permission[]> = {
 };
 
 export const ROLE_COLORS: Record<RoleKey, string> = {
-  super_admin: "#12924A",
+  super_admin: "#0F7A3E",
   admin: "#FF6B4A",
   accountant: "#2BB673",
   monitor: "#1E9BD7",

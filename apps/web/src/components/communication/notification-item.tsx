@@ -16,7 +16,7 @@ export const NOTIFICATION_THEME: Record<string, { icon: typeof Bell; color: stri
   EVENT_REMINDER: { icon: CalendarClock, color: "#E8457C" },
   ATTENDANCE: { icon: ClipboardCheck, color: "#00A3A3" },
   MESSAGE: { icon: MessageCircle, color: "#1683C0" },
-  ANNOUNCEMENT: { icon: Megaphone, color: "#12924A" },
+  ANNOUNCEMENT: { icon: Megaphone, color: "#0F7A3E" },
   SYSTEM: { icon: Bell, color: "#4A4360" },
 };
 

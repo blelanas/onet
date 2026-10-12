@@ -105,7 +105,7 @@ function GroupView({ id, data }: { id: string; data: Data }) {
                 </span>
                 {full && <span className="text-red-600">{tc("status.FULL")}</span>}
               </div>
-              <Progress value={g._count.children} max={g.capacity} color={full ? "#12924A" : g.color} />
+              <Progress value={g._count.children} max={g.capacity} color={full ? "#E30613" : g.color} />
             </div>
             <div className="flex flex-wrap gap-2 sm:justify-end">
               {canWork && can(user, "attendance.manage") && (

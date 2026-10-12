@@ -25,7 +25,7 @@ export type AnnouncementRow = {
 export const PRIORITY_THEME: Record<string, { color: string; soft: string; text: string; icon: typeof Megaphone }> = {
   NORMAL: { color: "#1E9BD7", soft: "bg-sky-soft", text: "text-sky-700", icon: Megaphone },
   IMPORTANT: { color: "#FFB400", soft: "bg-sun-soft", text: "text-amber-700", icon: AlertTriangle },
-  URGENT: { color: "#12924A", soft: "bg-brand-50", text: "text-brand-700", icon: AlertOctagon },
+  URGENT: { color: "#E30613", soft: "bg-red-50", text: "text-red-700", icon: AlertOctagon },
 };
 
 export function AnnouncementCard({ a, canManage, groups }: { a: AnnouncementRow; canManage: boolean; groups: { id: string; name: string }[] }) {
