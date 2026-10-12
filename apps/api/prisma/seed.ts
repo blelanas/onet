@@ -239,7 +239,7 @@ async function main() {
     { key: "assiduous", name: "Toujours présent", description: "10 présences consécutives", icon: "calendar-check", color: "#7C4DFF", points: 40 },
     { key: "artist", name: "Artiste", description: "Œuvre exposée à la fête de fin d'année", icon: "palette", color: "#FF6B4A", points: 25 },
     { key: "green_hero", name: "Héros de la planète", description: "Opération plage propre", icon: "leaf", color: "#5CAE2E", points: 30 },
-    { key: "star", name: "Étoile ONET", description: "Comportement exemplaire", icon: "star", color: "#E30613", points: 50 },
+    { key: "star", name: "Étoile ONET", description: "Comportement exemplaire", icon: "star", color: "#12924A", points: 50 },
   ];
   const badges = await Promise.all(badgeDefs.map((b) => db.badge.create({ data: b })));
   for (const c of allChildren) {
@@ -528,7 +528,7 @@ async function main() {
     });
   }
   const galleryDefs = [
-    ["#E30613", "#FF6B4A", "🎭", "Carnaval d'automne", "EVENTS", events[6].id, null],
+    ["#12924A", "#FF6B4A", "🎭", "Carnaval d'automne", "EVENTS", events[6].id, null],
     ["#1E9BD7", "#00A3A3", "🏖️", "Plage de Monastir", "TRIPS", null, trips[3].id],
     ["#FFB400", "#FF6B4A", "🎨", "Atelier peinture", "ACTIVITIES", null, null],
     ["#2BB673", "#5CAE2E", "⚽", "Tournoi des Aventuriers", "ACTIVITIES", null, null],
@@ -536,7 +536,7 @@ async function main() {
     ["#E8457C", "#FFB400", "🎂", "Journée mondiale de l'enfance", "EVENTS", events[7].id, null],
     ["#00A3A3", "#1E9BD7", "🏛️", "Amphithéâtre d'El Jem", "TRIPS", null, trips[4].id],
     ["#5CAE2E", "#2BB673", "🌳", "Grands jeux en forêt", "ACTIVITIES", null, null],
-    ["#FF6B4A", "#E30613", "🤖", "Robotique junior", "ACTIVITIES", null, null],
+    ["#FF6B4A", "#12924A", "🤖", "Robotique junior", "ACTIVITIES", null, null],
   ] as const;
   for (const [i, [, , , caption, album, eventId, tripId]] of galleryDefs.entries()) {
     await db.galleryItem.create({ data: { imageUrl: galleryUrl(i), caption, album, eventId, tripId, createdAt: daysFromNow(-i * 5) } });

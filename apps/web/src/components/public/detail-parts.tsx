@@ -131,7 +131,7 @@ export function RegisterPanel({
               <span className="text-ink">{tf("placesLeft", { count: left })}</span>
               <span className="text-muted tabular-nums">{t("placesTaken", { taken, capacity })}</span>
             </div>
-            <Progress value={taken} max={capacity} color={left === 0 ? "#E30613" : color} label={tf("placesLeft", { count: left })} />
+            <Progress value={taken} max={capacity} color={left === 0 ? "#12924A" : color} label={tf("placesLeft", { count: left })} />
             {deadline && open && <p className="mt-2 text-xs font-semibold text-muted">{t("deadline", { date: formatDate(deadline, locale, "long") })}</p>}
           </div>
           {open ? (

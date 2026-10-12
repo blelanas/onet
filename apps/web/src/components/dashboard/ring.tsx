@@ -16,5 +16,5 @@ export function Ring({ value, size = 96, stroke = 10, color = "#1E9460", track =
 
 export function rateColor(rate: number | null) {
   if (rate == null) return "#7a7390";
-  return rate >= 80 ? "#1E9460" : rate >= 60 ? "#D98B00" : "#E30613";
+  return rate >= 80 ? "#1E9460" : rate >= 60 ? "#D98B00" : "#12924A";
 }

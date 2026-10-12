@@ -85,7 +85,7 @@ export function AccountantDashboard({ d }: { d: AccountantData }) {
             xKey="month"
             series={[
               { key: "revenue", label: t("charts.revenue") },
-              { key: "expenses", label: t("charts.expenses"), color: "#E30613" },
+              { key: "expenses", label: t("charts.expenses"), color: "#12924A" },
             ]}
             format="money"
           />

@@ -44,7 +44,7 @@ function FinanceReportsPage({ data, sp }: { data: Data; sp: Record<string, strin
   const trend = r.months.map((m) => ({ month: monthFmt.format(new Date(`${m.key}-01T00:00:00`)), revenue: tnd(m.revenue), expenses: tnd(m.expenses) }));
   const series = [
     { key: "revenue", label: t("columns.revenue"), color: "#1E9460" },
-    { key: "expenses", label: t("columns.expenses"), color: "#E30613" },
+    { key: "expenses", label: t("columns.expenses"), color: "#12924A" },
   ];
   const short = (s: string) => (s.length > 22 ? `${s.slice(0, 21)}…` : s);
   const byKind = (kind: "event" | "trip") => r.margins.filter((m) => m.kind === kind).slice(0, 8).map((m) => ({ name: short(m.title), revenue: tnd(m.revenue), expenses: tnd(m.expenses) }));

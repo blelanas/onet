@@ -143,7 +143,7 @@ function ActivityView({ id, data }: { id: string; data: Data }) {
                   </span>
                   <span className={cn("text-sm font-bold", full ? "text-red-600" : "text-emerald-600")}>{tc("fields.placesLeft", { count: Math.max(0, a.capacity - a._count.participants) })}</span>
                 </div>
-                <Progress value={a._count.participants} max={a.capacity} color={full ? "#E30613" : color} className="mt-3 h-2.5" />
+                <Progress value={a._count.participants} max={a.capacity} color={full ? "#12924A" : color} className="mt-3 h-2.5" />
               </Section>
             )}
             {a.monitor && (

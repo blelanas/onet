@@ -3,7 +3,7 @@ import { ArrowUpRight, TrendingDown, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ACCENTS = {
-  brand: { bg: "bg-brand-50", fg: "text-brand-600", blob: "#E30613" },
+  brand: { bg: "bg-brand-50", fg: "text-brand-600", blob: "#12924A" },
   sun: { bg: "bg-sun-soft", fg: "text-amber-600", blob: "#FFB400" },
   sky: { bg: "bg-sky-soft", fg: "text-sky-600", blob: "#1E9BD7" },
   leaf: { bg: "bg-leaf-soft", fg: "text-emerald-600", blob: "#2BB673" },

@@ -2,7 +2,7 @@ import { Breadcrumbs, type Crumb } from "@/components/ui/page-header";
 import { cn } from "@/lib/utils";
 
 const THEMES = {
-  songs: "from-[#E30613] via-[#E8457C] to-[#7C4DFF]",
+  songs: "from-[#12924A] via-[#E8457C] to-[#7C4DFF]",
   games: "from-[#FFB400] via-[#FF6B4A] to-[#E8457C]",
   dances: "from-[#7C4DFF] via-[#E8457C] to-[#FFB400]",
   conferences: "from-[#1E9BD7] via-[#7C4DFF] to-[#E8457C]",

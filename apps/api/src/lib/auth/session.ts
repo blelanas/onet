@@ -84,8 +84,9 @@ export const getCurrentUser = requestCache("currentUser", async (): Promise<Curr
     avatarUrl: u.avatarUrl,
     roles: u.roles.map((r) => r.role.key as RoleKey),
     permissions,
-    memberId: u.member?.id ?? null,
-    memberType: u.member?.type ?? null,
+    // A pending sign-up already has its (pending) Member record: it must not act through it until approved.
+    memberId: u.status === "ACTIVE" ? (u.member?.id ?? null) : null,
+    memberType: u.status === "ACTIVE" ? (u.member?.type ?? null) : null,
     points: u.member?.points ?? 0,
     status: u.status,
   };

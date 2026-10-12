@@ -44,7 +44,7 @@ export function PermissionToggle({ roleId, permission, granted, disabled, color,
   );
 }
 
-const SWATCHES = ["#E30613", "#FF6B4A", "#FFB400", "#2BB673", "#00A3A3", "#1E9BD7", "#7C4DFF", "#E8457C", "#4A4360"];
+const SWATCHES = ["#12924A", "#FF6B4A", "#FFB400", "#2BB673", "#00A3A3", "#1E9BD7", "#7C4DFF", "#E8457C", "#4A4360"];
 
 export function NewRoleButton({ roles }: { roles: { id: string; key: string; label: string }[] }) {
   const t = useTranslations("settings.roles");

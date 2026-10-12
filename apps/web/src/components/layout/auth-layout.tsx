@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 export function AuthLayout({ sideTitle, sideText, children, wide }: { sideTitle: string; sideText: string; children: React.ReactNode; wide?: boolean }) {
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1.05fr_1fr]">
-      <aside className="relative hidden overflow-hidden bg-gradient-to-br from-brand-600 via-brand-700 to-[#7d0f16] p-12 text-white lg:flex lg:flex-col">
+      <aside className="relative hidden overflow-hidden bg-gradient-to-br from-brand-600 via-brand-700 to-[#0D4C2A] p-12 text-white lg:flex lg:flex-col">
         <div className="bg-confetti absolute inset-0 opacity-60" aria-hidden />
         <svg className="absolute -end-24 -bottom-24 size-[520px] opacity-15" viewBox="0 0 200 200" aria-hidden>
           <circle cx="100" cy="100" r="100" fill="#fff" />

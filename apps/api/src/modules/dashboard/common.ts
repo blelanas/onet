@@ -73,7 +73,7 @@ export async function activitySessions(where: ActivityFilter, from: Date, to: Da
       title: a.title,
       at,
       location: a.location,
-      color: CATEGORY_COLORS[a.category] ?? a.group?.color ?? "#E30613",
+      color: CATEGORY_COLORS[a.category] ?? a.group?.color ?? "#12924A",
       href: `/dashboard/activities/${a.id}`,
       groupId: a.groupId,
       category: a.category,
@@ -116,7 +116,7 @@ export async function eventsAndTrips(from: Date, to: Date, opts: { publicOnly?: 
       : Promise.resolve([]),
   ]);
   return [
-    ...events.map((e) => ({ id: `evt-${e.id}`, kind: "event" as const, title: e.title, at: e.startAt, location: e.location, color: CATEGORY_COLORS[e.category] ?? "#E30613", href: `/dashboard/events/${e.id}`, category: e.category })),
+    ...events.map((e) => ({ id: `evt-${e.id}`, kind: "event" as const, title: e.title, at: e.startAt, location: e.location, color: CATEGORY_COLORS[e.category] ?? "#12924A", href: `/dashboard/events/${e.id}`, category: e.category })),
     ...trips.map((t) => ({ id: `trp-${t.id}`, kind: "trip" as const, title: t.title, at: t.departAt, location: t.destination, color: CATEGORY_COLORS[t.category] ?? "#1E9BD7", href: `/dashboard/trips/${t.id}`, category: t.category })),
     ...entries.map((c) => ({ id: `cal-${c.id}`, kind: "calendar" as const, title: c.title, at: c.startAt, location: c.location, color: c.type === "HOLIDAY" ? "#2BB673" : c.type === "IMPORTANT" ? "#FF6B4A" : "#64748B", href: "/dashboard/calendar" })),
   ];

@@ -5,7 +5,7 @@ export const ATTENDANCE_COLORS: Record<AttendanceStatus, string> = {
   PRESENT: "#2BB673",
   LATE: "#FFB400",
   EXCUSED: "#1E9BD7",
-  ABSENT: "#E30613",
+  ABSENT: "#12924A",
 };
 
 /**
@@ -16,7 +16,7 @@ export const ATTENDANCE_TEXT_COLORS: Record<AttendanceStatus, string> = {
   PRESENT: "#18794E",
   LATE: "#A15C00",
   EXCUSED: "#0A6EA3",
-  ABSENT: "#E30613",
+  ABSENT: "#12924A",
 };
 
 export const attended = (s: string) => s === "PRESENT" || s === "LATE";

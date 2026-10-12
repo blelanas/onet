@@ -27,7 +27,7 @@ export function trackInfo(t: Track) {
 }
 
 export const GALLERY = [
-  ["#E30613", "#FF6B4A", "🎭"],
+  ["#12924A", "#FF6B4A", "🎭"],
   ["#1E9BD7", "#00A3A3", "🏖️"],
   ["#FFB400", "#FF6B4A", "🎨"],
   ["#2BB673", "#5CAE2E", "⚽"],
@@ -35,7 +35,7 @@ export const GALLERY = [
   ["#E8457C", "#FFB400", "🎂"],
   ["#00A3A3", "#1E9BD7", "🏛️"],
   ["#5CAE2E", "#2BB673", "🌳"],
-  ["#FF6B4A", "#E30613", "🤖"],
+  ["#FF6B4A", "#12924A", "🤖"],
 ] as const;
 export const galleryUrl = (i: number) => `/demo/gallery/photo-${i + 1}.svg`;
 

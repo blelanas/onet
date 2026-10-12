@@ -15,7 +15,7 @@ import { Squiggle, Star } from "@/components/public/shapes";
 
 const VALUES = [
   { key: "safety", icon: ShieldCheck, color: "#2BB673" },
-  { key: "rights", icon: Scale, color: "#E30613" },
+  { key: "rights", icon: Scale, color: "#12924A" },
   { key: "inclusion", icon: HeartHandshake, color: "#1E9BD7" },
   { key: "joy", icon: Sparkles, color: "#FFB400" },
 ] as const;
@@ -39,7 +39,7 @@ function AboutPage({ data: { org, groups, stats } }: { data: Data }) {
 
   return (
     <>
-      <PageHero eyebrow={t("eyebrow")} title={t("title")} subtitle={t("lead")} color="#E30613" icon={<Users />} crumbs={[{ href: "/", label: tn("home") }]} />
+      <PageHero eyebrow={t("eyebrow")} title={t("title")} subtitle={t("lead")} color="#12924A" icon={<Users />} crumbs={[{ href: "/", label: tn("home") }]} />
 
       {/* Mission + history */}
       <section className="mx-auto grid max-w-7xl gap-6 px-4 pt-12 sm:px-6 lg:grid-cols-2 lg:px-8">

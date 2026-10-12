@@ -19,7 +19,7 @@ export function ageFrom(dob?: Date | string | null): number | null {
 }
 
 /** Deterministic brand color for avatars / chips. */
-const PALETTE = ["#E30613", "#1E9BD7", "#2BB673", "#FFB400", "#7C4DFF", "#FF6B4A", "#00A3A3", "#E8457C"];
+const PALETTE = ["#12924A", "#1E9BD7", "#2BB673", "#FFB400", "#7C4DFF", "#FF6B4A", "#00A3A3", "#E8457C"];
 export function colorFor(seed: string) {
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;

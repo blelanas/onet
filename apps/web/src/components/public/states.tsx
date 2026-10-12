@@ -83,9 +83,9 @@ export function NotFoundView({ standalone }: { standalone?: boolean }) {
               404
             </text>
             <g className="animate-[var(--animate-float)]">
-              <ellipse cx="84" cy="80" rx="36" ry="42" fill="#E30613" />
+              <ellipse cx="84" cy="80" rx="36" ry="42" fill="#12924A" />
               <ellipse cx="72" cy="64" rx="8" ry="13" fill="#fff" opacity=".4" />
-              <path d="M80 121 l4 -6 l4 6z" fill="#E30613" />
+              <path d="M80 121 l4 -6 l4 6z" fill="#12924A" />
             </g>
             <g className="animate-[var(--animate-float)] [animation-delay:.8s]">
               <ellipse cx="160" cy="58" rx="34" ry="40" fill="#FFB400" />

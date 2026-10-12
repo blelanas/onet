@@ -18,7 +18,7 @@ import {
 // Categorical order validated for CVD separation (see dataviz validator): sky, red, amber, green, violet.
 export const CHART_COLORS = [
   "#1683C0",
-  "#E30613",
+  "#12924A",
   "#D98B00",
   "#1E9460",
   "#7C4DFF",
@@ -34,7 +34,7 @@ const tooltipStyle = {
     fontFamily: "inherit",
   },
   labelStyle: { fontWeight: 800, color: "#221b33" },
-  cursor: { fill: "rgb(227 6 19 / 0.05)" },
+  cursor: { fill: "rgb(18 146 74 / 0.05)" },
 };
 
 type Series = { key: string; label: string; color?: string };

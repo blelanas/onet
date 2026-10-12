@@ -78,7 +78,7 @@ export function PasswordForm() {
   const [pw, setPw] = useState("");
   const s = strength(pw);
   const level = s <= 1 ? "weak" : s <= 2 ? "medium" : "strong";
-  const color = { weak: "#E30613", medium: "#D98B00", strong: "#1E9460" }[level];
+  const color = { weak: "#12924A", medium: "#D98B00", strong: "#1E9460" }[level];
   return (
     <ActionForm action={changePassword} successMessage={t("passwordChanged")} resetOnSuccess onSuccess={() => setPw("")}>
       {(pending) => (

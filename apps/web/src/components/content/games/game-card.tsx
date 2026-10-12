@@ -10,7 +10,7 @@ type GameRow = { id: string; name: string; description: string; category: string
 export function GameCard({ game }: { game: GameRow }) {
   const t = useTranslations("content");
   const tc = useTranslations("common");
-  const color = CATEGORY_COLORS[game.category] ?? "#E30613";
+  const color = CATEGORY_COLORS[game.category] ?? "#12924A";
   const AgeIcon = AGE_ICONS[game.ageGroup] ?? AGE_ICONS.ALL;
   return (
     <Link href={`/dashboard/content/games/${game.id}`} className="card card-hover group flex animate-[var(--animate-fade-up)] flex-col overflow-hidden">

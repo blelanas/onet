@@ -24,7 +24,7 @@ export function EmptyState({
           <path d="M44 58 C40 70 46 78 42 88" stroke="#C9BFD9" strokeWidth="1.5" fill="none" />
           <path d="M76 52 C80 66 74 76 79 88" stroke="#C9BFD9" strokeWidth="1.5" fill="none" />
           <ellipse cx="44" cy="40" rx="17" ry="20" fill="#FFB400" />
-          <ellipse cx="78" cy="34" rx="18" ry="21" fill="#E30613" />
+          <ellipse cx="78" cy="34" rx="18" ry="21" fill="#12924A" />
           <ellipse cx="38" cy="33" rx="4" ry="6" fill="#fff" opacity=".45" />
           <ellipse cx="72" cy="26" rx="4" ry="6" fill="#fff" opacity=".45" />
           <circle cx="102" cy="14" r="4" fill="#1E9BD7" />

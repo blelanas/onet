@@ -5,7 +5,7 @@ export type SettingsSection = { key: string; href: string; icon: LucideIcon; per
 
 /** Settings sub-navigation. Each page re-checks its permission on the server. */
 export const SETTINGS_SECTIONS: SettingsSection[] = [
-  { key: "organization", href: "/dashboard/settings/organization", icon: Building2, perm: "settings.manage", color: "#E30613" },
+  { key: "organization", href: "/dashboard/settings/organization", icon: Building2, perm: "settings.manage", color: "#12924A" },
   { key: "users", href: "/dashboard/settings/users", icon: Users, perm: "users.manage", color: "#1E9BD7" },
   { key: "roles", href: "/dashboard/settings/roles", icon: KeyRound, perm: "roles.manage", color: "#7C4DFF" },
   { key: "notifications", href: "/dashboard/settings/notifications", icon: Bell, perm: "settings.manage", color: "#FFB400" },

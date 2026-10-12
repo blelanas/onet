@@ -48,7 +48,7 @@ function MemberProfile({ id, data }: { id: string; data: Data }) {
   const canManage = can(user, "members.manage");
   const isChild = m.type === "CHILD";
   const age = ageFrom(m.dateOfBirth);
-  const accent = m.group?.color ?? "#E30613";
+  const accent = m.group?.color ?? "#12924A";
 
   const presentCount = attendance.filter((a) => a.status === "PRESENT" || a.status === "LATE").length;
   const rate = attendance.length ? Math.round((presentCount / attendance.length) * 100) : null;
@@ -216,7 +216,7 @@ function MemberProfile({ id, data }: { id: string; data: Data }) {
                     {presentCount}/{attendance.length}
                   </span>
                 </div>
-                <Progress value={rate} className="mt-3" color={rate >= 80 ? "#2BB673" : rate >= 60 ? "#FFB400" : "#E30613"} />
+                <Progress value={rate} className="mt-3" color={rate >= 80 ? "#2BB673" : rate >= 60 ? "#FFB400" : "#12924A"} />
               </Section>
             )}
 

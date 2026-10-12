@@ -109,7 +109,7 @@ export function SiteFooter({ org }: { org: OrgProfile }) {
             </p>
             <p className="flex items-center gap-2">
               <span className="flex gap-1" aria-hidden>
-                {["#E30613", "#FFB400", "#1E9BD7", "#2BB673", "#7C4DFF"].map((c) => (
+                {["#12924A", "#FFB400", "#1E9BD7", "#2BB673", "#7C4DFF"].map((c) => (
                   <span key={c} className="size-2 rounded-full" style={{ background: c }} />
                 ))}
               </span>
