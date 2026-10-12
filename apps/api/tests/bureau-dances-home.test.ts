@@ -251,6 +251,51 @@ describe("member home", () => {
     await db.eventSeries.delete({ where: { id: series.id } });
   });
 
+  it("lists only the editions the member may see, never drafts, and counts the team's active kids", async () => {
+    const me = await db.member.findFirstOrThrow({ where: { user: { email: "membre@onet-teboulba.tn" } } });
+    const series = await db.eventSeries.create({ data: { name: "Série interne", kind: "CLUB" } });
+    const soon = { category: "CHILDREN", startAt: new Date(Date.now() + 60_000), endAt: new Date(Date.now() + 3 * 86400_000), seriesId: series.id };
+    const hidden = await db.event.create({ data: { ...soon, title: "Interne sans équipe", isPublic: false, editionNumber: 1 } });
+    const mine = await db.event.create({ data: { ...soon, title: "Interne avec équipe", isPublic: false, editionNumber: 2 } });
+    const draft = await db.event.create({ data: { ...soon, title: "Brouillon", status: "DRAFT", editionNumber: 3 } });
+    const team = await db.eventTeam.create({ data: { eventId: mine.id, name: "Équipe interne", leaderId: me.id } });
+    const draftTeam = await db.eventTeam.create({ data: { eventId: draft.id, name: "Équipe brouillon", leaderId: me.id } });
+    // One active kid counts; a cancelled kid and an adult on the team don't.
+    const [k1, k2] = await db.member.findMany({ where: { type: "CHILD" }, take: 2 });
+    const adult = await db.member.findFirstOrThrow({ where: { type: "MEMBER", id: { not: me.id } } });
+    await db.eventRegistration.createMany({
+      data: [
+        { eventId: mine.id, memberId: k1!.id, status: "CONFIRMED", teamId: team.id },
+        { eventId: mine.id, memberId: k2!.id, status: "CANCELLED", teamId: team.id },
+        { eventId: mine.id, memberId: adult.id, status: "CONFIRMED", teamId: team.id },
+      ],
+    });
+    try {
+      const d = (await call("GET", "/dashboard", { token: member })).body!.data as { editions: { id: string }[]; teams: { id: string; kids: number }[] };
+      const editions = d.editions.map((e) => e.id);
+      expect(editions).toContain(mine.id);
+      expect(editions).not.toContain(hidden.id);
+      expect(editions).not.toContain(draft.id);
+      expect(d.teams.map((t) => t.id)).not.toContain(draftTeam.id);
+      expect(d.teams.find((t) => t.id === team.id)).toMatchObject({ kids: 1 });
+    } finally {
+      await db.event.deleteMany({ where: { seriesId: series.id } });
+      await db.eventSeries.delete({ where: { id: series.id } });
+    }
+  });
+
+  it("a member (Member.type MEMBER) creates an activity and leads it; members are monitor options", async () => {
+    const me = await db.member.findFirstOrThrow({ where: { user: { email: "membre@onet-teboulba.tn" } } });
+    expect(me.type).toBe("MEMBER");
+    const r = await call("POST", "/activities", { token: member, body: { title: "Atelier test", category: "GAMES", durationMin: 60, capacity: 12, status: "ACTIVE" } });
+    expect(r.body, JSON.stringify(r.body)).toMatchObject({ ok: true });
+    const id = (r.body!.data as { id: string }).id;
+    expect(await db.activity.findUniqueOrThrow({ where: { id } })).toMatchObject({ monitorId: me.id });
+    const opts = await call("GET", "/activities/form-options", { token: admin });
+    expect(JSON.stringify(opts.body)).toContain(me.id);
+    await db.activity.delete({ where: { id } });
+  });
+
   it("seeded members carry their occupation and date of birth", async () => {
     const amel = await db.member.findFirstOrThrow({ where: { user: { email: "membre@onet-teboulba.tn" } } });
     expect(amel).toMatchObject({ occupation: "WORKER", occupationDetail: expect.stringContaining("Institutrice") });

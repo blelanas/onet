@@ -273,7 +273,10 @@
       "types": {
         "kid": "Kid",
         "member": "Member"
-      }
+      },
+      "refunds": "Refunds to make",
+      "refundAmount": "To refund (TND)",
+      "totalRefunds": "Total to refund (TND)"
     }
   },
   "notify": {
@@ -287,6 +290,7 @@
     "notClosed": "The list isn't finalized.",
     "notParticipant": "This person isn't on the list.",
     "noInvoice": "Nothing to collect: this registration has no invoice (free trip).",
-    "memberType": "Only kids and members can be added to the list."
+    "memberType": "Only kids and members can be added to the list.",
+    "memberInactive": "This person isn't active (pending, inactive or suspended): they can't be added to the list."
   }
 }

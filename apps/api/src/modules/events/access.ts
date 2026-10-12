@@ -11,14 +11,25 @@ import { visibleMemberIds } from "@api/lib/auth/scope";
  *  - events.manage (admins) may do everything;
  *  - the leaders of an edition (Member = EventTeam.leaderId of any team of that event) may add, edit and
  *    remove its kids, assign kids to teams, and change the members of their own team;
- *  - anyone with events.read may read series, editions and teams;
+ *  - anyone with events.read may read series, editions and teams (the animators' phone numbers only for
+ *    the admins and the edition's teams);
  *  - kids and their parents' phone numbers: members.read_all / events.manage see every kid, other users
- *    only the kids of editions where they are on a team (leader or member).
+ *    only the kids of editions where they are on a team (leader or member), and through a team only the
+ *    kid's card and those editions (see memberViewScope);
+ *  - being "on a team" needs an ACTIVE membership: suspended, inactive or pending members get none of this.
  */
 
-/** Teams a member belongs to: as leader or as a team member. */
+/**
+ * Teams a member belongs to: as leader or as a team member. Only while the membership is ACTIVE: a
+ * suspended (or inactive / pending) member keeps no access to the edition's kids and parents' phones.
+ */
 export function onTeamWhere(memberId: string): Prisma.EventTeamWhereInput {
-  return { OR: [{ leaderId: memberId }, { members: { some: { memberId } } }] };
+  return {
+    OR: [
+      { leaderId: memberId, leader: { membershipStatus: "ACTIVE" } },
+      { members: { some: { memberId, member: { membershipStatus: "ACTIVE" } } } },
+    ],
+  };
 }
 
 /** Registrations that count as "the kid takes part" (cancelled ones don't). */
@@ -102,27 +113,42 @@ export async function kidVisibleViaTeams(user: CurrentUser, kidId: string) {
   return (await db.member.count({ where: { id: kidId, type: "CHILD", ...kidScopeWhere(user) } })) > 0;
 }
 
-/** Kid profile / history: team scope, or the regular member scope (parents, group monitors…). */
-export async function canSeeKid(user: CurrentUser, kidId: string) {
-  if (await kidVisibleViaTeams(user, kidId)) return true;
+/**
+ * How the user may see a member's profile / a kid's history:
+ *  - "full": the regular member scope (members.read_all, parents, group monitors, trip managers…) or the
+ *    admins who see every kid;
+ *  - "team": a kid seen only because the user is on a team of one of its editions → its identity, guardian
+ *    contact and the history of those editions, nothing from other groups, events or trips;
+ *  - null: not at all.
+ */
+export async function memberViewScope(user: CurrentUser, memberId: string): Promise<"full" | "team" | null> {
   const ids = await visibleMemberIds(user);
-  return ids === "all" || ids.includes(kidId);
+  if (ids === "all" || ids.includes(memberId)) return "full";
+  if (!(await kidVisibleViaTeams(user, memberId))) return null;
+  return seesAllKids(user) ? "full" : "team";
+}
+
+/** Ids of the editions where the user is on a team (leader or member). */
+export async function myEditionIds(user: CurrentUser) {
+  return new Set((await myTeams(user)).map((t) => t.eventId));
 }
 
 /** Kid card data (photo, names, birth date, parent contact): member managers, admins, or a leader of one of the kid's editions. */
 export async function canEditKid(user: CurrentUser, kidId: string) {
   if (can(user, "members.manage") || canManageEditions(user)) return true;
   if (!user.memberId) return false;
-  const n = await db.eventRegistration.count({ where: { memberId: kidId, ...ACTIVE_KID_REG, event: { teams: { some: { leaderId: user.memberId } } } } });
+  const n = await db.eventRegistration.count({
+    where: { memberId: kidId, ...ACTIVE_KID_REG, event: { teams: { some: { leaderId: user.memberId, leader: { membershipStatus: "ACTIVE" } } } } },
+  });
   return n > 0;
 }
 
 /**
  * What the user may change on a team: "full" (admins: everything, incl. the leader), "members" (the team's
- * own leader: name, colour and members) or null.
+ * own leader, while their membership is ACTIVE: name, colour and members) or null.
  */
-export function teamEditRights(user: CurrentUser, team: { leaderId: string | null }): "full" | "members" | null {
+export function teamEditRights(user: CurrentUser, team: { leaderId: string | null; leader: { membershipStatus: string } | null }): "full" | "members" | null {
   if (canManageEditions(user)) return "full";
-  if (user.memberId && team.leaderId === user.memberId) return "members";
+  if (user.memberId && team.leaderId === user.memberId && team.leader?.membershipStatus === "ACTIVE") return "members";
   return null;
 }

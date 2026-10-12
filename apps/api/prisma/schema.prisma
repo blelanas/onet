@@ -451,6 +451,8 @@ model Event {
   expenses      Expense[]
   gallery       GalleryItem[]
 
+  // One number per edition of a series (NULLs are distinct: events outside a series aren't concerned).
+  @@unique([seriesId, editionNumber])
   @@index([startAt])
   @@index([seriesId, seasonYear])
 }

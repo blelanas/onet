@@ -102,10 +102,12 @@ export async function dancePage(req: Request) {
 }
 router.get("/content/dances/:id", query(dancePage));
 
-/** Edit form of a dance (content.manage). */
+/** Edit form of a dance (content.manage only: read straight away, without getDance()'s content.read check). */
 export async function danceFormPage(req: Request) {
   await requirePermission("content.manage");
-  return { dance: await getDance(param(req, "id")) };
+  const dance = await db.dance.findUnique({ where: { id: param(req, "id") } });
+  if (!dance) throw new AuthError("NOT_FOUND");
+  return { dance };
 }
 router.get("/content/dances/:id/form", query(danceFormPage));
 

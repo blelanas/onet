@@ -133,9 +133,34 @@ describe("teams and their group chat", () => {
     expect(teams.body.teams[0].members.map((m) => m.id).sort()).toEqual([yasmine, wassimId].sort());
   });
 
+  it("animators' phone numbers are only shown to admins and to the edition's teams", async () => {
+    type Teams = { teams: { leader: { phone: string | null } | null; members: { id: string; phone: string | null }[] }[] };
+    const amelPhone = (await db.member.findUniqueOrThrow({ where: { id: await memberIdOf(LEADER) } })).phone;
+    const wassimPhone = (await db.member.findUniqueOrThrow({ where: { id: wassimId } })).phone;
+    expect(amelPhone && wassimPhone).toBeTruthy();
+    // On no team of the edition (and not an admin): names only.
+    const seen = await call<Teams>("GET", `/events/${edition1}/teams`, { token: outsider });
+    expect(seen.status).toBe(200);
+    expect(seen.body.teams[0].leader).toMatchObject({ phone: null });
+    expect(seen.body.teams[0].members.map((m) => m.phone)).toEqual([null, null]);
+    const detail = await call<{ teams: { leader: { phone: string | null } | null }[] }>("GET", `/events/${edition1}`, { token: outsider });
+    expect(detail.body.teams[0].leader).toMatchObject({ phone: null });
+    // The team itself and admins see them.
+    for (const token of [leader, admin]) {
+      const r = await call<Teams>("GET", `/events/${edition1}/teams`, { token });
+      expect(r.body.teams[0].leader?.phone).toBe(amelPhone);
+      expect(r.body.teams[0].members.find((m) => m.id === wassimId)?.phone).toBe(wassimPhone);
+      expect((await call<{ teams: { leader: { phone: string | null } | null }[] }>("GET", `/events/${edition1}`, { token })).body.teams[0].leader?.phone).toBe(amelPhone);
+    }
+  });
+
   it("removing a member removes them from the chat; renaming renames it; a non-leader can't edit", async () => {
     const amel = await memberIdOf(LEADER);
     expect((await call("POST", `/events/${edition1}/teams`, { token: outsider, body: { id: teamId, name: "Hack", color: "#000000", memberIds: [] } })).status).toBe(403);
+    // Yasmine has an unread message notification from the team chat.
+    const link = `/dashboard/messages?c=${conversationId}`;
+    const yasmineUser = await userIdOf(TEAMMATE);
+    await db.notification.create({ data: { userId: yasmineUser, type: "MESSAGE", title: "Amel · Les Étoiles", body: "Salut", link } });
     // The team's own leader may change the members and the name, not the leader.
     const r = await call<Result<{ conversationId: string }>>("POST", `/events/${edition1}/teams`, {
       token: leader,
@@ -145,6 +170,8 @@ describe("teams and their group chat", () => {
     expect(r.body.data.conversationId).toBe(conversationId);
     expect(await db.eventTeam.findUniqueOrThrow({ where: { id: teamId } })).toMatchObject({ leaderId: amel, name: "Les Comètes" });
     expect(await participants(conversationId)).toEqual([{ userId: await userIdOf(LEADER), isAdmin: true }]);
+    // Removed from the chat: no unread notification left pointing at it.
+    expect(await db.notification.count({ where: { userId: yasmineUser, type: "MESSAGE", readAt: null, link } })).toBe(0);
     expect((await db.conversation.findUniqueOrThrow({ where: { id: conversationId } })).subject).toBe("مهرجان التجربة 1 · Les Comètes");
     // Only admins create teams.
     expect((await call("POST", `/events/${edition1}/teams`, { token: leader, body: { name: "Other", color: "#123456" } })).status).toBe(403);
@@ -192,6 +219,31 @@ describe("kids of an edition", () => {
     const missing = await call<{ ok: boolean; fieldErrors: Record<string, string> }>("POST", `/events/${edition1}/kids`, { token: leader, body: { firstName: "A", lastName: "B" } });
     expect(missing.body.ok).toBe(false);
     expect(Object.keys(missing.body.fieldErrors)).toEqual(expect.arrayContaining(["dateOfBirth", "parentName", "parentPhone"]));
+  });
+
+  it("needs a real parent phone, never creates the same kid twice, and drops a cancelled invoice when a kid comes back", async () => {
+    const kid = { firstName: "Sami", lastName: "Doublon", dateOfBirth: "2016-05-06", parentName: "Rim Doublon" };
+    for (const parentPhone of ["------", "call 22 345 678", "1234"]) {
+      const bad = await call<{ ok: boolean; fieldErrors: Record<string, string> }>("POST", `/events/${edition1}/kids`, { token: leader, body: { ...kid, parentPhone } });
+      expect(bad.body.fieldErrors?.parentPhone, parentPhone).toBe("errors.phone");
+    }
+    // The same new kid sent twice at once: one is created, the other is told it's already there.
+    const both = await Promise.all([1, 2].map(() => call<Result<{ memberId: string; registrationId: string }>>("POST", `/events/${edition1}/kids`, { token: leader, body: { ...kid, parentPhone: "+216 22 444 555" } })));
+    expect(both.filter((r) => r.body.ok)).toHaveLength(1);
+    expect(both.find((r) => !r.body.ok)?.body.error).toBe("errors.alreadyRegistered");
+    const sami = await db.member.findFirstOrThrow({ where: { type: "CHILD", firstName: "Sami", lastName: "Doublon" }, include: { parentLinks: true } });
+    expect(await db.member.count({ where: { type: "CHILD", firstName: "Sami", lastName: "Doublon" } })).toBe(1);
+    // A cancelled registration whose unpaid invoice was cancelled: re-adding the kid restores it without that invoice.
+    const reg = await db.eventRegistration.findFirstOrThrow({ where: { eventId: edition1, memberId: sami.id } });
+    const inv = await db.invoice.create({ data: { number: `TEST-KID-${Date.now()}`, description: "Test", amount: 5000, dueDate: new Date(), status: "CANCELLED", payerId: sami.id, childId: sami.id, eventId: edition1 } });
+    await db.eventRegistration.update({ where: { id: reg.id }, data: { status: "CANCELLED", invoiceId: inv.id } });
+    expect((await call("POST", `/events/${edition1}/kids`, { token: leader, body: { memberId: sami.id } })).body).toMatchObject({ ok: true });
+    expect(await db.eventRegistration.findUniqueOrThrow({ where: { id: reg.id } })).toMatchObject({ status: "CONFIRMED", invoiceId: null });
+    // Clean up (the edition's kid counts are checked further down).
+    await db.eventRegistration.delete({ where: { id: reg.id } });
+    await db.invoice.delete({ where: { id: inv.id } });
+    await db.member.delete({ where: { id: sami.id } });
+    await db.member.deleteMany({ where: { id: { in: sami.parentLinks.map((l) => l.parentId) } } });
   });
 
   it("assigns kids to teams; the kids list filters by team and shows the parent contact", async () => {
@@ -265,6 +317,25 @@ describe("editions history, copy of teams, global kids list", () => {
     });
   });
 
+  it("edition numbers are unique per series (database index); blank series fields are cleared", async () => {
+    // Database level: a second number 2 in the series is refused; events outside a series aren't concerned.
+    await expect(db.event.create({ data: { title: "Doublon", category: "CHILDREN", startAt: new Date(), endAt: new Date(), seriesId, editionNumber: 2 } })).rejects.toThrow();
+    const base = { title: "مهرجان التجربة 2", category: "CHILDREN", startAt: "2026-07-10T09:00", endAt: "2026-07-20T18:00", organizer: "ONET Teboulba", capacity: 100, price: 0, status: "PUBLISHED", isPublic: "on", id: edition2 };
+    expect((await call("POST", "/events", { token: admin, body: { ...base, editionNumber: 1 } })).body).toMatchObject({ ok: false, error: "errors.inUse" });
+    // Submitted blank → cleared; absent → kept.
+    expect((await call("POST", "/events", { token: admin, body: { ...base, editionNumber: "", seasonYear: "" } })).body).toMatchObject({ ok: true });
+    expect(await db.event.findUniqueOrThrow({ where: { id: edition2 } })).toMatchObject({ editionNumber: null, seasonYear: null });
+    expect((await call("POST", "/events", { token: admin, body: { ...base, editionNumber: 2, seasonYear: 2026 } })).body).toMatchObject({ ok: true });
+    expect((await call("POST", "/events", { token: admin, body: base })).body).toMatchObject({ ok: true });
+    expect(await db.event.findUniqueOrThrow({ where: { id: edition2 } })).toMatchObject({ editionNumber: 2, seasonYear: 2026 });
+    // Concurrent creations never give two editions the same number (the loser gets errors.inUse).
+    const created = await Promise.all([1, 2, 3].map(() => call<Result<{ id: string }>>("POST", `/series/${seriesId}/editions`, { token: admin, body: { startAt: "2028-07-10T09:00", endAt: "2028-07-20T18:00" } })));
+    for (const r of created) if (!r.body.ok) expect(r.body.error).toBe("errors.inUse");
+    const numbers = (await db.event.findMany({ where: { seriesId }, select: { editionNumber: true } })).map((e) => e.editionNumber);
+    expect(new Set(numbers).size).toBe(numbers.length);
+    await db.event.deleteMany({ where: { id: { in: created.filter((r) => r.body.ok).map((r) => r.body.data.id) } } });
+  });
+
   it("kid history is grouped by season year, newest first, with team and series", async () => {
     // Typing an existing kid again as a "new kid" is refused: the existing record must be used.
     const retyped = { firstName: "Nour", lastName: "Testi", dateOfBirth: "2017-03-04", parentName: "Hichem Testi", parentPhone: "+216 22 333 444" };
@@ -276,6 +347,48 @@ describe("editions history, copy of teams, global kids list", () => {
     expect(h.body.years[0].editions[0]).toMatchObject({ event: { id: edition2, series: { id: seriesId } }, team: null });
     expect(h.body.years[1].editions[0]).toMatchObject({ event: { id: edition1 }, team: { id: teamId } });
     expect((await call("GET", `/kids/${newKidId}/history`, { token: outsider })).status).toBe(403);
+  });
+
+  it("a kid seen only through a team: identity, guardian contact and those editions, nothing from other contexts", async () => {
+    const DAY = 86400_000;
+    const trip = await db.trip.create({ data: { title: "Sortie hors équipe", destination: "Monastir", category: "EXCURSION", departureLocation: "Teboulba", departAt: new Date(Date.now() + 10 * DAY), returnAt: new Date(Date.now() + 10 * DAY + 3600_000) } });
+    const other = await db.event.create({ data: { title: "Fête hors équipe", category: "CHILDREN", startAt: new Date(Date.now() + 5 * DAY), endAt: new Date(Date.now() + 5 * DAY + 3600_000) } });
+    await db.tripRegistration.create({ data: { tripId: trip.id, memberId: newKidId, status: "CONFIRMED" } });
+    await db.eventRegistration.create({ data: { eventId: other.id, memberId: newKidId, status: "CONFIRMED" } });
+    await db.attendance.create({ data: { memberId: newKidId, date: new Date(), status: "PRESENT", contextKey: `trip:${trip.id}`, tripId: trip.id } });
+    type Profile = {
+      teamView: boolean;
+      attendance: unknown[];
+      invoices: unknown[] | null;
+      member: { phone: string | null; group: unknown; parentLinks: { parent: { phone: string | null } }[]; eventRegistrations: { eventId: string }[]; tripRegistrations: unknown[] };
+    };
+    type History = { teamView: boolean; years: { editions: { event: { id: string } }[]; trips: { trip: { id: string } }[] }[] };
+    try {
+      const p = await call<Profile>("GET", `/members/${newKidId}`, { token: leader });
+      expect(p.status).toBe(200);
+      expect(p.body).toMatchObject({ teamView: true, attendance: [], invoices: null, member: { tripRegistrations: [], group: null } });
+      expect(p.body.member.eventRegistrations.map((r) => r.eventId).sort()).toEqual([edition1, edition2].sort());
+      expect(p.body.member.parentLinks[0]?.parent.phone).toBe("+216 22 999 000");
+      const h = await call<History>("GET", `/kids/${newKidId}/history`, { token: leader });
+      expect(h.body.teamView).toBe(true);
+      expect(h.body.years.flatMap((y) => y.editions.map((e) => e.event.id)).sort()).toEqual([edition1, edition2].sort());
+      expect(h.body.years.flatMap((y) => y.trips)).toEqual([]);
+      // Admins see the whole profile and history.
+      const full = await call<Profile>("GET", `/members/${newKidId}`, { token: admin });
+      expect(full.body.teamView).toBe(false);
+      expect(full.body.member.tripRegistrations).toHaveLength(1);
+      expect(full.body.member.eventRegistrations.map((r) => r.eventId)).toContain(other.id);
+      const fh = await call<History>("GET", `/kids/${newKidId}/history`, { token: admin });
+      expect(fh.body.teamView).toBe(false);
+      expect(fh.body.years.flatMap((y) => y.trips.map((t) => t.trip.id))).toEqual([trip.id]);
+      expect(fh.body.years.flatMap((y) => y.editions.map((e) => e.event.id))).toContain(other.id);
+    } finally {
+      await db.attendance.deleteMany({ where: { memberId: newKidId, tripId: trip.id } });
+      await db.tripRegistration.deleteMany({ where: { tripId: trip.id } });
+      await db.eventRegistration.deleteMany({ where: { eventId: other.id } });
+      await db.trip.delete({ where: { id: trip.id } });
+      await db.event.delete({ where: { id: other.id } });
+    }
   });
 
   it("the global kids list is scoped to the user's editions; admins see everyone", async () => {
@@ -296,6 +409,32 @@ describe("editions history, copy of teams, global kids list", () => {
     const csv = await fetch(`${base}/kids/export.csv?eventId=${edition1}`, { headers: { Authorization: `Bearer ${admin}`, "X-Forwarded-For": "10.89.0.1" } });
     expect(csv.status).toBe(200);
     expect(await csv.text()).toContain("Testi");
+  });
+
+  it("leaders searching kids to add get names and age only; the directory's filters hide drafts and inactive series", async () => {
+    type Cands = { rows: { id: string; age: number | null; photoUrl: string | null; dateOfBirth: unknown; gender: string | null; guardianName: string | null; lastEdition: unknown; membershipNumber: string | null }[] };
+    const mine = await call<Cands>("GET", `/events/${edition1}/kids/candidates?q=an`, { token: leader });
+    expect(mine.status).toBe(200);
+    expect(mine.body.rows.length).toBeGreaterThan(0);
+    for (const k of mine.body.rows) expect(k).toMatchObject({ photoUrl: null, dateOfBirth: null, gender: null, guardianName: null, lastEdition: null, membershipNumber: null, age: expect.any(Number) });
+    const all = await call<Cands>("GET", `/events/${edition1}/kids/candidates?q=an`, { token: admin });
+    expect(all.body.rows.some((k) => k.guardianName && k.dateOfBirth && k.membershipNumber)).toBe(true);
+
+    const hidden = await db.eventSeries.create({ data: { name: "Série masquée", kind: "OTHER", isActive: false } });
+    const draft = await db.event.create({ data: { title: "Édition brouillon", category: "CHILDREN", startAt: new Date(), endAt: new Date(), status: "DRAFT", seriesId, editionNumber: 99 } });
+    try {
+      type Kids = { series: { id: string }[]; editions: { id: string }[] };
+      const o = await call<Kids>("GET", "/kids", { token: outsider });
+      expect(o.body.series.map((s) => s.id)).not.toContain(hidden.id);
+      expect(o.body.editions.map((e) => e.id)).not.toContain(draft.id);
+      expect(o.body.editions.map((e) => e.id)).toContain(edition1);
+      const a = await call<Kids>("GET", "/kids", { token: admin });
+      expect(a.body.series.map((s) => s.id)).toContain(hidden.id);
+      expect(a.body.editions.map((e) => e.id)).toContain(draft.id);
+    } finally {
+      await db.event.delete({ where: { id: draft.id } });
+      await db.eventSeries.delete({ where: { id: hidden.id } });
+    }
   });
 
   it("my teams lists the teams I lead or belong to; admins list all current teams", async () => {
@@ -326,5 +465,57 @@ describe("editions history, copy of teams, global kids list", () => {
     expect((await call("DELETE", `/events/${edition2}`, { token: admin })).body).toMatchObject({ ok: true });
     expect(await db.eventTeam.count({ where: { eventId: edition2 } })).toBe(0);
     expect(await db.conversation.count({ where: { id: { in: chats } } })).toBe(0);
+  });
+});
+
+describe("suspended, pending or disabled people", () => {
+  it("a suspended leader loses what their team gave them (kids, parents' phones, the team chat)", async () => {
+    const amel = await memberIdOf(LEADER);
+    const team = { id: teamId, name: "Les Comètes", color: "#FFB400", leaderId: amel, memberIds: [wassimId] };
+    await db.member.update({ where: { id: amel }, data: { membershipStatus: "SUSPENDED" } });
+    try {
+      expect((await call("GET", `/events/${edition1}/kids`, { token: leader })).status).toBe(403);
+      expect((await call("GET", `/members/${newKidId}`, { token: leader })).status).toBe(403);
+      expect((await call("GET", `/kids/${newKidId}/history`, { token: leader })).status).toBe(403);
+      expect((await call("POST", `/kids/${newKidId}`, { token: leader, body: { firstName: "Nour", lastName: "Testi" } })).status).toBe(403);
+      expect((await call("POST", `/events/${edition1}/teams`, { token: leader, body: { ...team, memberIds: [] } })).status).toBe(403);
+      const d = await call<{ isLeader: boolean; isOnTeam: boolean; canSeeKids: boolean; teams: { leader: { phone: string | null } | null }[] }>("GET", `/events/${edition1}`, { token: leader });
+      expect(d.body).toMatchObject({ isLeader: false, isOnTeam: false, canSeeKids: false });
+      expect(d.body.teams[0].leader).toMatchObject({ phone: null });
+      expect((await call("GET", "/teams/mine", { token: leader })).body).toMatchObject({ current: [], past: [] });
+      // The team can still be saved as it is (she stays its leader), but her login leaves the chat.
+      const kept = await call<Result<unknown>>("POST", `/events/${edition1}/teams`, { token: admin, body: team });
+      expect(kept.body.ok, JSON.stringify(kept.body)).toBe(true);
+      expect(await participants(conversationId)).toEqual([]);
+    } finally {
+      await db.member.update({ where: { id: amel }, data: { membershipStatus: "ACTIVE" } });
+    }
+    expect((await call<Result<unknown>>("POST", `/events/${edition1}/teams`, { token: admin, body: team })).body.ok).toBe(true);
+    expect(await participants(conversationId)).toEqual([{ userId: await userIdOf(LEADER), isAdmin: true }]);
+    expect((await call("GET", `/events/${edition1}/kids`, { token: leader })).status).toBe(200);
+  });
+
+  it("people suspended, waiting for approval or without an active login are not team candidates and can't be added", async () => {
+    const amel = await memberIdOf(LEADER);
+    const stamp = Date.now();
+    const make = (lastName: string, membershipStatus: string, userId?: string) =>
+      db.member.create({ data: { type: "MEMBER", firstName: "Test", lastName, membershipNumber: `TST-${lastName}-${stamp}`, membershipStatus, userId } });
+    const account = await db.user.create({ data: { email: `team.pending.${stamp}@example.tn`, passwordHash: "x", name: "Test Compte", status: "PENDING" } });
+    const people = [await make("Suspendu", "SUSPENDED"), await make("EnAttente", "PENDING"), await make("CompteEnAttente", "ACTIVE", account.id)];
+    try {
+      const t = await call<{ candidates: { id: string }[] }>("GET", `/events/${edition1}/teams`, { token: admin });
+      const ids = t.body.candidates.map((c) => c.id);
+      expect(ids).toContain(wassimId);
+      for (const m of people) {
+        expect(ids).not.toContain(m.id);
+        const r = await call("POST", `/events/${edition1}/teams`, { token: admin, body: { id: teamId, name: "Les Comètes", color: "#FFB400", leaderId: amel, memberIds: [wassimId, m.id] } });
+        expect(r.body, m.lastName).toMatchObject({ ok: false, error: "errors.validation" });
+      }
+      expect((await call("POST", `/events/${edition1}/teams`, { token: admin, body: { name: "Nouvelle", color: "#123456", leaderId: people[0]!.id } })).body).toMatchObject({ ok: false, error: "errors.validation" });
+      expect((await db.eventTeamMember.findMany({ where: { teamId } })).map((m) => m.memberId)).toEqual([wassimId]);
+    } finally {
+      await db.member.deleteMany({ where: { id: { in: people.map((p) => p.id) } } });
+      await db.user.delete({ where: { id: account.id } });
+    }
   });
 });

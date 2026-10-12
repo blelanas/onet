@@ -73,6 +73,12 @@ describe("migrations", () => {
         DELETE FROM "EventTeam";
       `);
       expect((await client.execute(`SELECT "teamId" FROM "EventRegistration"`)).rows[0].teamId).toBeNull();
+      // One edition number per series; events outside a series (NULLs) never clash.
+      const event = (id: string, series: string | null, n: number | null) =>
+        `INSERT INTO "Event" ("id", "title", "category", "startAt", "endAt", "updatedAt", "seriesId", "editionNumber") VALUES ('${id}', 'E', 'CHILDREN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ${series ? `'${series}'` : "NULL"}, ${n ?? "NULL"})`;
+      await expect(client.execute(event("e2", "s1", 16))).rejects.toThrow(/UNIQUE/);
+      await client.executeMultiple(`${event("e3", "s1", 17)}; ${event("e4", null, null)}; ${event("e5", null, null)}; ${event("e6", null, 16)};`);
+      expect(await count("Event")).toBe(5);
     } finally {
       client.close();
     }

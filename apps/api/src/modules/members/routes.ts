@@ -117,19 +117,23 @@ export async function memberOptionsPage(req: Request) {
 }
 router.get("/members/options", query(memberOptionsPage));
 
-/** Member profile page: profile + attendance + invoices (null when not allowed) + options for staff. */
+/**
+ * Member profile page: profile + attendance + invoices (null when not allowed) + options for staff.
+ * `teamView`: a kid seen only through an edition team → no attendance, invoices or documents (the page
+ * hides those tabs).
+ */
 export async function memberProfilePage(req: Request) {
   const user = await requirePermission("members.read");
   const id = param(req, "id");
-  const member = await getMemberProfile(user, id);
+  const { member, teamView } = await getMemberProfile(user, id);
   const [attendance, invoices, parentOptions] = await Promise.all([
-    can(user, "attendance.read") ? memberAttendance(id, 60) : Promise.resolve([]),
-    memberInvoices(user, id),
+    can(user, "attendance.read") && !teamView ? memberAttendance(id, 60) : Promise.resolve([]),
+    teamView ? Promise.resolve(null) : memberInvoices(user, id),
     can(user, "members.manage") && member.type === "CHILD"
       ? memberOptions(["PARENT", "MEMBER", "STAFF", "MONITOR"])
       : Promise.resolve([]),
   ]);
-  return { member, attendance, invoices, parentOptions };
+  return { member, attendance, invoices, parentOptions, teamView };
 }
 router.get("/members/:id", query(memberProfilePage));
 

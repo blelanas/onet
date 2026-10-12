@@ -7,6 +7,8 @@ import { unreadMessagesCount } from "@api/modules/communication/messages";
 import { getOrgProfile } from "@api/modules/public/queries";
 import { getSetting } from "@api/modules/settings/store";
 import { ANNOUNCEMENT_SELECT } from "./common";
+import { canManageEditions, onTeamWhere } from "@api/modules/events/access";
+import { KIDS_OF_EDITION } from "@api/modules/events/series";
 
 const NONE = "__none__";
 
@@ -18,8 +20,11 @@ const NONE = "__none__";
 export async function memberDashboard(user: CurrentUser) {
   const now = new Date();
   const memberId = user.memberId ?? NONE;
+  const manage = canManageEditions(user);
   // Drafts only for those who manage them.
-  const eventStatuses: Prisma.EventWhereInput["status"] = can(user, "events.manage") ? { not: "CANCELLED" } : { in: ["PUBLISHED", "COMPLETED"] };
+  const eventStatuses: Prisma.EventWhereInput["status"] = manage ? { not: "CANCELLED" } : { in: ["PUBLISHED", "COMPLETED"] };
+  // Internal (non-public) editions: admins, and the members on one of their teams.
+  const editionScope: Prisma.EventWhereInput = manage ? {} : { OR: [{ isPublic: true }, { teams: { some: onTeamWhere(memberId) } }] };
   const tripStatuses: Prisma.TripWhereInput["status"] = { notIn: can(user, "trips.manage") ? ["CANCELLED"] : ["DRAFT", "CANCELLED"] };
 
   const [org, logoUrl, me, editions, teams, trips, announcementScope, unreadMessages, songs, dances, games] = await Promise.all([
@@ -28,7 +33,7 @@ export async function memberDashboard(user: CurrentUser) {
     user.memberId ? db.member.findUnique({ where: { id: user.memberId }, select: { firstName: true, firstNameAr: true } }) : Promise.resolve(null),
     // Editions (events of a series) still running or to come.
     db.event.findMany({
-      where: { seriesId: { not: null }, endAt: { gte: now }, status: eventStatuses },
+      where: { seriesId: { not: null }, endAt: { gte: now }, status: eventStatuses, ...editionScope },
       orderBy: { startAt: "asc" },
       take: 6,
       select: {
@@ -45,7 +50,7 @@ export async function memberDashboard(user: CurrentUser) {
     }),
     // Teams of editions not over yet that the member leads or belongs to.
     db.eventTeam.findMany({
-      where: { OR: [{ leaderId: memberId }, { members: { some: { memberId } } }], event: { endAt: { gte: now }, status: { not: "CANCELLED" } } },
+      where: { ...onTeamWhere(memberId), event: { endAt: { gte: now }, status: eventStatuses } },
       orderBy: [{ event: { startAt: "asc" } }, { name: "asc" }],
       take: 8,
       select: {
@@ -56,7 +61,8 @@ export async function memberDashboard(user: CurrentUser) {
         conversationId: true,
         event: { select: { id: true, title: true, startAt: true, endAt: true, series: { select: { name: true, nameAr: true, color: true } } } },
         members: { select: { memberId: true } },
-        _count: { select: { kids: true } },
+        // Kids = active CHILD registrations (as in the edition's teams).
+        _count: { select: { kids: { where: KIDS_OF_EDITION } } },
       },
     }),
     // Trips the member manages (TripMonitor).

@@ -95,8 +95,8 @@ export function tripTotals(rows: TripParticipant[]): TripTotals {
 const STATUS_ORDER: Record<string, number> = { CONFIRMED: 0, PENDING: 1, WAITLIST: 2, CANCELLED: 3 };
 
 /** Every registration of the trip (active first, then waitlist, then cancelled), alphabetical. */
-export async function tripParticipantRows(tripId: string) {
-  const regs = await db.tripRegistration.findMany({ where: { tripId }, include: participantInclude });
+export async function tripParticipantRows(tripId: string, client: Prisma.TransactionClient | typeof db = db) {
+  const regs = await client.tripRegistration.findMany({ where: { tripId }, include: participantInclude });
   return regs
     .map(toParticipant)
     .sort((a, b) => {
@@ -114,7 +114,8 @@ export async function participantCandidates(tripId: string, q?: string) {
     where: {
       id: { notIn: taken.map((t) => t.memberId) },
       type: { in: ["CHILD", "MEMBER", "MONITOR"] },
-      membershipStatus: { not: "SUSPENDED" },
+      // Only people who can be added (suspended, inactive or pending ones are refused).
+      membershipStatus: "ACTIVE",
       AND: terms.map((t) => ({
         OR: [{ firstName: { contains: t } }, { lastName: { contains: t } }, { firstNameAr: { contains: t } }, { lastNameAr: { contains: t } }, { membershipNumber: { contains: t } }, { phone: { contains: t } }],
       })),

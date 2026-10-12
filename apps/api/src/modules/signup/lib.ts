@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { APP_TIME_ZONE, SIGNUP_ROLE_KEYS, type SignupRole } from "@onet/shared";
 
 /** Member type created for an account of a given sign-up role. */
@@ -25,12 +26,16 @@ export function isSignupRole(v: unknown): v is SignupRole {
   return typeof v === "string" && (SIGNUP_ROLE_KEYS as readonly string[]).includes(v);
 }
 
+/** What a typed phone number may contain: digits and the usual separators (no letters or other text). */
+const PHONE_CHARS = /^[\d\s+().\-/]+$/;
+
 /**
  * Phone → comparable digits, Tunisian numbers by default: "+216 22 345 678", "0021622345678" and
- * "22 345 678" all give "21622345678". Returns null for anything that isn't 8–15 digits.
+ * "22 345 678" all give "21622345678". Returns null for anything that isn't 8–15 digits, or that holds
+ * anything but digits, spaces and + ( ) . - / ("call 22 345 678" is not a phone number).
  */
 export function normalizePhone(v: string | null | undefined): string | null {
-  if (!v) return null;
+  if (!v || !PHONE_CHARS.test(v)) return null;
   let d = v.replace(/\D/g, "");
   if (d.startsWith("00")) d = d.slice(2);
   if (d.length === 8) d = `216${d}`;
@@ -46,7 +51,8 @@ export function invitationState(inv: { revokedAt: Date | null; expiresAt: Date; 
   return "valid";
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** The sign-up form's e-mail rule (zod), also applied to the pre-approved list. */
+export const EMAIL_SCHEMA = z.string().trim().toLowerCase().max(160).email("errors.email");
 export type ParsedPerson = { line: number; name: string; email: string | null; phone: string | null };
 export type InvalidLine = { line: number; reason: "name" | "contact" | "email" | "phone" };
 
@@ -105,7 +111,7 @@ export function parsePeopleList(text: string): { people: ParsedPerson[]; invalid
     if (!name || name.length > 80) return invalid.push({ line, reason: "name" });
     if (!email && !phone) return invalid.push({ line, reason: "contact" });
     const e = email.toLowerCase();
-    if (e && (!EMAIL_RE.test(e) || e.length > 160)) return invalid.push({ line, reason: "email" });
+    if (e && !EMAIL_SCHEMA.safeParse(e).success) return invalid.push({ line, reason: "email" });
     const p = phone ? normalizePhone(phone) : null;
     if (phone && !p) return invalid.push({ line, reason: "phone" });
     people.push({ line, name, email: e || null, phone: p });

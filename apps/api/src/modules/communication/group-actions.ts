@@ -116,6 +116,8 @@ export async function updateGroup(fd: FormData | Record<string, unknown>) {
       ...(promote.length ? [db.conversationParticipant.updateMany({ where: { conversationId: conv.id, userId: { in: promote } }, data: { isAdmin: true } })] : []),
     ]);
     await ensureAdmin(conv.id);
+    // Removed people can't open the conversation any more: their unread notifications about it are done.
+    if (remove.length) await db.notification.updateMany({ where: { userId: { in: remove }, type: "MESSAGE", readAt: null, link: conversationLink(conv.id) }, data: { readAt: new Date() } });
     await audit(user.id, "update", "ChatGroup", conv.id, { title: d.title, added: add.length, removed: remove.length, promoted: promote.length });
     await notifyAdded(user, conv.id, title, add.filter((id) => id !== user.id));
     revalidatePath("/dashboard/messages");

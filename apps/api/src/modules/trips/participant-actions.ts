@@ -1,5 +1,6 @@
 import { revalidatePath } from "@api/lib/cache";
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
 import { db } from "@api/lib/db";
 import { getTranslations } from "@api/lib/i18n";
 import type { CurrentUser } from "@api/lib/auth/session";
@@ -15,7 +16,7 @@ import { cancelRegistration, registerForTrip } from "@api/modules/registrations/
 import { requireTripManager } from "./access";
 import { tripParticipantRows, tripTotals } from "./participants";
 
-type TripErrorKey = "listClosed" | "notClosed" | "notParticipant" | "noInvoice" | "memberType";
+type TripErrorKey = "listClosed" | "notClosed" | "notParticipant" | "noInvoice" | "memberType" | "memberInactive";
 
 /** Domain error rendered in the request language (trips.errors.*). */
 async function tripError(key: TripErrorKey): Promise<never> {
@@ -75,6 +76,7 @@ async function findParentByPhone(phone: string) {
 /**
  * New person added by a manager: a CHILD member (no login) and, when parent details are given, a PARENT
  * contact (no login; reused when the phone matches an existing parent) linked as primary guardian.
+ * Returns the child and the parent contact created by this call (null when reused or none).
  */
 async function createPerson(d: z.infer<typeof addSchema>) {
   const parentId = d.parentName ? (d.parentPhone ? await findParentByPhone(d.parentPhone) : null) : null;
@@ -82,13 +84,26 @@ async function createPerson(d: z.infer<typeof addSchema>) {
     const child = await tx.member.create({
       data: { type: "CHILD", firstName: d.firstName!, lastName: d.lastName!, dateOfBirth: d.dateOfBirth!, phone: d.phone ?? null, membershipNumber: await nextMembershipNumber(tx), membershipStatus: "ACTIVE" },
     });
+    let newParentId: string | null = null;
     if (d.parentName) {
-      const pid =
-        parentId ??
-        (await tx.member.create({ data: { type: "PARENT", ...splitName(d.parentName), phone: d.parentPhone ?? null, membershipNumber: await nextMembershipNumber(tx), membershipStatus: "ACTIVE" } })).id;
-      await tx.guardianship.create({ data: { parentId: pid, childId: child.id, relation: d.parentRelation ?? "PARENT", isPrimary: true } });
+      if (!parentId) {
+        newParentId = (await tx.member.create({ data: { type: "PARENT", ...splitName(d.parentName), phone: d.parentPhone ?? null, membershipNumber: await nextMembershipNumber(tx), membershipStatus: "ACTIVE" } })).id;
+      }
+      await tx.guardianship.create({ data: { parentId: (parentId ?? newParentId)!, childId: child.id, relation: d.parentRelation ?? "PARENT", isPrimary: true } });
     }
-    return child.id;
+    return { childId: child.id, newParentId };
+  });
+}
+
+/**
+ * Undoes createPerson() when the registration then failed (trip full and closed, cancelled…): the child,
+ * its guardianship and the parent contact created with it go. Only while nothing else points to them.
+ */
+async function deleteCreatedPerson(p: { childId: string; newParentId: string | null }) {
+  if (await db.tripRegistration.count({ where: { memberId: p.childId } })) return;
+  await db.$transaction(async (tx) => {
+    await tx.member.delete({ where: { id: p.childId } }); // guardianship: cascade
+    if (p.newParentId) await tx.member.deleteMany({ where: { id: p.newParentId, childrenLinks: { none: {} }, userId: null } });
   });
 }
 
@@ -99,15 +114,28 @@ export async function addTripParticipant(fd: FormData | Record<string, unknown>)
     const trip = await requireTripManager(user, d.tripId);
     await assertListOpen(trip);
     let memberId = d.memberId;
+    let created: Awaited<ReturnType<typeof createPerson>> | null = null;
     if (memberId) {
-      const m = await db.member.findUnique({ where: { id: memberId }, select: { type: true } });
+      const m = await db.member.findUnique({ where: { id: memberId }, select: { type: true, membershipStatus: true } });
       if (!m) throw new AuthError("NOT_FOUND");
       if (!["CHILD", "MEMBER", "MONITOR"].includes(m.type)) await tripError("memberType");
+      // Suspended, inactive or not yet approved people can't be put on a trip.
+      if (m.membershipStatus !== "ACTIVE") await tripError("memberInactive");
     } else {
-      memberId = await createPerson(d);
-      await audit(user.id, "create", "Member", memberId, { via: "trip", tripId: d.tripId, parent: !!d.parentName });
+      created = await createPerson(d);
+      memberId = created.childId;
     }
-    const r = await registerForTrip(user, d.tripId, memberId, { manager: true, notes: d.notes });
+    let r: Awaited<ReturnType<typeof registerForTrip>>;
+    try {
+      r = await registerForTrip(user, d.tripId, memberId, { manager: true, notes: d.notes });
+    } catch (e) {
+      // Not registered: don't leave behind the person created for it.
+      if (created) {
+        await deleteCreatedPerson(created).catch((err: unknown) => console.error("[trips] could not remove the person created for a failed registration", created?.childId, err));
+      }
+      throw e;
+    }
+    if (created) await audit(user.id, "create", "Member", created.childId, { via: "trip", tripId: d.tripId, parent: !!d.parentName });
     revalidateTrip(d.tripId);
     return r;
   }).then(async (res) => {
@@ -162,11 +190,19 @@ export async function recordTripPayment(fd: FormData | Record<string, unknown>) 
   });
 }
 
-/** Sends the finalized list to the accountants (and admins), each in their own language. */
-async function notifyFinalized(user: CurrentUser, trip: { id: string; title: string }, totals: { participants: number; collected: number; outstanding: number }) {
-  const ids = (await roleUserIds(["accountant", "admin", "super_admin"])).filter((id) => id !== user.id);
+/**
+ * Sends the finalized list to the accountants (and admins), each in their own language. `recipients` are
+ * looked up before the transaction; the notifications are written in it (`tx`).
+ */
+async function notifyFinalized(
+  tx: Prisma.TransactionClient,
+  recipients: string[],
+  user: CurrentUser,
+  trip: { id: string; title: string },
+  totals: { participants: number; collected: number; outstanding: number },
+) {
   await notifyLocalized(
-    ids,
+    recipients,
     "TRIP_REGISTRATION",
     `/dashboard/trips/${trip.id}/report`,
     (t, locale) => ({
@@ -174,6 +210,7 @@ async function notifyFinalized(user: CurrentUser, trip: { id: string; title: str
       body: t("finalizedBody", { count: totals.participants, collected: formatMoney(totals.collected, locale), outstanding: formatMoney(totals.outstanding, locale), name: user.name }),
     }),
     "trips.notify",
+    tx,
   );
 }
 
@@ -184,12 +221,17 @@ export async function finalizeTripList(tripId: string) {
     const trip = await requireTripManager(user, id);
     await assertListOpen(trip);
     const now = new Date();
-    // Conditional update: two managers finalizing at once notify only once.
-    const { count } = await db.trip.updateMany({ where: { id, listClosedAt: null }, data: { listClosedAt: now, listClosedById: user.id } });
-    if (!count) await tripError("listClosed");
-    const totals = tripTotals(await tripParticipantRows(id));
+    const recipients = (await roleUserIds(["accountant", "admin", "super_admin"])).filter((uid) => uid !== user.id);
+    // One write transaction: the list is closed together with the accountants' notifications, so a failure
+    // leaves it open (finalize again). Conditional update: two managers finalizing at once notify only once.
+    const totals = await db.$transaction(async (tx) => {
+      const { count } = await tx.trip.updateMany({ where: { id, listClosedAt: null }, data: { listClosedAt: now, listClosedById: user.id } });
+      if (!count) await tripError("listClosed");
+      const totals = tripTotals(await tripParticipantRows(id, tx));
+      await notifyFinalized(tx, recipients, user, trip, totals);
+      return totals;
+    });
     await audit(user.id, "finalize_list", "Trip", id, { participants: totals.participants, expected: totals.expected, collected: totals.collected, outstanding: totals.outstanding });
-    await notifyFinalized(user, trip, totals);
     revalidateTrip(id);
     return { closedAt: now, ...totals };
   }).then(async (res) => {

@@ -88,6 +88,8 @@ export async function seedTripsAndChats(db: PrismaClient) {
       const issued = ago(6 - k, 18);
       const paidAmount = Math.round((trip.price * p.paid) / 1000) * 1000;
       const status = trip.price === 0 || paidAmount >= trip.price ? "PAID" : paidAmount > 0 ? "PARTIALLY_PAID" : "PENDING";
+      // One payment per person: a fully paid invoice is paid when that payment was recorded.
+      const paymentAt = ago(3 - Math.min(k, 2), 17);
       const invoice =
         trip.price > 0
           ? await db.invoice.create({
@@ -101,12 +103,12 @@ export async function seedTripsAndChats(db: PrismaClient) {
                 issuedAt: issued,
                 dueDate: trip.registrationDeadline ?? trip.departAt,
                 status,
-                paidAt: status === "PAID" ? ago(2, 17) : null,
+                paidAt: status === "PAID" ? paymentAt : null,
               },
             })
           : null;
       if (invoice && paidAmount > 0) {
-        await db.payment.create({ data: { invoiceId: invoice.id, amount: paidAmount, method: p.method ?? "CASH", provider: "manual", paidAt: ago(3 - Math.min(k, 2), 17), recordedById: amel.id, notes: "Encaissé par la responsable de la sortie" } });
+        await db.payment.create({ data: { invoiceId: invoice.id, amount: paidAmount, method: p.method ?? "CASH", provider: "manual", paidAt: paymentAt, recordedById: amel.id, notes: "Encaissé par la responsable de la sortie" } });
       }
       await db.tripRegistration.create({
         data: { tripId: trip.id, memberId: member.id, invoiceId: invoice?.id, status: !invoice || status === "PAID" ? "CONFIRMED" : "PENDING", parentConsent: true, documentsStatus: k === 0 ? "COMPLETE" : "PARTIAL", registeredById: amel.id, createdAt: issued },
@@ -120,6 +122,9 @@ export async function seedTripsAndChats(db: PrismaClient) {
     await db.tripMonitor.upsert({ where: { tripId_memberId: { tripId: past.id, memberId: yasmine.member.id } }, create: { tripId: past.id, memberId: yasmine.member.id }, update: {} });
     const closedAt = new Date(past.departAt.getTime() - 2 * DAY);
     await db.trip.update({ where: { id: past.id }, data: { listClosedAt: closedAt, listClosedById: yasmine.id } });
+    // Everyone on a finalized list registered before it was closed (the main seed dates them "now").
+    const late = await db.tripRegistration.findMany({ where: { tripId: past.id, createdAt: { gte: closedAt } }, orderBy: { id: "asc" }, select: { id: true } });
+    for (const [i, r] of late.entries()) await db.tripRegistration.update({ where: { id: r.id }, data: { createdAt: new Date(closedAt.getTime() - (3 + (i % 10)) * DAY - i * 3600_000) } });
     const regs = await db.tripRegistration.findMany({
       where: { tripId: past.id, status: { in: ["PENDING", "CONFIRMED"] } },
       select: { invoice: { select: { amount: true, status: true, payments: { select: { amount: true, status: true } } } } },

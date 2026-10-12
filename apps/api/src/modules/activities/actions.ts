@@ -7,7 +7,7 @@ import { ActionError, formToObject, runAction, zs } from "@api/lib/actions";
 import { audit } from "@api/lib/audit";
 import { ACTIVITY_CATEGORIES, ACTIVITY_STATUSES } from "@api/lib/constants";
 import { normalizeDay } from "@api/modules/attendance/day";
-import { canManageActivity } from "./queries";
+import { ACTIVITY_MONITOR_TYPES, canManageActivity } from "./queries";
 
 const optNum = (min: number, max: number) => z.preprocess((v) => (v === "" || v == null ? undefined : Number(v)), z.number().int().min(min).max(max).optional());
 
@@ -57,7 +57,7 @@ export async function saveActivity(fd: FormData | Record<string, unknown>) {
       if (!(await canManageActivity(user, existing))) throw new AuthError("FORBIDDEN");
       if (existing._count.participants > f.capacity) throw new ActionError("errors.capacityFull");
     }
-    if (f.monitorId && !(await db.member.count({ where: { id: f.monitorId, type: { in: ["MONITOR", "STAFF"] } } }))) throw new ActionError("errors.validation");
+    if (f.monitorId && !(await db.member.count({ where: { id: f.monitorId, type: { in: ACTIVITY_MONITOR_TYPES } } }))) throw new ActionError("errors.validation");
     const payload = {
       ...f,
       description: f.description ?? null,

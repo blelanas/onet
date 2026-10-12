@@ -288,6 +288,9 @@ export default {
       collected: T("Encaissé (TND)", "المحصّل (دينار)", "Collected (TND)"),
       outstanding: T("Reste à encaisser (TND)", "المتبقي للتحصيل (دينار)", "Outstanding (TND)"),
       types: { kid: T("Enfant", "طفل", "Kid"), member: T("Membre", "عضو", "Member") },
+      refunds: T("Remboursements à effectuer", "مبالغ يجب إرجاعها", "Refunds to make"),
+      refundAmount: T("À rembourser (TND)", "المبلغ الواجب إرجاعه (دينار)", "To refund (TND)"),
+      totalRefunds: T("Total à rembourser (TND)", "مجموع المبالغ الواجب إرجاعها (دينار)", "Total to refund (TND)"),
     },
   },
   notify: {
@@ -310,5 +313,10 @@ export default {
     notParticipant: T("Cette personne ne fait pas partie de la liste.", "هذا الشخص ليس ضمن القائمة.", "This person isn't on the list."),
     noInvoice: T("Rien à encaisser : cette inscription n'a pas de facture (sortie gratuite).", "لا شيء للاستلام: لا فاتورة لهذا التسجيل (رحلة مجانية).", "Nothing to collect: this registration has no invoice (free trip)."),
     memberType: T("Seuls les enfants et les membres peuvent être ajoutés à la liste.", "لا يمكن إضافة سوى الأطفال والأعضاء إلى القائمة.", "Only kids and members can be added to the list."),
+    memberInactive: T(
+      "Cette personne n'est pas active (en attente, inactive ou suspendue) : elle ne peut pas être ajoutée à la liste.",
+      "هذا الشخص غير نشط (في الانتظار أو غير نشط أو موقوف): لا يمكن إضافته إلى القائمة.",
+      "This person isn't active (pending, inactive or suspended): they can't be added to the list.",
+    ),
   },
 };

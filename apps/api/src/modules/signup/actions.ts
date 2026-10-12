@@ -12,7 +12,7 @@ import { notifyRoles, notifyUsers } from "@api/lib/services/notifications";
 import { DEFAULT_LOCALE, OCCUPATIONS, SIGNUP_ROLE_KEYS, parseFormDate, type SignupRole } from "@onet/shared";
 import { nextMembershipNumber } from "../members/actions";
 import { splitName } from "../joinRequests/actions";
-import { MEMBER_TYPE_FOR_ROLE, SIGNUP_MAX_AGE, SIGNUP_MIN_AGE, ageOn, invitationState, isSignupRole, normalizePhone, parsePeopleList } from "./lib";
+import { EMAIL_SCHEMA, MEMBER_TYPE_FOR_ROLE, SIGNUP_MAX_AGE, SIGNUP_MIN_AGE, ageOn, invitationState, isSignupRole, normalizePhone, parsePeopleList } from "./lib";
 
 const APPROVERS = ["super_admin", "admin"];
 const DAY = 86400_000;
@@ -155,7 +155,7 @@ const signupSchema = z.object({
   firstName: reqText(NAME_PART_MAX),
   lastName: reqText(NAME_PART_MAX),
   dateOfBirth: zBirthDate,
-  email: z.string().trim().toLowerCase().max(160).email("errors.email"),
+  email: EMAIL_SCHEMA,
   phone: z
     .string()
     .trim()
@@ -175,6 +175,8 @@ const signupSchema = z.object({
  *  2. a valid invitation link → PENDING, requestedRole = the invitation's role (one use consumed);
  *  3. otherwise → PENDING, requestedRole = member.
  * ACTIVE accounts get their linked Member right away; PENDING ones a PENDING Member, activated on approval.
+ * A REJECTED sign-up may apply again with the same e-mail: its account row is reused (new name, phone,
+ * password and answers, the approval cleared) and goes through the same rules as a fresh sign-up.
  * Signs the new user in: same response shape as /auth/login.
  */
 export async function signup(input: unknown) {
@@ -195,7 +197,8 @@ export async function signup(input: unknown) {
     };
 
     const result = await db.$transaction(async (tx) => {
-      if (await tx.user.findUnique({ where: { email: d.email }, select: { id: true } })) throw new ActionError("errors.signupEmailTaken");
+      const previous = await tx.user.findUnique({ where: { email: d.email }, select: { id: true, status: true, member: { select: { id: true, membershipStatus: true } } } });
+      if (previous && previous.status !== "REJECTED") throw new ActionError("errors.signupEmailTaken");
 
       const entry = await tx.preapprovedPerson.findFirst({
         where: { usedById: null, OR: [{ email: d.email }, { phone: phoneKey }] },
@@ -221,30 +224,41 @@ export async function signup(input: unknown) {
 
       const roleRow = status === "ACTIVE" ? await tx.role.findUnique({ where: { key: role }, select: { id: true } }) : null;
       if (status === "ACTIVE" && !roleRow) throw new ActionError("errors.unexpected");
-      const user = await tx.user.create({
-        data: {
-          name: `${d.firstName} ${d.lastName}`.slice(0, NAME_MAX),
-          email: d.email,
-          phone: d.phone,
-          passwordHash,
-          locale,
-          status,
-          requestedRole: status === "PENDING" ? role : null,
-          invitationId: invitation?.id ?? null,
-          roles: roleRow ? { create: [{ roleId: roleRow.id }] } : undefined,
-        },
-      });
-      if (status === "ACTIVE") await createLinkedMember(tx, user.id, role, profile);
-      else await createPendingMember(tx, user.id, role, profile);
+      const account = {
+        name: `${d.firstName} ${d.lastName}`.slice(0, NAME_MAX),
+        email: d.email,
+        phone: d.phone,
+        passwordHash,
+        locale,
+        status,
+        requestedRole: status === "PENDING" ? role : null,
+        invitationId: invitation?.id ?? null,
+      };
+      const user = previous
+        ? // A rejected sign-up applying again: same row, fresh answers, back through approval (or the list).
+          await tx.user.update({
+            where: { id: previous.id },
+            data: { ...account, approvedById: null, approvedAt: null, roles: { deleteMany: {}, ...(roleRow ? { create: [{ roleId: roleRow.id }] } : {}) } },
+          })
+        : await tx.user.create({ data: { ...account, roles: roleRow ? { create: [{ roleId: roleRow.id }] } : undefined } });
+      // The rejection removed (or unlinked) its PENDING record; one still linked gets the new answers.
+      const leftover = previous?.member ?? null;
+      if (leftover?.membershipStatus === "PENDING") {
+        await tx.member.update({ where: { id: leftover.id }, data: memberData(profile, MEMBER_TYPE_FOR_ROLE[role]) });
+        if (status === "ACTIVE") await activateMember(tx, { ...user, member: { ...profile, id: leftover.id, membershipStatus: "PENDING" } }, role);
+      } else if (!leftover) {
+        if (status === "ACTIVE") await createLinkedMember(tx, user.id, role, profile);
+        else await createPendingMember(tx, user.id, role, profile);
+      }
       if (entry && status === "ACTIVE") {
         const { count } = await tx.preapprovedPerson.updateMany({ where: { id: entry.id, usedById: null }, data: { usedById: user.id, usedAt: new Date() } });
         if (!count) throw new ActionError("errors.unexpected");
       }
-      return { user, status, role, invitation, preapprovedId: entry && status === "ACTIVE" ? entry.id : null };
+      return { user, status, role, invitation, preapprovedId: entry && status === "ACTIVE" ? entry.id : null, again: !!previous };
     });
 
-    const { user, status, role, invitation, preapprovedId } = result;
-    await audit(user.id, "signup", "User", user.id, { status, role, invitationId: invitation?.id ?? null, preapprovedId });
+    const { user, status, role, invitation, preapprovedId, again } = result;
+    await audit(user.id, "signup", "User", user.id, { status, role, invitationId: invitation?.id ?? null, preapprovedId, ...(again ? { afterRejection: true } : {}) });
     if (status === "PENDING") {
       // The account exists: a notification failure must not turn the sign-up into an error.
       try {

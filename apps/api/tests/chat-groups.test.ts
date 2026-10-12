@@ -130,14 +130,20 @@ describe("chat groups", () => {
   });
 
   it("admins rename, add, remove and promote", async () => {
+    // Karim still has the unread "added to the group" notification.
+    const link = `/dashboard/messages?c=${groupId}`;
+    expect(await db.notification.count({ where: { userId: U.karim, type: "MESSAGE", readAt: null, link } })).toBe(1);
     const r = await call("POST", `/messages/groups/${groupId}`, { token: T.member, body: { title: "Théâtre & chant", addUserIds: [U.ines], removeUserIds: [U.karim], makeAdminIds: [U.monitor] } });
     expect(r.status, JSON.stringify(r.body)).toBe(200);
     const { thread: th } = await thread(T.member, groupId);
     expect(th!.title).toBe("Théâtre & chant");
     expect(th!.participants.map((p) => p.userId).sort()).toEqual([U.member, U.monitor, U.ines].sort());
     expect(th!.participants.find((p) => p.userId === U.monitor)?.isAdmin).toBe(true);
-    // Removed people lose access; adding a non-contact is refused.
+    // Removed people lose access (and their unread notifications about it); adding a non-contact is refused.
     expect((await thread(T.karim, groupId)).status).toBe(404);
+    expect(await db.notification.count({ where: { userId: U.karim, type: "MESSAGE", readAt: null, link } })).toBe(0);
+    // Ines, just added, keeps hers.
+    expect(await db.notification.count({ where: { userId: U.ines, type: "MESSAGE", readAt: null, link } })).toBe(1);
     expect((await call("POST", `/messages/groups/${groupId}`, { token: T.member, body: { addUserIds: [U.parent] } })).status).toBe(403);
     // Only current members can be made admin.
     const bad = await call("POST", `/messages/groups/${groupId}`, { token: T.member, body: { makeAdminIds: [U.karim] } });

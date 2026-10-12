@@ -1,5 +1,9 @@
+import type { Prisma, PrismaClient } from "@prisma/client";
 import { db } from "@api/lib/db";
 import type { NotificationChannel, NotificationType } from "@api/lib/constants";
+
+/** The Prisma client, or the caller's transaction (notifications written with the change they announce). */
+export type NotifyClient = PrismaClient | Prisma.TransactionClient;
 
 export type NotificationPayload = {
   type: NotificationType;
@@ -14,14 +18,14 @@ export type NotificationPayload = {
  */
 interface ChannelAdapter {
   channel: NotificationChannel;
-  send(userIds: string[], payload: NotificationPayload): Promise<void>;
+  send(userIds: string[], payload: NotificationPayload, client: NotifyClient): Promise<void>;
 }
 
 const inApp: ChannelAdapter = {
   channel: "IN_APP",
-  async send(userIds, p) {
+  async send(userIds, p, client) {
     if (!userIds.length) return;
-    await db.notification.createMany({
+    await client.notification.createMany({
       data: userIds.map((userId) => ({ userId, type: p.type, title: p.title, body: p.body, link: p.link, channel: "IN_APP" })),
     });
   },
@@ -41,17 +45,21 @@ const ADAPTERS: Record<NotificationChannel, ChannelAdapter> = {
   PUSH: logOnly("PUSH"),
 };
 
-async function enabledChannels(): Promise<NotificationChannel[]> {
-  const s = await db.setting.findUnique({ where: { key: "notifications.channels" } });
+async function enabledChannels(client: NotifyClient): Promise<NotificationChannel[]> {
+  const s = await client.setting.findUnique({ where: { key: "notifications.channels" } });
   const parsed = s ? (JSON.parse(s.value) as NotificationChannel[]) : null;
   return parsed?.length ? Array.from(new Set<NotificationChannel>(["IN_APP", ...parsed])) : ["IN_APP"];
 }
 
-export async function notifyUsers(userIds: string[], payload: NotificationPayload) {
+/**
+ * `client`: pass the transaction when the notifications must be written together with the change they
+ * announce (inside a transaction, every query must go through it).
+ */
+export async function notifyUsers(userIds: string[], payload: NotificationPayload, client: NotifyClient = db) {
   const unique = [...new Set(userIds.filter(Boolean))];
   if (!unique.length) return;
-  const channels = await enabledChannels();
-  await Promise.all(channels.map((c) => ADAPTERS[c].send(unique, payload)));
+  const channels = await enabledChannels(client);
+  for (const c of channels) await ADAPTERS[c].send(unique, payload, client);
 }
 
 /** Notify the login accounts of the guardians of a child (and the child's own account). */

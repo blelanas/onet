@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { db } from "@api/lib/db";
 import { requirePermission } from "@api/lib/auth/guards";
 import { ActionError, formToObject, runAction, zs } from "@api/lib/actions";
@@ -6,6 +7,12 @@ import { audit } from "@api/lib/audit";
 import { EVENT_CATEGORIES, SERIES_KINDS } from "@api/lib/constants";
 import { defaultEditionTitle, tunisYear } from "./series";
 import { syncTeamChat } from "./team-chat";
+import { TEAM_ELIGIBLE } from "./teams";
+
+/** The (seriesId, editionNumber) unique index refused a row: that number is already taken in the series. */
+export function isEditionNumberClash(e: unknown) {
+  return e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002" && JSON.stringify(e.meta ?? {}).includes("editionNumber");
+}
 
 /** "#12924A"-style colour (empty → the default green). */
 export const hexColor = z.preprocess((v) => (v === "" || v == null ? "#12924A" : String(v).trim()), z.string().regex(/^#[0-9a-fA-F]{6}$/, "errors.validation"));
@@ -98,6 +105,7 @@ export async function createEdition(fd: FormData | Record<string, unknown>) {
         (await db.event.findFirst({ where: { seriesId: series.id }, orderBy: { startAt: "desc" }, select: { id: true } })))
       : null;
 
+    // Two concurrent creations may pick the same number: the unique index refuses the second one.
     const result = await db.$transaction(async (tx) => {
       const e = await tx.event.create({
         data: {
@@ -122,15 +130,22 @@ export async function createEdition(fd: FormData | Record<string, unknown>) {
       let copied = 0;
       if (previous) {
         const teams = await tx.eventTeam.findMany({ where: { eventId: previous.id }, orderBy: { createdAt: "asc" }, select: { name: true, color: true, leaderId: true, members: { select: { memberId: true } } } });
+        // People suspended (or whose login was disabled) since the previous edition are not carried over.
+        const ids = [...new Set(teams.flatMap((t) => [...(t.leaderId ? [t.leaderId] : []), ...t.members.map((m) => m.memberId)]))];
+        const ok = new Set((await tx.member.findMany({ where: { id: { in: ids }, ...TEAM_ELIGIBLE }, select: { id: true } })).map((m) => m.id));
         for (const t of teams) {
+          const leaderId = t.leaderId && ok.has(t.leaderId) ? t.leaderId : null;
           const team = await tx.eventTeam.create({
-            data: { eventId: e.id, name: t.name, color: t.color, leaderId: t.leaderId, members: { create: t.members.filter((m) => m.memberId !== t.leaderId).map((m) => ({ memberId: m.memberId })) } },
+            data: { eventId: e.id, name: t.name, color: t.color, leaderId, members: { create: t.members.filter((m) => m.memberId !== leaderId && ok.has(m.memberId)).map((m) => ({ memberId: m.memberId })) } },
           });
           await syncTeamChat(tx, team.id, user.id);
           copied++;
         }
       }
       return { id: e.id, copied };
+    }).catch((e: unknown) => {
+      if (isEditionNumberClash(e)) throw new ActionError("errors.inUse");
+      throw e;
     });
     await audit(user.id, "create", "Event", result.id, { title, seriesId: series.id, editionNumber, seasonYear, copiedTeams: result.copied });
     return { id: result.id, editionNumber, seasonYear, title, copiedTeams: result.copied };
