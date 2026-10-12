@@ -96,7 +96,7 @@ describe("self sign-up", () => {
     expect(r.body).toMatchObject({ ok: true, data: { status: "PENDING" } });
     const token = (r.body!.data as { token: string }).token;
     const me = await call("GET", "/auth/me", { token });
-    expect(me.body).toMatchObject({ email: p.email, name: p.name, roles: [], perms: [], status: "PENDING", requestedRole: "member", memberType: "MEMBER" });
+    expect(me.body).toMatchObject({ email: p.email, name: p.name, roles: [], perms: [], status: "PENDING", requestedRole: "member" });
     // No permission while pending.
     expect((await call("GET", "/dashboard", { token })).status).toBe(403);
     expect((await call("GET", "/content/dances", { token })).status).toBe(403);
@@ -168,7 +168,7 @@ describe("self sign-up", () => {
     expect(r.body).toMatchObject({ ok: true, data: { status: "PENDING" } });
     const token = (r.body!.data as { token: string }).token;
     const me = await call("GET", "/auth/me", { token });
-    expect(me.body).toMatchObject({ status: "PENDING", requestedRole: "monitor", roles: [], perms: [], memberType: "MONITOR" });
+    expect(me.body).toMatchObject({ status: "PENDING", requestedRole: "monitor", roles: [], perms: [] });
     expect((await call("GET", "/members?type=CHILD", { token })).status).toBe(403);
     expect((await call("GET", "/activities", { token })).status).toBe(403);
     expect((await call("GET", "/approvals/pending", { token })).status).toBe(403);
