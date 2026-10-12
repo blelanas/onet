@@ -16,10 +16,10 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { ConfirmButton } from "@/components/ui/confirm-button";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Select, Textarea } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { FilterChips } from "@/components/ui/toolbar";
-import { ApprovalTabs, Intro, RoleBadge, useFirstPageWhenPastEnd, formatPhone } from "./shared";
+import { ApprovalTabs, Intro, RoleBadge, SignupRoleField, useFirstPageWhenPastEnd, formatPhone } from "./shared";
 
 type Data = Loaded<typeof approvalsPreapprovedPage>;
 type Row = Data["rows"][number];
@@ -34,7 +34,6 @@ const MAX_CHARS = 200_000;
 
 function Preapproved({ data, sp }: { data: Data; sp: Record<string, string | undefined> }) {
   const t = useTranslations("approvals.preapproved");
-  const tr = useTranslations("common.roles");
   const tc = useTranslations("common");
   const locale = useLocale();
   const [text, setText] = useState("");
@@ -152,7 +151,7 @@ function Preapproved({ data, sp }: { data: Data; sp: Record<string, string | und
                   required
                 />
                 <div className="flex flex-col gap-3">
-                  <Select name="role" label={t("role")} options={[{ value: "monitor", label: tr("monitor") }, { value: "member", label: tr("member") }]} defaultValue="monitor" required />
+                  <SignupRoleField label={t("role")} />
                   <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-line bg-surface-2/50 px-3 py-2.5 text-sm font-bold text-ink-2 transition hover:border-brand-300 hover:text-brand-700 focus-within:ring-4 focus-within:ring-brand-100">
                     <FileUp className="size-4" /> {t("file")}
                     <input

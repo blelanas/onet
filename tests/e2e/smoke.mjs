@@ -12,32 +12,32 @@ const PUBLIC = ["/", "/about", "/activities", "/events", "/trips", "/news", "/ga
 // Expected access per role: `allow` must render content, `deny` must show the forbidden page.
 const ROLES = {
   "admin@onet-teboulba.tn": {
-    allow: ["/dashboard", "/dashboard/members", "/dashboard/groups", "/dashboard/finance/invoices", "/dashboard/finance/reports", "/dashboard/reports", "/dashboard/settings/roles", "/dashboard/settings/audit", "/dashboard/approvals"],
+    allow: ["/dashboard", "/dashboard/members", "/dashboard/groups", "/dashboard/finance/invoices", "/dashboard/finance/reports", "/dashboard/reports", "/dashboard/settings/roles", "/dashboard/settings/audit", "/dashboard/settings/bureau", "/dashboard/approvals", "/dashboard/content/dances", "/dashboard/content/dances/new"],
     deny: [],
   },
   "gestion@onet-teboulba.tn": {
-    allow: ["/dashboard", "/dashboard/members", "/dashboard/events", "/dashboard/finance/invoices", "/dashboard/settings/users", "/dashboard/approvals", "/dashboard/approvals?tab=invitations", "/dashboard/approvals?tab=preapproved"],
+    allow: ["/dashboard", "/dashboard/members", "/dashboard/events", "/dashboard/finance/invoices", "/dashboard/settings/users", "/dashboard/settings/bureau", "/dashboard/approvals", "/dashboard/approvals?tab=invitations", "/dashboard/approvals?tab=preapproved"],
     deny: ["/dashboard/finance/invoices/new", "/dashboard/settings/roles", "/dashboard/settings/audit"],
   },
   "comptable@onet-teboulba.tn": {
     allow: ["/dashboard", "/dashboard/finance/invoices", "/dashboard/finance/payments", "/dashboard/finance/expenses", "/dashboard/finance/reports"],
-    deny: ["/dashboard/groups", "/dashboard/activities", "/dashboard/attendance", "/dashboard/settings/users", "/dashboard/join-requests", "/dashboard/approvals"],
+    deny: ["/dashboard/groups", "/dashboard/activities", "/dashboard/attendance", "/dashboard/settings/users", "/dashboard/settings/bureau", "/dashboard/join-requests", "/dashboard/approvals"],
   },
   "moniteur@onet-teboulba.tn": {
-    allow: ["/dashboard", "/dashboard/children", "/dashboard/groups", "/dashboard/attendance", "/dashboard/calendar", "/dashboard/messages"],
-    deny: ["/dashboard/members", "/dashboard/finance/invoices", "/dashboard/reports", "/dashboard/settings/users", "/dashboard/approvals"],
+    allow: ["/dashboard", "/dashboard/children", "/dashboard/groups", "/dashboard/attendance", "/dashboard/calendar", "/dashboard/messages", "/dashboard/content/dances"],
+    deny: ["/dashboard/members", "/dashboard/finance/invoices", "/dashboard/reports", "/dashboard/settings/users", "/dashboard/settings/bureau", "/dashboard/approvals"],
   },
   "parent@onet-teboulba.tn": {
     allow: ["/dashboard", "/dashboard/my-children", "/dashboard/events", "/dashboard/trips", "/dashboard/finance/invoices", "/dashboard/messages", "/dashboard/content/songs"],
     deny: ["/dashboard/members", "/dashboard/groups", "/dashboard/finance/expenses", "/dashboard/finance/reports", "/dashboard/reports", "/dashboard/settings/users"],
   },
   "enfant@onet-teboulba.tn": {
-    allow: ["/dashboard", "/dashboard/achievements", "/dashboard/activities", "/dashboard/content/songs", "/dashboard/content/games", "/dashboard/announcements"],
+    allow: ["/dashboard", "/dashboard/achievements", "/dashboard/activities", "/dashboard/content/songs", "/dashboard/content/games", "/dashboard/content/dances", "/dashboard/announcements"],
     deny: ["/dashboard/children", "/dashboard/finance/invoices", "/dashboard/finance/payments", "/dashboard/messages", "/dashboard/documents", "/dashboard/attendance"],
   },
   "membre@onet-teboulba.tn": {
-    allow: ["/dashboard", "/dashboard/events", "/dashboard/trips", "/dashboard/content/songs"],
-    deny: ["/dashboard/children", "/dashboard/finance/invoices", "/dashboard/settings/users"],
+    allow: ["/dashboard", "/dashboard/events", "/dashboard/trips", "/dashboard/announcements", "/dashboard/messages", "/dashboard/content/songs", "/dashboard/content/dances"],
+    deny: ["/dashboard/finance/invoices", "/dashboard/settings/users", "/dashboard/settings/bureau", "/dashboard/content/dances/new", "/dashboard/approvals"],
   },
 };
 
@@ -46,6 +46,8 @@ const EXPECT_TESTID = {
   "/dashboard/approvals": "approvals-pending",
   "/dashboard/approvals?tab=invitations": "approvals-invitations",
   "/dashboard/approvals?tab=preapproved": "approvals-preapproved",
+  "/dashboard/settings/bureau": "bureau-list",
+  "/dashboard/content/dances": "dance-card",
 };
 
 const failures = [];

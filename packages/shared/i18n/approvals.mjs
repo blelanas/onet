@@ -4,9 +4,9 @@ import { T } from "./_lib.mjs";
 export default {
   title: T("Validations", "الموافقات", "Approvals"),
   description: T(
-    "Confirmez les comptes créés par les moniteurs et les membres, gérez les liens d'invitation et la liste des personnes pré-approuvées.",
-    "أكّد الحسابات التي أنشأها المنشّطون والأعضاء، وأدِر روابط الدعوة وقائمة الأشخاص الموافَق عليهم مسبقًا.",
-    "Confirm accounts created by monitors and members, manage invitation links and the pre-approved list.",
+    "Confirmez les comptes créés par les nouveaux membres, gérez les liens d'invitation et la liste des personnes pré-approuvées.",
+    "أكّد الحسابات التي أنشأها الأعضاء الجدد، وأدِر روابط الدعوة وقائمة الأشخاص الموافَق عليهم مسبقًا.",
+    "Confirm accounts created by new members, manage invitation links and the pre-approved list.",
   ),
   tabs: {
     pending: T("En attente", "قيد الانتظار", "Pending"),
@@ -15,13 +15,14 @@ export default {
   },
   pending: {
     intro: T(
-      "Ces personnes se sont inscrites avec un lien d'invitation. Elles peuvent se connecter mais n'ont accès à rien tant que vous n'avez pas confirmé leur rôle.",
-      "سجّل هؤلاء الأشخاص عبر رابط دعوة. يمكنهم تسجيل الدخول لكن لا يصلون إلى أي شيء قبل أن تؤكّد دورهم.",
-      "These people signed up with an invitation link. They can sign in but can't access anything until you confirm their role.",
+      "Ces personnes ont créé leur compte de membre, avec ou sans lien d'invitation. Elles peuvent se connecter mais n'ont accès à rien tant que vous ne les avez pas confirmées.",
+      "أنشأ هؤلاء الأشخاص حساباتهم كأعضاء، عبر رابط دعوة أو دونه. يمكنهم تسجيل الدخول لكن لا يصلون إلى أي شيء قبل أن تؤكّدهم.",
+      "These people created their member account, with or without an invitation link. They can sign in but can't access anything until you confirm them.",
     ),
     columns: {
       person: T("Personne", "الشخص", "Person"),
       role: T("Rôle demandé", "الدور المطلوب", "Requested role"),
+      profile: T("Âge et activité", "العمر والنشاط", "Age and occupation"),
       invitation: T("Lien utilisé", "الرابط المستعمل", "Link used"),
       signedUp: T("Inscription", "التسجيل", "Signed up"),
       known: T("Déjà connu ?", "معروف مسبقًا؟", "Already known?"),
@@ -67,10 +68,12 @@ export default {
     ),
     empty: T("Aucun compte en attente", "لا توجد حسابات في الانتظار", "No pending accounts"),
     emptyHint: T(
-      "Les inscriptions faites avec un lien d'invitation apparaîtront ici.",
-      "ستظهر هنا التسجيلات التي تتمّ عبر رابط دعوة.",
-      "Sign-ups made with an invitation link will show up here.",
+      "Les nouvelles inscriptions de membres apparaîtront ici.",
+      "ستظهر هنا تسجيلات الأعضاء الجدد.",
+      "New member sign-ups will show up here.",
     ),
+    age: T("{age} ans", "{age} سنة", "{age} years old"),
+    noProfile: T("Non renseigné", "غير مذكور", "Not given"),
     known: T("Fiche existante : {name}", "بطاقة موجودة: {name}", "Existing record: {name}"),
     hasAccount: T("a déjà un compte", "لديه حساب بالفعل", "already has an account"),
     unknown: T("Aucune fiche avec cet e-mail ou ce téléphone", "لا توجد بطاقة بهذا البريد أو الهاتف", "No record with this e-mail or phone"),
@@ -79,14 +82,14 @@ export default {
   },
   invitations: {
     intro: T(
-      "Partagez un lien pour que les moniteurs ou les membres créent leur compte. Les comptes créés avec un lien restent en attente jusqu'à votre validation.",
-      "شارك رابطًا ليُنشئ المنشّطون أو الأعضاء حساباتهم. تبقى الحسابات المُنشأة عبر الرابط في الانتظار إلى أن توافق عليها.",
-      "Share a link so monitors or members can create their account. Accounts created with a link stay pending until you approve them.",
+      "Partagez un lien pour que de nouveaux membres créent leur compte. Les comptes créés avec un lien restent en attente jusqu'à votre validation ; le libellé du lien vous aide à les reconnaître.",
+      "شارك رابطًا ليُنشئ الأعضاء الجدد حساباتهم. تبقى الحسابات المُنشأة عبر الرابط في الانتظار إلى أن توافق عليها، وتساعدك تسمية الرابط على التعرّف عليهم.",
+      "Share a link so new members can create their account. Accounts created with a link stay pending until you approve them; the link's label helps you recognise them.",
     ),
     newTitle: T("Nouveau lien d'invitation", "رابط دعوة جديد", "New invitation link"),
     role: T("Rôle", "الدور", "Role"),
     label: T("Libellé (facultatif)", "التسمية (اختيارية)", "Label (optional)"),
-    labelPlaceholder: T("ex. Moniteurs 2026", "مثال: منشّطو 2026", "e.g. Monitors 2026"),
+    labelPlaceholder: T("ex. Animateurs 2026", "مثال: منشّطو 2026", "e.g. Animators 2026"),
     expiresAt: T("Expire le", "ينتهي في", "Expires on"),
     maxUses: T("Inscriptions max.", "الحدّ الأقصى للتسجيلات", "Max sign-ups"),
     maxUsesHint: T("Entre 1 et 500", "من 1 إلى 500", "Between 1 and 500"),
@@ -126,7 +129,7 @@ export default {
       revoked: T("Désactivé", "معطّل", "Revoked"),
     },
     empty: T("Aucun lien d'invitation", "لا توجد روابط دعوة", "No invitation links"),
-    emptyHint: T("Créez un lien pour permettre aux moniteurs de s'inscrire.", "أنشئ رابطًا ليتمكّن المنشّطون من التسجيل.", "Create a link so monitors can sign up."),
+    emptyHint: T("Créez un lien pour inviter de nouveaux membres.", "أنشئ رابطًا لدعوة أعضاء جدد.", "Create a link to invite new members."),
   },
   preapproved: {
     intro: T(
@@ -189,13 +192,13 @@ export default {
     activatedBy: T("par {name}, {when}", "من طرف {name}، {when}", "by {name}, {when}"),
     deleteTitle: T("Retirer cette personne de la liste ?", "حذف هذا الشخص من القائمة؟", "Remove this person from the list?"),
     deleteText: T(
-      "Si elle s'inscrit plus tard, elle obtiendra un compte parent (ou en attente avec un lien d'invitation).",
-      "إذا سجّل لاحقًا، سيحصل على حساب وليّ (أو حساب في الانتظار عبر رابط دعوة).",
-      "If they sign up later, they'll get a parent account (or a pending one with an invitation link).",
+      "Si elle s'inscrit plus tard, son compte attendra votre validation.",
+      "إذا سجّل لاحقًا، سيبقى حسابه في انتظار موافقتك.",
+      "If they sign up later, their account will wait for your approval.",
     ),
     remove: T("Retirer", "حذف", "Remove"),
     empty: T("La liste est vide", "القائمة فارغة", "The list is empty"),
-    emptyHint: T("Importez les moniteurs et membres que vous connaissez déjà.", "استورد المنشّطين والأعضاء الذين تعرفهم مسبقًا.", "Import the monitors and members you already know."),
+    emptyHint: T("Importez les membres que vous connaissez déjà.", "استورد الأعضاء الذين تعرفهم مسبقًا.", "Import the members you already know."),
   },
   // Server-side notifications (sent in the default language to approvers, in the user's language to them).
   notify: {

@@ -10,7 +10,7 @@ import type { RoleKey } from "@onet/shared";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
 import { Logo } from "./logo";
-import { mobileTabs, visibleNav, type NavItem } from "./nav-config";
+import { TAB_ALIASES, mobileTabs, visibleNav, type NavItem } from "./nav-config";
 
 export type ShellUser = {
   name: string;
@@ -32,9 +32,14 @@ export function AppShell({ user, unread, badges = {}, children }: { user: ShellU
   const ctx = useMemo(() => ({ perms: new Set(user.perms), roles: user.roles }), [user.perms, user.roles]);
   const sections = useMemo(() => visibleNav(ctx), [ctx]);
   const allItems = sections.flatMap((s) => s.items);
+  type Tab = NavItem & { label: string; prefix?: string };
   const tabs = mobileTabs(ctx)
-    .map((k) => allItems.find((i) => i.key === k))
-    .filter((x): x is NavItem => !!x);
+    .map((k): Tab | null => {
+      const alias = TAB_ALIASES[k] as (typeof TAB_ALIASES)[string] | undefined;
+      const item = allItems.find((i) => i.key === (alias?.item ?? k));
+      return item ? { ...item, key: k, icon: alias?.icon ?? item.icon, label: alias?.label ?? `items.${item.key}`, prefix: alias?.prefix } : null;
+    })
+    .filter((x): x is Tab => !!x);
   const isKid = user.roles.length === 1 && user.roles[0] === "kid";
 
   useEffect(() => setDrawer(false), [pathname]);
@@ -122,7 +127,7 @@ export function AppShell({ user, unread, badges = {}, children }: { user: ShellU
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label={t("aria.tabs")}>
         <ul className="mx-auto grid max-w-md grid-cols-5">
           {tabs.map((item) => {
-            const active = isActive(pathname, item);
+            const active = item.prefix ? pathname === item.prefix || pathname.startsWith(item.prefix + "/") : isActive(pathname, item);
             const Icon = item.icon;
             return (
               <li key={item.key}>
@@ -130,7 +135,7 @@ export function AppShell({ user, unread, badges = {}, children }: { user: ShellU
                   <span className={cn("grid h-7 w-12 place-items-center rounded-full transition", active && "bg-brand-50")}>
                     <Icon className="size-5" />
                   </span>
-                  <span className="max-w-full truncate px-1">{t(`items.${item.key}`)}</span>
+                  <span className="max-w-full truncate px-1">{t(item.label)}</span>
                 </Link>
               </li>
             );

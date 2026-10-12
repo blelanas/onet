@@ -1,16 +1,17 @@
 {
   "title": "Validations",
-  "description": "Confirmez les comptes créés par les moniteurs et les membres, gérez les liens d'invitation et la liste des personnes pré-approuvées.",
+  "description": "Confirmez les comptes créés par les nouveaux membres, gérez les liens d'invitation et la liste des personnes pré-approuvées.",
   "tabs": {
     "pending": "En attente",
     "invitations": "Liens d'invitation",
     "preapproved": "Liste pré-approuvée"
   },
   "pending": {
-    "intro": "Ces personnes se sont inscrites avec un lien d'invitation. Elles peuvent se connecter mais n'ont accès à rien tant que vous n'avez pas confirmé leur rôle.",
+    "intro": "Ces personnes ont créé leur compte de membre, avec ou sans lien d'invitation. Elles peuvent se connecter mais n'ont accès à rien tant que vous ne les avez pas confirmées.",
     "columns": {
       "person": "Personne",
       "role": "Rôle demandé",
+      "profile": "Âge et activité",
       "invitation": "Lien utilisé",
       "signedUp": "Inscription",
       "known": "Déjà connu ?"
@@ -27,7 +28,9 @@
     "approved": "{count, plural, =0 {Aucun compte approuvé} one {# compte approuvé} other {# comptes approuvés}}",
     "rejected": "{count, plural, =0 {Aucun compte refusé} one {# compte refusé} other {# comptes refusés}}",
     "empty": "Aucun compte en attente",
-    "emptyHint": "Les inscriptions faites avec un lien d'invitation apparaîtront ici.",
+    "emptyHint": "Les nouvelles inscriptions de membres apparaîtront ici.",
+    "age": "{age} ans",
+    "noProfile": "Non renseigné",
     "known": "Fiche existante : {name}",
     "hasAccount": "a déjà un compte",
     "unknown": "Aucune fiche avec cet e-mail ou ce téléphone",
@@ -35,11 +38,11 @@
     "noLabel": "Lien sans libellé"
   },
   "invitations": {
-    "intro": "Partagez un lien pour que les moniteurs ou les membres créent leur compte. Les comptes créés avec un lien restent en attente jusqu'à votre validation.",
+    "intro": "Partagez un lien pour que de nouveaux membres créent leur compte. Les comptes créés avec un lien restent en attente jusqu'à votre validation ; le libellé du lien vous aide à les reconnaître.",
     "newTitle": "Nouveau lien d'invitation",
     "role": "Rôle",
     "label": "Libellé (facultatif)",
-    "labelPlaceholder": "ex. Moniteurs 2026",
+    "labelPlaceholder": "ex. Animateurs 2026",
     "expiresAt": "Expire le",
     "maxUses": "Inscriptions max.",
     "maxUsesHint": "Entre 1 et 500",
@@ -71,7 +74,7 @@
       "revoked": "Désactivé"
     },
     "empty": "Aucun lien d'invitation",
-    "emptyHint": "Créez un lien pour permettre aux moniteurs de s'inscrire."
+    "emptyHint": "Créez un lien pour inviter de nouveaux membres."
   },
   "preapproved": {
     "intro": "Quand une personne de cette liste crée son compte avec le même e-mail ou le même téléphone, elle reçoit son rôle immédiatement, sans validation.",
@@ -109,10 +112,10 @@
     "activated": "Activé",
     "activatedBy": "par {name}, {when}",
     "deleteTitle": "Retirer cette personne de la liste ?",
-    "deleteText": "Si elle s'inscrit plus tard, elle obtiendra un compte parent (ou en attente avec un lien d'invitation).",
+    "deleteText": "Si elle s'inscrit plus tard, son compte attendra votre validation.",
     "remove": "Retirer",
     "empty": "La liste est vide",
-    "emptyHint": "Importez les moniteurs et membres que vous connaissez déjà."
+    "emptyHint": "Importez les membres que vous connaissez déjà."
   },
   "notify": {
     "pendingTitle": "Inscription à valider : {name}",

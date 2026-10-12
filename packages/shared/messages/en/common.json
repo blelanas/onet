@@ -87,6 +87,9 @@
     "amountTooHigh": "Amount exceeds the remaining balance",
     "accountRejected": "Your sign-up request was declined by the association. Contact it to find out more.",
     "signupEmailTaken": "An account already exists with this email. Sign in, or contact the association if you forgot your password.",
+    "birthDate": "Invalid date of birth",
+    "ageMin": "You must be at least 12 to become a member",
+    "ageMax": "Check the date of birth (100 years at most)",
     "inviteInvalid": "This invitation link isn't valid",
     "inviteExpired": "This invitation link has expired",
     "inviteFull": "This invitation link is full",
@@ -186,6 +189,11 @@
       "GUARDIAN": "Guardian",
       "PARENT": "Parent"
     },
+    "OCCUPATIONS": {
+      "STUDENT": "Student",
+      "WORKER": "Working",
+      "OTHER": "Other"
+    },
     "activityCategory": {
       "SPORTS": "Sports",
       "MUSIC": "Music",
@@ -229,6 +237,13 @@
       "EDUCATIONAL": "Educational",
       "ICEBREAKER": "Icebreaker",
       "ENERGIZER": "Energizer"
+    },
+    "DANCE_CATEGORIES": {
+      "GROUP": "Group dance",
+      "TRADITIONAL": "Traditional",
+      "MODERN": "Modern",
+      "KIDS": "For little ones",
+      "SHOW": "Show"
     },
     "conferenceCategory": {
       "EDUCATION": "Education",

@@ -87,6 +87,9 @@
     "amountTooHigh": "Le montant dépasse le reste à payer",
     "accountRejected": "Votre demande d'inscription a été refusée par l'association. Contactez-la pour en savoir plus.",
     "signupEmailTaken": "Un compte existe déjà avec cette adresse e-mail. Connectez-vous, ou contactez l'association si vous avez oublié votre mot de passe.",
+    "birthDate": "Date de naissance invalide",
+    "ageMin": "Il faut avoir au moins 12 ans pour devenir membre",
+    "ageMax": "Vérifiez la date de naissance (100 ans au maximum)",
     "inviteInvalid": "Ce lien d'invitation n'est pas valide",
     "inviteExpired": "Ce lien d'invitation a expiré",
     "inviteFull": "Ce lien d'invitation est complet",
@@ -186,6 +189,11 @@
       "GUARDIAN": "Tuteur",
       "PARENT": "Parent"
     },
+    "OCCUPATIONS": {
+      "STUDENT": "Élève / étudiant·e",
+      "WORKER": "En activité",
+      "OTHER": "Autre"
+    },
     "activityCategory": {
       "SPORTS": "Sport",
       "MUSIC": "Musique",
@@ -229,6 +237,13 @@
       "EDUCATIONAL": "Éducatif",
       "ICEBREAKER": "Brise-glace",
       "ENERGIZER": "Dynamiseur"
+    },
+    "DANCE_CATEGORIES": {
+      "GROUP": "Danse de groupe",
+      "TRADITIONAL": "Traditionnelle",
+      "MODERN": "Moderne",
+      "KIDS": "Pour les petits",
+      "SHOW": "Spectacle"
     },
     "conferenceCategory": {
       "EDUCATION": "Éducation",

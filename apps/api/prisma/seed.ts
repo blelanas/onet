@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { createHash, randomBytes } from "crypto";
 import { ALL_PERMISSIONS, DEFAULT_ROLE_PERMISSIONS, PERMISSIONS, ROLE_COLORS, ROLE_KEYS } from "@onet/shared";
 import { CONFERENCE_TRACKS, SONG_TRACKS, galleryUrl, trackInfo } from "./demo-media";
+import { seedMembersContent } from "./seed-members-content";
 
 const db = new PrismaClient({ adapter: new PrismaLibSQL({ url: process.env.DATABASE_URL ?? "file:./prisma/dev.db", authToken: process.env.DATABASE_AUTH_TOKEN }) });
 const PASSWORD = "Onet2026!";
@@ -666,6 +667,8 @@ async function main() {
   console.log(`\nDemo accounts (password: ${PASSWORD})`);
   for (const e of ["admin", "gestion", "comptable", "moniteur", "parent", "enfant", "membre"]) console.log(`  ${e}@onet-teboulba.tn`);
   console.log(`\nDemo monitor invitation: /signup?invite=${inviteToken}`);
+
+  await seedMembersContent(db);
 }
 
 main()

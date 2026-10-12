@@ -1,6 +1,6 @@
 {
   "hub": {
-    "title": "Contenus"
+    "title": "Bagage"
   },
   "common": {
     "newItem": "Ajouter",
@@ -150,6 +150,38 @@
       "videoUrl": "…ou lien vidéo (YouTube, etc.)",
       "isPublic": "Publier sur le site public",
       "maxLtMin": "Le maximum doit être supérieur au minimum"
+    }
+  },
+  "dances": {
+    "title": "Danses",
+    "description": "Les danses de l'animateur : pas à pas, en musique et en vidéo.",
+    "searchPlaceholder": "Titre, description, pas…",
+    "results": "{count, plural, =0 {Aucune danse} one {# danse} other {# danses}}",
+    "category": "Catégorie",
+    "ageGroup": "Âge",
+    "duration": "Durée",
+    "steps": "Les pas",
+    "music": "La musique",
+    "video": "Vidéo",
+    "openVideo": "Voir la vidéo",
+    "noSteps": "Les pas ne sont pas encore décrits.",
+    "hasMusic": "Avec musique",
+    "hasVideo": "Avec vidéo",
+    "new": "Nouvelle danse",
+    "editTitle": "Modifier la danse",
+    "emptyTitle": "Pas encore de danses",
+    "emptyText": "Ajoutez les danses de l'équipe, avec leurs pas, leur musique et une vidéo.",
+    "form": {
+      "title": "Titre de la danse",
+      "description": "Description",
+      "steps": "Les pas",
+      "stepsHint": "Un pas par ligne : ils s'affichent en étapes numérotées.",
+      "durationMin": "Durée (minutes)",
+      "image": "Image",
+      "audio": "Musique (fichier audio)",
+      "videoUpload": "Vidéo (fichier)",
+      "videoUrl": "…ou lien vidéo (YouTube, etc.)",
+      "isPublic": "Publier sur le site public"
     }
   },
   "conferences": {

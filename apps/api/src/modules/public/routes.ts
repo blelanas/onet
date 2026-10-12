@@ -21,6 +21,7 @@ import {
   newsCategories,
 } from "./queries";
 import { submitContactMessage, submitJoinRequest } from "./actions";
+import { listPublicBureau } from "@api/modules/settings/bureau";
 
 /**
  * Public website routes (mounted under /api). Anonymous by design: no auth, only public /
@@ -45,8 +46,9 @@ export async function publicOrg() {
 router.get("/public/org", query(publicOrg));
 
 export async function publicHome() {
-  const [data, org] = await Promise.all([getHomeData(), getOrgProfile()]);
-  return { ...data, org };
+  // The local bureau is presented right after the hero: shipped with the page so it doesn't pop in later.
+  const [data, org, bureau] = await Promise.all([getHomeData(), getOrgProfile(), listPublicBureau()]);
+  return { ...data, org, bureau };
 }
 router.get("/public/home", query(publicHome));
 
@@ -129,6 +131,12 @@ export async function publicConferences(req: Request) {
   return listPublicConferences({ category: qs(req, "category") });
 }
 router.get("/public/conferences", query(publicConferences));
+
+/** Local bureau members (أعضاء المكتب المحلي) presented on the landing page: active ones, in order. */
+export async function publicBureau() {
+  return { rows: await listPublicBureau() };
+}
+router.get("/public/bureau", query(publicBureau));
 
 // Anonymous forms: zod validation + honeypot + per-IP rate limit (see actions.ts).
 router.post("/public/join", mutation((req) => submitJoinRequest(req.body)));

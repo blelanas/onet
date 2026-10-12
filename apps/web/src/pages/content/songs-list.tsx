@@ -49,7 +49,7 @@ function SongsPage({ data, params }: { data: Data; params: Record<string, string
       <ContentHero
         theme="songs"
         icon={<Music />}
-        eyebrow={isKid ? t("songs.hello") : tn("sections.content")}
+        eyebrow={isKid ? t("songs.hello") : tn("sections.baggage")}
         title={t("songs.title")}
         description={t("songs.description")}
         breadcrumbs={[{ label: tn("items.dashboard"), href: "/dashboard" }, { label: t("songs.title") }]}

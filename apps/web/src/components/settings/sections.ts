@@ -1,4 +1,4 @@
-import { Bell, Building2, CreditCard, Inbox, KeyRound, ScrollText, Tags, Users, type LucideIcon } from "lucide-react";
+import { Bell, Building2, CreditCard, Inbox, KeyRound, ScrollText, Tags, Users, UsersRound, type LucideIcon } from "lucide-react";
 import type { Permission } from "@onet/shared";
 
 export type SettingsSection = { key: string; href: string; icon: LucideIcon; perm: Permission; color: string };
@@ -13,6 +13,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
   { key: "categories", href: "/dashboard/settings/categories", icon: Tags, perm: "settings.manage", color: "#E8457C" },
   { key: "audit", href: "/dashboard/settings/audit", icon: ScrollText, perm: "audit.read", color: "#4A4360" },
   { key: "contact", href: "/dashboard/settings/contact", icon: Inbox, perm: "settings.manage", color: "#00A3A3" },
+  { key: "bureau", href: "/dashboard/settings/bureau", icon: UsersRound, perm: "content.manage", color: "#2BB673" },
 ];
 
 export function allowedSections(perms: Iterable<string>) {
