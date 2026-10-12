@@ -6,6 +6,7 @@ import { ActionError, formToObject, runAction, zs } from "@api/lib/actions";
 import { audit } from "@api/lib/audit";
 import { EVENT_CATEGORIES, EVENT_STATUSES } from "@api/lib/constants";
 import { saveRollCall } from "@api/modules/registrations/roll-call";
+import { deleteTeamChat, syncEditionChats } from "./team-chat";
 
 const eventSchema = z
   .object({
@@ -24,6 +25,9 @@ const eventSchema = z
     requiresPayment: zs.bool,
     status: z.enum(EVENT_STATUSES),
     isPublic: zs.bool,
+    // Editions of a series only (absent from the form of other events → left unchanged).
+    editionNumber: z.preprocess((v) => (v === "" || v == null ? undefined : Number(v)), z.number().int().min(1).max(9999).optional()),
+    seasonYear: z.preprocess((v) => (v === "" || v == null ? undefined : Number(v)), z.number().int().min(1990).max(2100).optional()),
   })
   .refine((d) => d.endAt >= d.startAt, { path: ["endAt"], message: "errors.validation" })
   .refine((d) => !d.registrationDeadline || d.registrationDeadline <= d.startAt, { path: ["registrationDeadline"], message: "errors.validation" });
@@ -40,7 +44,10 @@ export async function saveEvent(fd: FormData | Record<string, unknown>) {
       registrationDeadline: d.registrationDeadline ?? null,
       requiresPayment: d.price > 0 && d.requiresPayment,
     };
+    const before = id ? await db.event.findUnique({ where: { id }, select: { title: true } }) : null;
     const e = id ? await db.event.update({ where: { id }, data }) : await db.event.create({ data });
+    // Team group chats are named after the edition.
+    if (before && before.title !== e.title) await syncEditionChats(db, e.id);
     await audit(user.id, id ? "update" : "create", "Event", e.id, { title: e.title, status: e.status, price: e.price });
     revalidatePath("/dashboard/events");
     revalidatePath(`/dashboard/events/${e.id}`);
@@ -55,6 +62,9 @@ export async function deleteEvent(id: string) {
     if (paid) throw new ActionError("errors.inUse");
     const e = await db.$transaction(async (tx) => {
       await tx.invoice.updateMany({ where: { eventId, status: { in: ["DRAFT", "PENDING", "OVERDUE"] } }, data: { status: "CANCELLED" } });
+      // Edition teams go with the event (cascade); their group chats must go too.
+      const chats = await tx.eventTeam.findMany({ where: { eventId, conversationId: { not: null } }, select: { conversationId: true } });
+      for (const c of chats) await deleteTeamChat(tx, c.conversationId);
       return tx.event.delete({ where: { id: eventId } });
     });
     await audit(user.id, "delete", "Event", eventId, { title: e.title });

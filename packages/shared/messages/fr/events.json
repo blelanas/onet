@@ -201,5 +201,113 @@
       "PENDING": "Inscription de {name} en attente de paiement (« {title} »)"
     },
     "monitorAssigned": "Vous encadrez la sortie « {title} »"
+  },
+  "series": {
+    "title": "Programmes",
+    "description": "Le festival de l'enfance, les clubs et nos autres rendez-vous : chaque édition avec ses équipes et ses enfants.",
+    "others": "Autres événements",
+    "othersHint": "Les événements ponctuels qui ne font partie d'aucun programme.",
+    "new": "Nouveau programme",
+    "edit": "Modifier le programme",
+    "empty": "Aucun programme pour l'instant",
+    "emptyHint": "Créez un programme (festival, club…) puis ses éditions.",
+    "editions": "{count, plural, =0 {Aucune édition} one {# édition} other {# éditions}}",
+    "latest": "Dernière édition",
+    "noEdition": "Pas encore d'édition",
+    "inactive": "Archivé",
+    "showArchived": "Afficher les programmes archivés",
+    "deleteTitle": "Supprimer ce programme ?",
+    "deleteText": "Possible uniquement tant qu'il n'a aucune édition.",
+    "form": {
+      "name": "Nom",
+      "nameHint": "En français, ex. « Club des enfants ».",
+      "nameAr": "Nom en arabe",
+      "nameArHint": "Ex. « تظاهرة الطفولة » : sert aussi au titre des éditions d'un festival.",
+      "kind": "Type",
+      "kindHint": "Festival : éditions numérotées. Club : une saison par année scolaire.",
+      "color": "Couleur",
+      "sortOrder": "Ordre d'affichage",
+      "active": "Programme actif",
+      "activeHint": "Décochez pour l'archiver : il n'apparaît plus dans la liste."
+    }
+  },
+  "edition": {
+    "number": "Édition {n}",
+    "season": "Saison {from}-{to}",
+    "new": "Nouvelle édition",
+    "newHint": "Le numéro, la saison et le titre sont proposés : modifiez-les si besoin.",
+    "editionNumber": "Numéro d'édition",
+    "seasonYear": "Année (début de saison)",
+    "titleHint": "Proposé à partir du programme.",
+    "copyTeams": "Reprendre les équipes de « {title} »",
+    "copyTeamsHint": "{count, plural, one {# équipe} other {# équipes}} : noms, couleurs, responsables et membres — pas les enfants.",
+    "empty": "Aucune édition pour l'instant",
+    "emptyHint": "Créez la première édition pour y former les équipes et inscrire les enfants.",
+    "status": {
+      "current": "En cours",
+      "upcoming": "À venir",
+      "past": "Terminée"
+    },
+    "mine": "Mon équipe",
+    "dates": "Du {from} au {to}",
+    "tabs": {
+      "teams": "Équipes",
+      "kids": "Enfants"
+    },
+    "roleLeader": "Vous êtes responsable d'une équipe de cette édition : vous pouvez inscrire les enfants et les répartir dans les équipes.",
+    "roleMember": "Vous faites partie d'une équipe de cette édition.",
+    "kpi": {
+      "kids": "Enfants",
+      "teams": "Équipes",
+      "animators": "Animateurs"
+    },
+    "seeAllTeams": "Voir les équipes"
+  },
+  "teams": {
+    "title": "Mes équipes",
+    "description": "Les équipes dont vous êtes responsable ou membre, édition par édition.",
+    "tabs": {
+      "mine": "Mes équipes",
+      "all": "Toutes les équipes en cours"
+    },
+    "current": "En ce moment",
+    "past": "Éditions passées",
+    "empty": "Vous ne faites partie d'aucune équipe",
+    "emptyHint": "Les responsables vous ajouteront à une équipe lors de la prochaine édition.",
+    "emptyCurrent": "Aucune équipe en ce moment",
+    "emptyAll": "Aucune équipe dans les éditions en cours",
+    "emptyEdition": "Aucune équipe dans cette édition",
+    "emptyEditionHint": "Créez les équipes : un responsable, ses animateurs, puis répartissez les enfants.",
+    "count": "{count, plural, =0 {Aucune équipe} one {# équipe} other {# équipes}}",
+    "new": "Nouvelle équipe",
+    "edit": "Modifier l'équipe",
+    "manage": "Gérer",
+    "leader": "Responsable",
+    "member": "Membre",
+    "noLeader": "Pas de responsable",
+    "members": "Animateurs",
+    "noMembers": "Aucun animateur",
+    "animators": "{count, plural, =0 {Aucun animateur} one {# animateur} other {# animateurs}}",
+    "kids": "{count, plural, =0 {Aucun enfant} one {# enfant} other {# enfants}}",
+    "openChat": "Ouvrir la discussion",
+    "openEdition": "Ouvrir l'édition",
+    "role": {
+      "LEADER": "Responsable",
+      "MEMBER": "Membre"
+    },
+    "deleteTitle": "Supprimer cette équipe ?",
+    "deleteText": "Les enfants restent inscrits (sans équipe) et la discussion de l'équipe est supprimée.",
+    "form": {
+      "name": "Nom de l'équipe",
+      "color": "Couleur",
+      "leader": "Responsable",
+      "leaderLocked": "Seuls les administrateurs changent le responsable.",
+      "members": "Animateurs de l'équipe",
+      "membersHint": "Membres, moniteurs et équipe de l'ONET.",
+      "search": "Rechercher un animateur…",
+      "selected": "{count, plural, =0 {Aucun animateur choisi} one {# animateur choisi} other {# animateurs choisis}}",
+      "noMatch": "Aucun animateur trouvé",
+      "chatHint": "Une discussion de groupe réunit automatiquement le responsable et les animateurs qui ont un compte."
+    }
   }
 }

@@ -27,6 +27,10 @@ import { ParticipantsTable } from "@/components/registrations/participants-table
 import { RollCallForm } from "@/components/registrations/roll-call-form";
 import { CategoryIcon, DateTile, PlacesMeter, categoryColor } from "@/components/registrations/visuals";
 import { dateTime, hm } from "@/components/registrations/format";
+import { EditionOverview } from "@/components/events/edition-overview";
+import { EditionTeams } from "@/components/events/edition-teams";
+import { SeriesKindIcon, seriesName, useDateRange, useEditionLabel } from "@/components/events/series-visuals";
+import { EditionKids } from "@/components/kids/edition-kids";
 
 type Data = Loaded<typeof eventPage>;
 
@@ -48,39 +52,73 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
   const tabParam = useSearchParams().get("tab");
   const { event: e, manage, staff, canCheckIn, showMoney, open } = data;
   usePageTitle(e.title);
+  const editionLabel = useEditionLabel();
+  const range = useDateRange();
 
-  const color = categoryColor(e.category);
+  // An edition of a programme (series) gets Teams and Kids tabs instead of participants / check-in.
+  const series = e.series;
+  const color = series?.color ?? categoryColor(e.category);
   const taken = e._count.registrations;
   const left = Math.max(0, e.capacity - taken);
   const base = `/dashboard/events/${id}`;
-  const tabs = [
-    { key: "overview", label: t("detail.tabs.overview"), href: base },
-    ...(staff ? [{ key: "participants", label: t("detail.tabs.participants"), href: `${base}?tab=participants`, count: taken }] : []),
-    ...(canCheckIn ? [{ key: "checkin", label: t("detail.tabs.checkin"), href: `${base}?tab=checkin` }] : []),
-  ];
+  const tabs = series
+    ? [
+        { key: "overview", label: t("detail.tabs.overview"), href: base },
+        { key: "teams", label: t("edition.tabs.teams"), href: `${base}?tab=teams`, count: data.teams.length },
+        ...(data.canSeeKids ? [{ key: "kids", label: t("edition.tabs.kids"), href: `${base}?tab=kids`, count: data.kidsCount }] : []),
+      ]
+    : [
+        { key: "overview", label: t("detail.tabs.overview"), href: base },
+        ...(staff ? [{ key: "participants", label: t("detail.tabs.participants"), href: `${base}?tab=participants`, count: taken }] : []),
+        ...(canCheckIn ? [{ key: "checkin", label: t("detail.tabs.checkin"), href: `${base}?tab=checkin` }] : []),
+      ];
   const tab = tabs.some((x) => x.key === tabParam) ? tabParam! : "overview";
 
   return (
     <div className="space-y-6">
-      <Breadcrumbs items={[{ label: tn("items.dashboard"), href: "/dashboard" }, { label: t("titles.events"), href: "/dashboard/events" }, { label: e.title }]} />
+      <Breadcrumbs
+        items={[
+          { label: tn("items.dashboard"), href: "/dashboard" },
+          { label: t("titles.events"), href: "/dashboard/events" },
+          ...(series ? [{ label: seriesName(series, locale), href: `/dashboard/events/series/${series.id}` }] : []),
+          { label: e.title },
+        ]}
+      />
 
       {/* Hero */}
       <div className="card overflow-hidden">
-        <CoverArt src={e.coverUrl} seed={e.id} color={color} icon={<CategoryIcon kind="event" category={e.category} />} className="h-48 sm:h-64">
+        <CoverArt src={e.coverUrl} seed={e.id} color={color} icon={series ? <SeriesKindIcon kind={series.kind} /> : <CategoryIcon kind="event" category={e.category} />} className="h-48 sm:h-64">
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 flex items-end gap-4 p-4 sm:p-6">
             <DateTile date={e.startAt} locale={locale} className="hidden sm:flex" />
             <div className="min-w-0 flex-1 text-white">
               <div className="mb-2 flex flex-wrap gap-1.5">
-                <span className="rounded-full bg-white/90 px-2.5 py-0.5 text-xs font-extrabold" style={{ color }}>
-                  {tc(`enums.eventCategory.${e.category}`)}
-                </span>
+                {series ? (
+                  <>
+                    <Link href={`/dashboard/events/series/${series.id}`} className="rounded-full bg-white/90 px-2.5 py-0.5 text-xs font-extrabold hover:bg-white" style={{ color }}>
+                      {seriesName(series, locale)}
+                    </Link>
+                    {(e.editionNumber || e.seasonYear) && <span className="rounded-full bg-black/40 px-2.5 py-0.5 text-xs font-bold">{editionLabel(series.kind, e)}</span>}
+                  </>
+                ) : (
+                  <span className="rounded-full bg-white/90 px-2.5 py-0.5 text-xs font-extrabold" style={{ color }}>
+                    {tc(`enums.eventCategory.${e.category}`)}
+                  </span>
+                )}
                 {e.status !== "PUBLISHED" && <StatusBadge status={e.status} className="bg-white/90" />}
                 {!e.isPublic && <span className="rounded-full bg-black/40 px-2.5 py-0.5 text-xs font-bold">{t("card.internal")}</span>}
               </div>
-              <h1 className="text-2xl leading-tight font-extrabold drop-shadow sm:text-4xl">{e.title}</h1>
+              <h1 className="text-2xl leading-tight font-extrabold drop-shadow sm:text-4xl">
+                <bdi>{e.title}</bdi>
+              </h1>
               <p className="mt-1 text-sm font-semibold text-white/90 sm:text-base">
-                {formatDate(e.startAt, locale, "long")} · <span dir="ltr">{hm(e.startAt, locale)}</span>
+                {series ? (
+                  range(e.startAt, e.endAt, locale)
+                ) : (
+                  <>
+                    {formatDate(e.startAt, locale, "long")} · <span dir="ltr">{hm(e.startAt, locale)}</span>
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -102,6 +140,7 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
       {tab === "overview" && (
         <div className="grid gap-5 lg:grid-cols-3">
           <div className="space-y-5 lg:col-span-2">
+            {series && <EditionOverview eventId={id} data={data} color={color} />}
             {e.description && (
               <Section title={t("detail.about")}>
                 <p className="leading-relaxed whitespace-pre-line text-ink-2">{e.description}</p>
@@ -110,7 +149,7 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
             <Section title={t("detail.practical")}>
               <InfoList
                 items={[
-                  { icon: <CalendarClock className="size-4" />, label: t("detail.when"), value: <span>{formatDate(e.startAt, locale, "long")}</span> },
+                  { icon: <CalendarClock className="size-4" />, label: t("detail.when"), value: <span>{series ? range(e.startAt, e.endAt, locale) : formatDate(e.startAt, locale, "long")}</span> },
                   {
                     icon: <Clock className="size-4" />,
                     label: tc("fields.time"),
@@ -169,6 +208,10 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
       )}
 
       {tab === "participants" && staff && <ParticipantsSection eventId={id} />}
+
+      {tab === "teams" && series && <EditionTeams eventId={id} />}
+
+      {tab === "kids" && series && data.canSeeKids && <EditionKids eventId={id} />}
 
       {tab === "checkin" && canCheckIn && <CheckInSection eventId={id} />}
     </div>

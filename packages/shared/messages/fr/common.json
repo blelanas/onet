@@ -319,6 +319,11 @@
       "IMPORTANT": "Date importante",
       "OTHER": "Autre"
     },
+    "SERIES_KINDS": {
+      "FESTIVAL": "Festival",
+      "CLUB": "Club",
+      "OTHER": "Autre"
+    },
     "weekday": {
       "0": "Dimanche",
       "1": "Lundi",

@@ -9,22 +9,28 @@ import { eventTabCounts, familyRegistrationsFor, getEvent, getEventForEdit, list
 import { deleteEvent, saveEvent, saveEventCheckIn } from "./actions";
 import { addableMembers, canSeeMoney, eventParticipants, familyEntries, hideInvoiceMoney, hidePrice, paymentState, registrationStats, rollCall } from "@api/modules/registrations/queries";
 import { deadlinePassed, isOpen, loadTarget } from "@api/modules/registrations/service";
+import { editionAccess } from "./access";
+import { KIDS_OF_EDITION, seriesFormPage, seriesListPage, seriesPage } from "./series";
+import { createEdition, deleteSeries, saveSeries } from "./series-actions";
+import { allTeamsPage, editionTeams, editionTeamsPage, myTeamsPage } from "./teams";
+import { deleteTeam, saveTeam } from "./team-actions";
 
 /** events module routes (mounted under /api). */
 export const router = Router();
 
 const PAGE_SIZE = 12;
 
-/** Events list (tabs upcoming / past / drafts, category + search filters). */
+/** Events list (tabs upcoming / past / drafts, category + search filters; `series=none` → events outside any series). */
 export async function eventsPage(req: Request) {
   const user = await requirePermission("events.read");
   const manage = can(user, "events.manage");
   const tabParam = qs(req, "tab");
   const tab: EventTab = tabParam === "past" ? "past" : tabParam === "drafts" && manage ? "drafts" : "upcoming";
   const page = Math.max(1, Number(qs(req, "page")) || 1);
+  const series = qs(req, "series");
   const [{ rows, total }, counts] = await Promise.all([
-    listEvents(user, { tab, category: qs(req, "category"), q: qs(req, "q"), skip: (page - 1) * PAGE_SIZE, take: PAGE_SIZE }),
-    eventTabCounts(user),
+    listEvents(user, { tab, category: qs(req, "category"), q: qs(req, "q"), series, skip: (page - 1) * PAGE_SIZE, take: PAGE_SIZE }),
+    eventTabCounts(user, series),
   ]);
   const family = await familyRegistrationsFor(user, rows.map((r) => r.id));
   const showMoney = canSeeMoney(user);
@@ -32,7 +38,10 @@ export async function eventsPage(req: Request) {
 }
 router.get("/events", query(eventsPage));
 
-/** Event detail: event + permission flags + the family registration panel entries. */
+/**
+ * Event detail: event (+ its series when it is an edition) + permission flags + the family registration
+ * panel entries + the edition's teams summary, kids count and the user's role on it.
+ */
 export async function eventPage(req: Request) {
   const user = await requirePermission("events.read");
   const id = param(req, "id");
@@ -41,8 +50,20 @@ export async function eventPage(req: Request) {
   const showMoney = canSeeMoney(user);
   const target = await loadTarget("event", id);
   const isKid = user.roles.includes("kid") && !can(user, "events.register");
-  const entries = await familyEntries(user, target);
+  const [entries, access, teams, kidsCount] = await Promise.all([
+    familyEntries(user, target),
+    editionAccess(user, id),
+    editionTeams(id),
+    db.eventRegistration.count({ where: { eventId: id, ...KIDS_OF_EDITION } }),
+  ]);
   return {
+    teams: teams.map((t) => ({ id: t.id, name: t.name, color: t.color, leader: t.leader, memberCount: t.memberCount, kidsCount: t.kidsCount, members: t.members.map((m) => ({ id: m.id, firstName: m.firstName, lastName: m.lastName, photoUrl: m.photoUrl })), conversationId: access.myTeamIds.includes(t.id) ? t.conversationId : null })),
+    kidsCount,
+    canManage: access.manage,
+    isLeader: access.isLeader,
+    isOnTeam: access.isOnTeam,
+    canSeeKids: access.seeKids,
+    canManageKids: access.manageKids,
     event: hidePrice(e, showMoney),
     manage,
     staff: can(user, "registrations.manage") || manage,
@@ -123,6 +144,7 @@ router.get(
   }),
 );
 router.get("/events/:id/participants", query(eventParticipantsPage));
+router.get("/events/:id/teams", query(editionTeamsPage));
 router.get("/events/:id/checkin", query(eventCheckInPage));
 router.get("/events/:id/form", query(eventFormPage));
 router.get("/events/:id", query(eventPage));
@@ -139,3 +161,32 @@ router.post(
   "/events/:id/checkin",
   mutation((req) => saveEventCheckIn({ ...req.body, id: param(req, "id") })),
 );
+
+// ── Series & editions ──
+router.get("/series", query(seriesListPage));
+router.get("/series/:id/form", query(seriesFormPage));
+router.get("/series/:id", query(seriesPage));
+router.post(
+  "/series",
+  mutation((req) => saveSeries(req.body)),
+);
+router.delete(
+  "/series/:id",
+  mutation((req) => deleteSeries(param(req, "id"))),
+);
+router.post(
+  "/series/:id/editions",
+  mutation((req) => createEdition({ ...req.body, seriesId: param(req, "id") })),
+);
+
+// ── Edition teams ──
+router.post(
+  "/events/:id/teams",
+  mutation((req) => saveTeam({ ...req.body, eventId: param(req, "id") })),
+);
+router.delete(
+  "/events/teams/:teamId",
+  mutation((req) => deleteTeam(param(req, "teamId"))),
+);
+router.get("/teams/mine", query(myTeamsPage));
+router.get("/teams", query(allTeamsPage));

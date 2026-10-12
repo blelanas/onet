@@ -1,0 +1,100 @@
+{
+  "title": "Enfants",
+  "description": "Les enfants inscrits aux programmes, leur contact parent et leur parcours d'une édition à l'autre.",
+  "searchPlaceholder": "Rechercher un enfant…",
+  "total": "{count, plural, =0 {Aucun enfant} one {# enfant} other {# enfants}}",
+  "filters": {
+    "allSeries": "Tous les programmes",
+    "allEditions": "Toutes les éditions",
+    "allYears": "Toutes les années",
+    "allTeams": "Toutes les équipes",
+    "noTeam": "Sans équipe"
+  },
+  "view": {
+    "label": "Affichage",
+    "table": "Liste",
+    "cards": "Fiches"
+  },
+  "columns": {
+    "kid": "Enfant",
+    "team": "Équipe",
+    "parent": "Parent",
+    "phone": "Téléphone",
+    "latest": "Dernière édition",
+    "editions": "Éditions"
+  },
+  "editionsCount": "{count, plural, =0 {Aucune édition} one {# édition} other {# éditions}}",
+  "empty": "Aucun enfant ici",
+  "emptyEdition": "Aucun enfant inscrit à cette édition",
+  "emptyEditionHint": "Ajoutez les enfants un par un : un enfant déjà connu de l'ONET ou un nouvel enfant avec le contact de son parent.",
+  "emptyScoped": "Vous verrez ici les enfants des éditions où vous faites partie d'une équipe.",
+  "noParent": "Pas de contact parent",
+  "medical": "Infos médicales",
+  "add": {
+    "button": "Ajouter un enfant",
+    "title": "Ajouter un enfant à l'édition",
+    "existing": "Enfant déjà connu",
+    "new": "Nouvel enfant",
+    "search": "Nom de l'enfant…",
+    "searchHint": "Tapez au moins 2 lettres du prénom ou du nom.",
+    "noMatch": "Aucun enfant trouvé : créez-le dans « Nouvel enfant ».",
+    "addThis": "Ajouter",
+    "lastEdition": "Dernière édition : {title}",
+    "parentOf": "Parent : {name}",
+    "kidSection": "L'enfant",
+    "parentSection": "Contact du parent",
+    "parentHint": "Le parent n'a pas de compte : c'est le numéro à appeler en cas de besoin.",
+    "photo": "Photo",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "firstNameAr": "Prénom en arabe",
+    "lastNameAr": "Nom en arabe",
+    "birthDate": "Date de naissance",
+    "gender": "Genre",
+    "medicalNotes": "Infos médicales / allergies",
+    "parentName": "Nom du parent",
+    "parentPhone": "Téléphone du parent",
+    "relation": "Lien de parenté",
+    "team": "Équipe",
+    "noTeam": "Sans équipe",
+    "added": "Enfant ajouté à l'édition"
+  },
+  "edit": {
+    "button": "Modifier la fiche",
+    "title": "Fiche de {name}",
+    "parentLocked": "Ce parent a un compte : il gère lui-même son nom et son téléphone."
+  },
+  "remove": {
+    "button": "Retirer de l'édition",
+    "title": "Retirer {name} de l'édition ?",
+    "text": "Sa fiche et son parcours sont conservés.",
+    "confirm": "Oui, retirer"
+  },
+  "team": {
+    "label": "Équipe de {name}",
+    "saved": "Équipe mise à jour"
+  },
+  "errors": {
+    "kidExists": "Un enfant avec ce nom et cette date de naissance existe déjà : ajoutez-le depuis « Enfant déjà connu »."
+  },
+  "cards": {
+    "print": "Imprimer les fiches",
+    "parent": "Parent",
+    "phone": "Tél.",
+    "noTeam": "Sans équipe"
+  },
+  "history": {
+    "tab": "Parcours",
+    "title": "Parcours à l'ONET",
+    "empty": "Pas encore de participation",
+    "emptyHint": "Les éditions et sorties de l'enfant apparaîtront ici, année par année.",
+    "stats": {
+      "editions": "Éditions",
+      "series": "Programmes",
+      "trips": "Sorties"
+    },
+    "season": "Saison {from}-{to}",
+    "trip": "Sortie",
+    "event": "Événement"
+  }
+}

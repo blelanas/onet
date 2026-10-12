@@ -3,6 +3,7 @@ import { db } from "@api/lib/db";
 import type { CurrentUser } from "@api/lib/auth/session";
 import { assertCanSeeMember, memberScopeWhere } from "@api/lib/auth/scope";
 import { AuthError } from "@api/lib/auth/guards";
+import { kidVisibleViaTeams } from "@api/modules/events/access";
 
 export type MemberFilters = { q?: string; type?: string; status?: string; groupId?: string; sort?: string; skip?: number; take?: number };
 
@@ -61,7 +62,8 @@ export async function listMembers(user: CurrentUser, f: MemberFilters) {
 }
 
 export async function getMemberProfile(user: CurrentUser, id: string) {
-  await assertCanSeeMember(user, id);
+  // Kids are also visible to the members on a team of one of their editions (see events/access.ts).
+  if (!(await kidVisibleViaTeams(user, id))) await assertCanSeeMember(user, id);
   const member = await db.member.findUnique({
     where: { id },
     include: {

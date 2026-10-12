@@ -83,6 +83,7 @@ export default {
     documentCategory: { MEDICAL: T("Médical", "طبي", "Medical"), ID: T("Identité", "هوية", "ID"), AUTHORIZATION: T("Autorisation", "ترخيص", "Authorization"), INVOICE: T("Facture", "فاتورة", "Invoice"), REPORT: T("Rapport", "تقرير", "Report"), PHOTO: T("Photo", "صورة", "Photo"), OTHER: T("Autre", "أخرى", "Other") },
     entityType: { GENERAL: T("Général", "عام", "General"), MEMBER: T("Membre", "عضو", "Member"), EVENT: T("Événement", "حدث", "Event"), TRIP: T("Sortie", "رحلة", "Trip"), INVOICE: T("Facture", "فاتورة", "Invoice"), ACTIVITY: T("Activité", "نشاط", "Activity") },
     calendarType: { MEETING: T("Réunion", "اجتماع", "Meeting"), HOLIDAY: T("Vacances", "عطلة", "Holiday"), IMPORTANT: T("Date importante", "تاريخ مهم", "Important date"), OTHER: T("Autre", "أخرى", "Other") },
+    SERIES_KINDS: { FESTIVAL: T("Festival", "تظاهرة", "Festival"), CLUB: T("Club", "نادٍ", "Club"), OTHER: T("Autre", "أخرى", "Other") },
     weekday: { 0: T("Dimanche", "الأحد", "Sunday"), 1: T("Lundi", "الإثنين", "Monday"), 2: T("Mardi", "الثلاثاء", "Tuesday"), 3: T("Mercredi", "الأربعاء", "Wednesday"), 4: T("Jeudi", "الخميس", "Thursday"), 5: T("Vendredi", "الجمعة", "Friday"), 6: T("Samedi", "السبت", "Saturday") },
   },
   fields: {
