@@ -1,0 +1,128 @@
+import type { Prisma } from "@prisma/client";
+import { db } from "@api/lib/db";
+import { requestCache } from "@api/lib/context";
+import type { CurrentUser } from "@api/lib/auth/session";
+import { AuthError, can } from "@api/lib/auth/guards";
+import { visibleMemberIds } from "@api/lib/auth/scope";
+
+/**
+ * Access rules for series editions, their teams and their kids (one place, used by the events and
+ * kids modules and by the member profile scope):
+ *  - events.manage (admins) may do everything;
+ *  - the leaders of an edition (Member = EventTeam.leaderId of any team of that event) may add, edit and
+ *    remove its kids, assign kids to teams, and change the members of their own team;
+ *  - anyone with events.read may read series, editions and teams;
+ *  - kids and their parents' phone numbers: members.read_all / events.manage see every kid, other users
+ *    only the kids of editions where they are on a team (leader or member).
+ */
+
+/** Teams a member belongs to: as leader or as a team member. */
+export function onTeamWhere(memberId: string): Prisma.EventTeamWhereInput {
+  return { OR: [{ leaderId: memberId }, { members: { some: { memberId } } }] };
+}
+
+/** Registrations that count as "the kid takes part" (cancelled ones don't). */
+export const ACTIVE_KID_REG: Prisma.EventRegistrationWhereInput = { status: { not: "CANCELLED" } };
+
+export function canManageEditions(user: CurrentUser) {
+  return can(user, "events.manage");
+}
+
+/** Users who see every kid (and every parent phone number). */
+export function seesAllKids(user: CurrentUser) {
+  return can(user, "members.read_all") || can(user, "events.manage");
+}
+
+/** The current user's teams (as leader or member), resolved once per request. */
+export const myTeams = requestCache("myTeams", async (user: CurrentUser) => {
+  if (!user.memberId) return [] as { id: string; eventId: string; isLeader: boolean }[];
+  const teams = await db.eventTeam.findMany({ where: onTeamWhere(user.memberId), select: { id: true, eventId: true, leaderId: true } });
+  return teams.map((t) => ({ id: t.id, eventId: t.eventId, isLeader: t.leaderId === user.memberId }));
+});
+
+export type EditionAccess = {
+  /** events.manage: everything on every edition. */
+  manage: boolean;
+  /** Leads at least one team of this edition. */
+  isLeader: boolean;
+  /** Leader or member of at least one team of this edition. */
+  isOnTeam: boolean;
+  /** Teams of this edition led by the user. */
+  ledTeamIds: string[];
+  /** Ids of the user's teams in this edition. */
+  myTeamIds: string[];
+  /** May list the kids (and their parents' phones). */
+  seeKids: boolean;
+  /** May add / edit / remove kids and assign them to teams. */
+  manageKids: boolean;
+};
+
+export async function editionAccess(user: CurrentUser, eventId: string): Promise<EditionAccess> {
+  const manage = canManageEditions(user);
+  const mine = (await myTeams(user)).filter((t) => t.eventId === eventId);
+  const ledTeamIds = mine.filter((t) => t.isLeader).map((t) => t.id);
+  const isLeader = ledTeamIds.length > 0;
+  const isOnTeam = mine.length > 0;
+  return {
+    manage,
+    isLeader,
+    isOnTeam,
+    ledTeamIds,
+    myTeamIds: mine.map((t) => t.id),
+    seeKids: seesAllKids(user) || isOnTeam,
+    manageKids: manage || isLeader,
+  };
+}
+
+export async function assertCanSeeKids(user: CurrentUser, eventId: string) {
+  const a = await editionAccess(user, eventId);
+  if (!a.seeKids) throw new AuthError("FORBIDDEN");
+  return a;
+}
+
+export async function assertCanManageKids(user: CurrentUser, eventId: string) {
+  const a = await editionAccess(user, eventId);
+  if (!a.manageKids) throw new AuthError("FORBIDDEN");
+  return a;
+}
+
+/**
+ * Prisma filter restricting CHILD members to the kids this user may see through teams:
+ * {} for users who see every kid, otherwise kids registered in an edition where the user is on a team.
+ */
+export function kidScopeWhere(user: CurrentUser): Prisma.MemberWhereInput {
+  if (seesAllKids(user)) return {};
+  if (!user.memberId) return { id: { in: [] } };
+  return { eventRegistrations: { some: { ...ACTIVE_KID_REG, event: { teams: { some: onTeamWhere(user.memberId) } } } } };
+}
+
+/** True when the user sees this kid because they are on a team of one of its editions. */
+export async function kidVisibleViaTeams(user: CurrentUser, kidId: string) {
+  if (!user.memberId && !seesAllKids(user)) return false;
+  return (await db.member.count({ where: { id: kidId, type: "CHILD", ...kidScopeWhere(user) } })) > 0;
+}
+
+/** Kid profile / history: team scope, or the regular member scope (parents, group monitors…). */
+export async function canSeeKid(user: CurrentUser, kidId: string) {
+  if (await kidVisibleViaTeams(user, kidId)) return true;
+  const ids = await visibleMemberIds(user);
+  return ids === "all" || ids.includes(kidId);
+}
+
+/** Kid card data (photo, names, birth date, parent contact): member managers, admins, or a leader of one of the kid's editions. */
+export async function canEditKid(user: CurrentUser, kidId: string) {
+  if (can(user, "members.manage") || canManageEditions(user)) return true;
+  if (!user.memberId) return false;
+  const n = await db.eventRegistration.count({ where: { memberId: kidId, ...ACTIVE_KID_REG, event: { teams: { some: { leaderId: user.memberId } } } } });
+  return n > 0;
+}
+
+/**
+ * What the user may change on a team: "full" (admins: everything, incl. the leader), "members" (the team's
+ * own leader: name, colour and members) or null.
+ */
+export function teamEditRights(user: CurrentUser, team: { leaderId: string | null }): "full" | "members" | null {
+  if (canManageEditions(user)) return "full";
+  if (user.memberId && team.leaderId === user.memberId) return "members";
+  return null;
+}

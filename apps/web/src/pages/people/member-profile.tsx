@@ -25,6 +25,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { LinkTabs } from "@/components/ui/tabs";
 import { EntityDocuments } from "@/components/documents/entity-documents";
 import { AccountForm, LinkParentForm } from "@/components/members/profile-forms";
+import { KidHistory } from "@/components/kids/kid-history";
 
 type Data = Loaded<typeof memberProfilePage>;
 
@@ -42,6 +43,7 @@ function MemberProfile({ id, data }: { id: string; data: Data }) {
   const t = useTranslations("people");
   const tc = useTranslations("common");
   const tn = useTranslations("nav");
+  const tk = useTranslations("kids.history");
   const locale = useLocale();
   const canManage = can(user, "members.manage");
   const isChild = m.type === "CHILD";
@@ -56,6 +58,7 @@ function MemberProfile({ id, data }: { id: string; data: Data }) {
     { key: "overview", label: t("profile.tabs.overview"), href: base },
     ...(isChild || m.type === "MEMBER" ? [{ key: "attendance", label: t("profile.tabs.attendance"), href: `${base}?tab=attendance`, count: attendance.length }] : []),
     { key: "participation", label: t("profile.tabs.participation"), href: `${base}?tab=participation`, count: m.eventRegistrations.length + m.tripRegistrations.length },
+    ...(isChild ? [{ key: "history", label: tk("tab"), href: `${base}?tab=history` }] : []),
     ...(invoices ? [{ key: "payments", label: t("profile.tabs.payments"), href: `${base}?tab=payments`, count: invoices.length }] : []),
     { key: "documents", label: t("profile.tabs.documents"), href: `${base}?tab=documents` },
   ];
@@ -373,6 +376,8 @@ function MemberProfile({ id, data }: { id: string; data: Data }) {
           </Section>
         </div>
       )}
+
+      {tab === "history" && isChild && <KidHistory kidId={id} />}
 
       {tab === "payments" && invoices && (
         <Section title={t("profile.tabs.payments")}>

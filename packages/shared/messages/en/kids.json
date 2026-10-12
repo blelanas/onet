@@ -1,0 +1,100 @@
+{
+  "title": "Kids",
+  "description": "Kids registered in the programmes, their parent contact and their journey from one edition to the next.",
+  "searchPlaceholder": "Search a kid…",
+  "total": "{count, plural, =0 {No kids} one {# kid} other {# kids}}",
+  "filters": {
+    "allSeries": "All programmes",
+    "allEditions": "All editions",
+    "allYears": "All years",
+    "allTeams": "All teams",
+    "noTeam": "No team"
+  },
+  "view": {
+    "label": "View",
+    "table": "List",
+    "cards": "Cards"
+  },
+  "columns": {
+    "kid": "Kid",
+    "team": "Team",
+    "parent": "Parent",
+    "phone": "Phone",
+    "latest": "Latest edition",
+    "editions": "Editions"
+  },
+  "editionsCount": "{count, plural, =0 {No editions} one {# edition} other {# editions}}",
+  "empty": "No kids here",
+  "emptyEdition": "No kids registered in this edition",
+  "emptyEditionHint": "Add the kids one by one: a kid ONET already knows, or a new kid with their parent's contact.",
+  "emptyScoped": "You'll see here the kids of the editions where you are on a team.",
+  "noParent": "No parent contact",
+  "medical": "Medical info",
+  "add": {
+    "button": "Add a kid",
+    "title": "Add a kid to the edition",
+    "existing": "Known kid",
+    "new": "New kid",
+    "search": "Kid's name…",
+    "searchHint": "Type at least 2 letters of the first or last name.",
+    "noMatch": "No kid found: create them under \"New kid\".",
+    "addThis": "Add",
+    "lastEdition": "Latest edition: {title}",
+    "parentOf": "Parent: {name}",
+    "kidSection": "The kid",
+    "parentSection": "Parent contact",
+    "parentHint": "The parent has no account: this is the number to call when needed.",
+    "photo": "Photo",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "firstNameAr": "First name in Arabic",
+    "lastNameAr": "Last name in Arabic",
+    "birthDate": "Date of birth",
+    "gender": "Gender",
+    "medicalNotes": "Medical info / allergies",
+    "parentName": "Parent's name",
+    "parentPhone": "Parent's phone",
+    "relation": "Relationship",
+    "team": "Team",
+    "noTeam": "No team",
+    "added": "Kid added to the edition"
+  },
+  "edit": {
+    "button": "Edit card",
+    "title": "{name}'s card",
+    "parentLocked": "This parent has an account: they manage their own name and phone."
+  },
+  "remove": {
+    "button": "Remove from the edition",
+    "title": "Remove {name} from the edition?",
+    "text": "Their card and history are kept.",
+    "confirm": "Yes, remove"
+  },
+  "team": {
+    "label": "{name}'s team",
+    "saved": "Team updated"
+  },
+  "errors": {
+    "kidExists": "A kid with this name and date of birth already exists: add them from \"Known kid\"."
+  },
+  "cards": {
+    "print": "Print the cards",
+    "parent": "Parent",
+    "phone": "Phone",
+    "noTeam": "No team"
+  },
+  "history": {
+    "tab": "History",
+    "title": "Journey at ONET",
+    "empty": "No participation yet",
+    "emptyHint": "The kid's editions and trips will show up here, year by year.",
+    "stats": {
+      "editions": "Editions",
+      "series": "Programmes",
+      "trips": "Trips"
+    },
+    "season": "Season {from}-{to}",
+    "trip": "Trip",
+    "event": "Event"
+  }
+}

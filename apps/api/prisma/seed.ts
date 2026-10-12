@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { createHash, randomBytes } from "crypto";
 import { ALL_PERMISSIONS, DEFAULT_ROLE_PERMISSIONS, PERMISSIONS, ROLE_COLORS, ROLE_KEYS } from "@onet/shared";
 import { CONFERENCE_TRACKS, SONG_TRACKS, galleryUrl, trackInfo } from "./demo-media";
+import { seedSeries } from "./seed-series";
 import { seedTripsAndChats } from "./seed-trips-chats";
 
 const db = new PrismaClient({ adapter: new PrismaLibSQL({ url: process.env.DATABASE_URL ?? "file:./prisma/dev.db", authToken: process.env.DATABASE_AUTH_TOKEN }) });
@@ -662,6 +663,7 @@ async function main() {
   };
   for (const [key, value] of Object.entries(settings)) await db.setting.create({ data: { key, value: JSON.stringify(value) } });
 
+  await seedSeries(db);
   await seedTripsAndChats(db);
 
   const counts = await Promise.all([db.member.count(), db.invoice.count(), db.payment.count(), db.attendance.count()]);

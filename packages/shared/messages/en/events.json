@@ -201,5 +201,113 @@
       "PENDING": "{name}'s registration is awaiting payment (\"{title}\")"
     },
     "monitorAssigned": "You are supervising the trip \"{title}\""
+  },
+  "series": {
+    "title": "Programmes",
+    "description": "The children's festival, the clubs and our other programmes: each edition with its teams and kids.",
+    "others": "Other events",
+    "othersHint": "One-off events that are not part of a programme.",
+    "new": "New programme",
+    "edit": "Edit programme",
+    "empty": "No programmes yet",
+    "emptyHint": "Create a programme (festival, club…) and then its editions.",
+    "editions": "{count, plural, =0 {No editions} one {# edition} other {# editions}}",
+    "latest": "Latest edition",
+    "noEdition": "No edition yet",
+    "inactive": "Archived",
+    "showArchived": "Show archived programmes",
+    "deleteTitle": "Delete this programme?",
+    "deleteText": "Only possible while it has no editions.",
+    "form": {
+      "name": "Name",
+      "nameHint": "In French, e.g. \"Club des enfants\".",
+      "nameAr": "Arabic name",
+      "nameArHint": "E.g. \"تظاهرة الطفولة\": also used in the title of a festival's editions.",
+      "kind": "Type",
+      "kindHint": "Festival: numbered editions. Club: one season per school year.",
+      "color": "Colour",
+      "sortOrder": "Display order",
+      "active": "Active programme",
+      "activeHint": "Untick to archive it: it no longer shows in the list."
+    }
+  },
+  "edition": {
+    "number": "Edition {n}",
+    "season": "Season {from}-{to}",
+    "new": "New edition",
+    "newHint": "Number, season and title are suggested: change them if needed.",
+    "editionNumber": "Edition number",
+    "seasonYear": "Year (season start)",
+    "titleHint": "Suggested from the programme.",
+    "copyTeams": "Copy the teams of \"{title}\"",
+    "copyTeamsHint": "{count, plural, one {# team} other {# teams}}: names, colours, leaders and members — not the kids.",
+    "empty": "No editions yet",
+    "emptyHint": "Create the first edition to set up teams and register kids.",
+    "status": {
+      "current": "Ongoing",
+      "upcoming": "Upcoming",
+      "past": "Finished"
+    },
+    "mine": "My team",
+    "dates": "From {from} to {to}",
+    "tabs": {
+      "teams": "Teams",
+      "kids": "Kids"
+    },
+    "roleLeader": "You lead a team in this edition: you can register kids and assign them to teams.",
+    "roleMember": "You are on a team in this edition.",
+    "kpi": {
+      "kids": "Kids",
+      "teams": "Teams",
+      "animators": "Animators"
+    },
+    "seeAllTeams": "See the teams"
+  },
+  "teams": {
+    "title": "My teams",
+    "description": "The teams you lead or belong to, edition by edition.",
+    "tabs": {
+      "mine": "My teams",
+      "all": "All current teams"
+    },
+    "current": "Right now",
+    "past": "Past editions",
+    "empty": "You are not on any team",
+    "emptyHint": "Leaders will add you to a team for the next edition.",
+    "emptyCurrent": "No team right now",
+    "emptyAll": "No teams in the current editions",
+    "emptyEdition": "No teams in this edition",
+    "emptyEditionHint": "Create the teams: a leader and their animators, then assign the kids.",
+    "count": "{count, plural, =0 {No teams} one {# team} other {# teams}}",
+    "new": "New team",
+    "edit": "Edit team",
+    "manage": "Manage",
+    "leader": "Leader",
+    "member": "Member",
+    "noLeader": "No leader",
+    "members": "Animators",
+    "noMembers": "No animators",
+    "animators": "{count, plural, =0 {No animators} one {# animator} other {# animators}}",
+    "kids": "{count, plural, =0 {No kids} one {# kid} other {# kids}}",
+    "openChat": "Open chat",
+    "openEdition": "Open edition",
+    "role": {
+      "LEADER": "Leader",
+      "MEMBER": "Member"
+    },
+    "deleteTitle": "Delete this team?",
+    "deleteText": "Kids stay registered (without a team) and the team chat is deleted.",
+    "form": {
+      "name": "Team name",
+      "color": "Colour",
+      "leader": "Leader",
+      "leaderLocked": "Only administrators change the leader.",
+      "members": "Team animators",
+      "membersHint": "ONET members, monitors and staff.",
+      "search": "Search an animator…",
+      "selected": "{count, plural, =0 {No animator selected} one {# animator selected} other {# animators selected}}",
+      "noMatch": "No animator found",
+      "chatHint": "A group chat automatically brings together the leader and the animators who have an account."
+    }
   }
 }

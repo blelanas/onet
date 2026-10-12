@@ -18,6 +18,8 @@ import { routes as communication } from "@/pages/communication/routes";
 import { routes as documents } from "@/pages/documents/routes";
 import { routes as reports } from "@/pages/reports/routes";
 import { routes as settings } from "@/pages/settings/routes";
+import { routes as kids } from "@/pages/kids/routes";
+import { routes as teams } from "@/pages/teams/routes";
 import { publicRoutes } from "@/pages/public/routes";
 
 const DashboardLayoutLazy = lazy(() => import("@/pages/dashboard-shell/layout"));
@@ -38,6 +40,8 @@ const dashboardChildren: RouteObject[] = [
   ...documents,
   ...reports,
   ...settings,
+  ...kids,
+  ...teams,
   { path: "forbidden", lazy: async () => ({ Component: (await import("@/components/states/page-state")).Forbidden }) },
   { path: "*", element: <NotFound /> },
 ];
