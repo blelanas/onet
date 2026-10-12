@@ -137,11 +137,14 @@ export const ROLE_COLORS: Record<RoleKey, string> = {
 
 /** Roles staff only (super admins) may grant: never obtainable through sign-up, invitations or the pre-approved list. */
 export const STAFF_ROLE_KEYS = ["super_admin", "admin", "accountant"] as const satisfies readonly RoleKey[];
-/** Roles that invitation links and the pre-approved list may grant (confirmed by the organisation). */
-export const SIGNUP_ROLE_KEYS = ["monitor", "member"] as const satisfies readonly RoleKey[];
+/**
+ * Roles that self sign-up, invitation links and the pre-approved list may grant (confirmed by the
+ * organisation). "member" first: it is the default; "monitor" is still accepted for existing rows.
+ */
+export const SIGNUP_ROLE_KEYS = ["member", "monitor"] as const satisfies readonly RoleKey[];
 export type SignupRole = (typeof SIGNUP_ROLE_KEYS)[number];
 export const USER_STATUSES = ["ACTIVE", "PENDING", "REJECTED"] as const;
 export type UserStatus = (typeof USER_STATUSES)[number];
 
-/** Which dashboard flavour a user sees (first match wins). */
-export const DASHBOARD_PRIORITY: RoleKey[] = ["super_admin", "admin", "accountant", "monitor", "parent", "kid", "member"];
+/** Which dashboard flavour a user sees (first match wins). Monitors and members share the member home. */
+export const DASHBOARD_PRIORITY: RoleKey[] = ["super_admin", "admin", "accountant", "member", "monitor", "parent", "kid"];

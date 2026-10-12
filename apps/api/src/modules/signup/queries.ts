@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { db } from "@api/lib/db";
-import { invitationState, normalizePhone } from "./lib";
+import { ageOn, invitationState, normalizePhone } from "./lib";
 
 /** LIKE pattern matching a phone that contains these digits in order, whatever the separators between them. */
 const digitsPattern = (digits: string) => `%${digits.split("").join("%")}%`;
@@ -18,15 +18,37 @@ export async function approvalCounts() {
 }
 
 /**
- * PENDING sign-ups, oldest first, with what may help an approver recognise them: the invitation
- * label and existing Member records sharing their e-mail or phone.
+ * PENDING sign-ups, oldest first, with what may help an approver recognise them: age, occupation, the
+ * invitation label and existing Member records sharing their e-mail or phone.
  */
 export async function listPendingUsers(skip: number, take: number) {
   const where = { status: "PENDING" };
-  const [rows, total] = await Promise.all([
-    db.user.findMany({ where, orderBy: { createdAt: "asc" }, skip, take, select: { id: true, name: true, email: true, phone: true, requestedRole: true, invitationId: true, createdAt: true } }),
+  const [users, total] = await Promise.all([
+    db.user.findMany({
+      where,
+      orderBy: { createdAt: "asc" },
+      skip,
+      take,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        requestedRole: true,
+        invitationId: true,
+        createdAt: true,
+        // The sign-up's answers (see createPendingMember in ./actions).
+        member: { select: { id: true, dateOfBirth: true, occupation: true, occupationDetail: true } },
+      },
+    }),
     db.user.count({ where }),
   ]);
+  const rows = users.map(({ member, ...u }) => ({
+    ...u,
+    age: member?.dateOfBirth ? ageOn(member.dateOfBirth) : null,
+    occupation: member?.occupation ?? null,
+    occupationDetail: member?.occupationDetail ?? null,
+  }));
   const invIds = [...new Set(rows.map((r) => r.invitationId).filter((x): x is string => !!x))];
   const invitations = invIds.length ? await db.invitation.findMany({ where: { id: { in: invIds } }, select: { id: true, label: true } }) : [];
   const labelOf = new Map(invitations.map((i) => [i.id, i.label]));
@@ -52,6 +74,8 @@ export async function listPendingUsers(skip: number, take: number) {
     rows: rows.map((r) => {
       const p = normalizePhone(r.phone);
       const known = candidates
+        // Not their own (PENDING) record.
+        .filter((m) => m.userId !== r.id)
         .filter((m) => (m.email && m.email.toLowerCase() === r.email) || (p && normalizePhone(m.phone) === p))
         .slice(0, 3)
         .map((m) => ({ id: m.id, name: `${m.firstName} ${m.lastName}`, type: m.type, membershipNumber: m.membershipNumber, hasAccount: !!m.userId }));

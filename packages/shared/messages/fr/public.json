@@ -41,8 +41,8 @@
       "description": "Une question ? Écrivez-nous ou passez nous voir à la Maison de l'enfance."
     },
     "join": {
-      "title": "Nous rejoindre",
-      "description": "Inscrivez votre enfant à l'ONET Teboulba en quelques minutes."
+      "title": "Devenir membre",
+      "description": "Rejoignez l'équipe des animateurs de l'ONET Teboulba : créez votre compte de membre en quelques minutes."
     }
   },
   "nav": {
@@ -144,10 +144,16 @@
     },
     "cta": {
       "title": "Prêt à vivre l'aventure ONET ?",
-      "text": "Inscrivez votre enfant en quelques minutes : nous vous rappelons pour finaliser l'adhésion.",
-      "join": "Inscrire mon enfant",
+      "text": "Vous avez envie d'animer, de chanter et de jouer avec les enfants ? Devenez membre de l'équipe en quelques minutes.",
+      "join": "Devenir membre",
       "contact": "Poser une question"
     }
+  },
+  "bureau": {
+    "eyebrow": "Notre équipe",
+    "title": "Membres du bureau local",
+    "subtitle": "Les bénévoles élus qui font vivre l'ONET Teboulba au quotidien.",
+    "list": "Membres du bureau local"
   },
   "common": {
     "seeAll": "Tout voir",
@@ -327,49 +333,36 @@
   },
   "join": {
     "eyebrow": "Adhésion",
-    "title": "Inscrivez votre enfant",
-    "subtitle": "Remplissez ce formulaire : un membre de l'équipe vous rappelle pour finaliser l'inscription et répondre à vos questions.",
+    "title": "Devenir membre",
+    "subtitle": "Les membres de l'ONET Teboulba sont ses animateurs et animatrices : des jeunes et des adultes qui donnent de leur temps pour les enfants. Créez votre compte, l'association le valide et vous rejoignez l'équipe.",
     "steps": {
       "one": {
-        "title": "Vous remplissez le formulaire",
-        "text": "2 minutes, sans créer de compte."
+        "title": "Vous créez votre compte",
+        "text": "2 minutes : identité, contact, activité."
       },
       "two": {
-        "title": "Nous vous rappelons",
-        "text": "Pour choisir le groupe et les activités."
+        "title": "L'association valide",
+        "text": "Le bureau vérifie votre demande."
       },
       "three": {
-        "title": "Bienvenue dans la famille !",
-        "text": "Votre espace famille est activé."
+        "title": "Bienvenue dans l'équipe !",
+        "text": "Événements, sorties, groupes et bagage."
       }
     },
-    "parentSection": "Le parent / tuteur",
-    "childSection": "L'enfant",
-    "parentName": "Nom complet",
-    "email": "E-mail",
-    "phone": "Téléphone",
-    "phoneHint": "Nous vous appellerons sur ce numéro.",
-    "childName": "Prénom et nom de l'enfant",
-    "childDob": "Date de naissance",
-    "message": "Centres d'intérêt, questions…",
-    "messagePh": "Ex. : elle adore chanter et aimerait rejoindre la chorale.",
-    "consent": "J'accepte d'être contacté·e par l'ONET Teboulba au sujet de cette demande.",
-    "submit": "Envoyer la demande",
-    "sent": "Demande envoyée !",
-    "successTitle": "Bienvenue dans l'aventure !",
-    "successText": "Votre demande est bien enregistrée. Nous vous appelons dans les prochains jours pour finaliser l'adhésion.",
-    "successNext": "En attendant, découvrez nos activités",
-    "another": "Inscrire un autre enfant",
+    "cta": "Créer mon compte de membre",
+    "ctaHint": "Gratuit · Validation par l'association",
+    "whoTitle": "Qui peut devenir membre ?",
+    "who": "Toute personne de 12 ans et plus, élève, étudiant·e, en activité ou non, qui a envie d'animer, de chanter, de jouer et de partager avec les enfants de Teboulba.",
     "already": "Déjà membre ?",
-    "parentAccount": "Vos enfants sont déjà inscrits ?",
-    "parentAccountCta": "Créer un compte parent",
     "why": "Pourquoi nous rejoindre ?",
     "perks": {
-      "a": "Des clubs chaque semaine encadrés par des moniteurs formés",
-      "b": "Sorties, camps et grandes fêtes toute l'année",
-      "c": "Un espace famille pour suivre présences, inscriptions et paiements",
-      "d": "Une cotisation annuelle solidaire"
-    }
+      "a": "Animer des événements, des clubs et des sorties pour les enfants",
+      "b": "Rejoindre des groupes et discuter avec toute l'équipe",
+      "c": "Un bagage partagé : chansons, danses et jeux",
+      "d": "Se former et appartenir à une grande famille"
+    },
+    "contactTitle": "Une question avant de vous inscrire ?",
+    "contactCta": "Écrivez-nous"
   },
   "form": {
     "honeypot": "Ne pas remplir ce champ",

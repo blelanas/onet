@@ -203,3 +203,24 @@
 html[dir="rtl"] .rtl-flip {
   transform: scaleX(-1);
 }
+
+/*
+ * Seamless horizontal marquee (landing page, local bureau): the track holds its list twice and slides
+ * by half its width, the other way in RTL; it pauses on hover and keyboard focus. Components hide it
+ * for prefers-reduced-motion (motion-reduce:) and show a static layout instead.
+ */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(var(--marquee-shift, -50%)); }
+}
+.animate-marquee {
+  --marquee-shift: -50%;
+  animation: marquee var(--marquee-duration, 40s) linear infinite;
+}
+html[dir="rtl"] .animate-marquee {
+  --marquee-shift: 50%;
+}
+.marquee-pause:hover .animate-marquee,
+.marquee-pause:focus-within .animate-marquee {
+  animation-play-state: paused;
+}

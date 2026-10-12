@@ -9,37 +9,120 @@ import { ActionError, formToObject, runAction, zs } from "@api/lib/actions";
 import { audit } from "@api/lib/audit";
 import { getLocale, getTranslations } from "@api/lib/i18n";
 import { notifyRoles, notifyUsers } from "@api/lib/services/notifications";
-import { DEFAULT_LOCALE, SIGNUP_ROLE_KEYS } from "@onet/shared";
+import { DEFAULT_LOCALE, OCCUPATIONS, SIGNUP_ROLE_KEYS, parseFormDate, type SignupRole } from "@onet/shared";
 import { nextMembershipNumber } from "../members/actions";
 import { splitName } from "../joinRequests/actions";
-import { MEMBER_TYPE_FOR_ROLE, invitationState, isSignupRole, normalizePhone, parsePeopleList } from "./lib";
+import { MEMBER_TYPE_FOR_ROLE, SIGNUP_MAX_AGE, SIGNUP_MIN_AGE, ageOn, invitationState, isSignupRole, normalizePhone, parsePeopleList } from "./lib";
 
 const APPROVERS = ["super_admin", "admin"];
 const DAY = 86400_000;
 
-/** Member names are at most 80 characters per part (members form); sign-up names are capped at 80 too. */
+/** Sign-up name parts are capped at 40 characters each; the account name ("First Last") at 80. */
+const NAME_PART_MAX = 40;
 const NAME_MAX = 80;
 
-/**
- * Gives a login (PARENT, MONITOR or MEMBER) its Member record, inside the caller's transaction.
- * Monitors and members: when exactly one existing Member of that type without an account has the
- * same e-mail (any case), that record is linked instead of creating a duplicate. Never for parents:
- * linking a parent record would hand its children to whoever signed up with that e-mail, unverified.
- */
-async function createLinkedMember(tx: Prisma.TransactionClient, u: { id: string; name: string; email: string; phone: string | null }, role: keyof typeof MEMBER_TYPE_FOR_ROLE) {
-  const type = MEMBER_TYPE_FOR_ROLE[role];
-  if (role !== "parent") {
-    const matches = await tx.$queryRaw<{ id: string }[]>`SELECT "id" FROM "Member" WHERE "type" = ${type} AND "userId" IS NULL AND "email" IS NOT NULL AND lower("email") = lower(${u.email}) LIMIT 2`;
-    if (matches.length === 1) {
-      const { count } = await tx.member.updateMany({ where: { id: matches[0].id, userId: null }, data: { userId: u.id } });
-      if (count) return { id: matches[0].id };
-    }
-  }
+/** What a sign-up tells about the person, copied onto their Member record. */
+type Profile = {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: Date | null;
+  occupation: string | null;
+  occupationDetail: string | null;
+  email: string;
+  phone: string | null;
+};
+
+/** Profile of an account created before sign-ups asked for these details (name only). */
+function profileFromAccount(u: { name: string; email: string; phone: string | null }): Profile {
   const { firstName, lastName } = splitName(u.name);
+  return { firstName: firstName.slice(0, NAME_MAX), lastName: lastName.slice(0, NAME_MAX), dateOfBirth: null, occupation: null, occupationDetail: null, email: u.email, phone: u.phone };
+}
+
+/**
+ * The one existing Member of that type without an account whose e-mail is the same (any case), or
+ * null when there is none or more than one (ambiguous).
+ */
+async function unlinkedMatch(tx: Prisma.TransactionClient, type: string, email: string) {
+  const matches = await tx.$queryRaw<{ id: string }[]>`SELECT "id" FROM "Member" WHERE "type" = ${type} AND "userId" IS NULL AND "email" IS NOT NULL AND lower("email") = lower(${email}) LIMIT 2`;
+  return matches.length === 1 ? matches[0].id : null;
+}
+
+/** Links an existing record to the account and fills its empty fields from the sign-up (never overwrites). */
+async function linkExisting(tx: Prisma.TransactionClient, memberId: string, userId: string, p: Profile) {
+  const { count } = await tx.member.updateMany({ where: { id: memberId, userId: null }, data: { userId } });
+  if (!count) return false;
+  const m = await tx.member.findUniqueOrThrow({ where: { id: memberId }, select: { dateOfBirth: true, occupation: true, occupationDetail: true, phone: true, email: true } });
+  const fill: Prisma.MemberUpdateInput = {};
+  if (!m.dateOfBirth && p.dateOfBirth) fill.dateOfBirth = p.dateOfBirth;
+  if (!m.occupation && p.occupation) fill.occupation = p.occupation;
+  if (!m.occupationDetail && p.occupationDetail) fill.occupationDetail = p.occupationDetail;
+  if (!m.phone?.trim() && p.phone) fill.phone = p.phone;
+  if (!m.email?.trim() && p.email) fill.email = p.email;
+  if (Object.keys(fill).length) await tx.member.update({ where: { id: memberId }, data: fill });
+  return true;
+}
+
+function memberData(p: Profile, type: string) {
+  return {
+    type,
+    firstName: p.firstName,
+    lastName: p.lastName,
+    dateOfBirth: p.dateOfBirth,
+    occupation: p.occupation,
+    occupationDetail: p.occupationDetail,
+    email: p.email,
+    phone: p.phone,
+  };
+}
+
+/**
+ * Gives an ACTIVE login (MONITOR or MEMBER) its Member record, inside the caller's transaction. When
+ * exactly one existing Member of that type without an account has the same e-mail (any case), that
+ * record is linked (its empty fields filled from the sign-up) instead of creating a duplicate.
+ */
+async function createLinkedMember(tx: Prisma.TransactionClient, userId: string, role: SignupRole, p: Profile) {
+  const type = MEMBER_TYPE_FOR_ROLE[role];
+  const match = await unlinkedMatch(tx, type, p.email);
+  if (match && (await linkExisting(tx, match, userId, p))) return { id: match };
   return tx.member.create({
-    data: { type, firstName: firstName.slice(0, NAME_MAX), lastName: lastName.slice(0, NAME_MAX), email: u.email, phone: u.phone, userId: u.id, membershipNumber: await nextMembershipNumber(tx), membershipStatus: "ACTIVE" },
+    data: { ...memberData(p, type), userId, membershipNumber: await nextMembershipNumber(tx), membershipStatus: "ACTIVE" },
     select: { id: true },
   });
+}
+
+/**
+ * A PENDING sign-up keeps what it told about itself on a Member record of its own, with membership
+ * status PENDING: it is never linked to an existing record before an approver has seen it (the e-mail
+ * is not verified). Approval activates it (or merges it into the existing record), rejection removes it.
+ */
+async function createPendingMember(tx: Prisma.TransactionClient, userId: string, role: SignupRole, p: Profile) {
+  return tx.member.create({
+    data: { ...memberData(p, MEMBER_TYPE_FOR_ROLE[role]), userId, membershipNumber: await nextMembershipNumber(tx), membershipStatus: "PENDING" },
+    select: { id: true },
+  });
+}
+
+/** On approval: the account's Member record, activated (see createPendingMember). */
+async function activateMember(
+  tx: Prisma.TransactionClient,
+  u: { id: string; name: string; email: string; phone: string | null; member: (Omit<Profile, "email" | "phone"> & { id: string; membershipStatus: string; email: string | null; phone: string | null }) | null },
+  role: SignupRole,
+) {
+  const m = u.member;
+  // Accounts that signed up before sign-ups recorded a Member: same as an ACTIVE sign-up.
+  if (!m) return (await createLinkedMember(tx, u.id, role, profileFromAccount(u))).id;
+  if (m.membershipStatus !== "PENDING") return m.id;
+  const type = MEMBER_TYPE_FOR_ROLE[role];
+  const profile: Profile = { ...m, email: u.email, phone: m.phone ?? u.phone };
+  const match = await unlinkedMatch(tx, type, u.email);
+  if (match) {
+    // The organisation already knows this person: keep its record, completed with the sign-up's answers.
+    await tx.member.delete({ where: { id: m.id } });
+    if (!(await linkExisting(tx, match, u.id, profile))) throw new ActionError("errors.unexpected");
+    return match;
+  }
+  await tx.member.update({ where: { id: m.id }, data: { type, membershipStatus: "ACTIVE", membershipDate: new Date() } });
+  return m.id;
 }
 
 // ─── Public sign-up ─────────────────────────────────────────────────────────
@@ -56,8 +139,22 @@ export async function takeInvitationPlace(tx: Prisma.TransactionClient, id: stri
 
 const optToken = z.preprocess((v) => (typeof v === "string" && v.trim() !== "" ? v.trim() : undefined), z.string().max(200).optional());
 
+/** Date of birth (<input type="date">), giving an age between SIGNUP_MIN_AGE and SIGNUP_MAX_AGE today. */
+const zBirthDate = z.preprocess(
+  (v) => (v === "" || v == null ? undefined : v instanceof Date ? v : parseFormDate(String(v).trim().slice(0, 10))),
+  z
+    .date({ error: (iss) => (iss.input === undefined ? "errors.required" : "errors.birthDate") })
+    .refine((d) => ageOn(d) >= SIGNUP_MIN_AGE, "errors.ageMin")
+    .refine((d) => ageOn(d) <= SIGNUP_MAX_AGE, "errors.ageMax"),
+);
+
+/** Required text: missing or blank both give "errors.required". */
+const reqText = (max: number) => z.string({ error: "errors.required" }).trim().min(1, "errors.required").max(max);
+
 const signupSchema = z.object({
-  name: zs.reqStr(NAME_MAX),
+  firstName: reqText(NAME_PART_MAX),
+  lastName: reqText(NAME_PART_MAX),
+  dateOfBirth: zBirthDate,
   email: z.string().trim().toLowerCase().max(160).email("errors.email"),
   phone: z
     .string()
@@ -65,16 +162,19 @@ const signupSchema = z.object({
     .min(1, "errors.required")
     .max(30)
     .regex(/^\+?[0-9 ().-]{8,}$/, "errors.phone"),
+  // Student / worker / other, and the school & field of study or the job.
+  occupation: z.enum(OCCUPATIONS, { error: "errors.required" }),
+  occupationDetail: reqText(120),
   password: z.string().min(1, "errors.required").max(200),
   invite: optToken,
 });
 
 /**
- * Self sign-up. Role decision (staff roles are never reachable from here):
+ * Self sign-up (members = monitors / animators). Role decision (staff roles are never reachable from here):
  *  1. e-mail or phone on the pre-approved list → ACTIVE with that role (entry marked used);
  *  2. a valid invitation link → PENDING, requestedRole = the invitation's role (one use consumed);
- *  3. otherwise → ACTIVE parent.
- * ACTIVE accounts get their linked Member right away; PENDING ones get it on approval.
+ *  3. otherwise → PENDING, requestedRole = member.
+ * ACTIVE accounts get their linked Member right away; PENDING ones a PENDING Member, activated on approval.
  * Signs the new user in: same response shape as /auth/login.
  */
 export async function signup(input: unknown) {
@@ -84,6 +184,15 @@ export async function signup(input: unknown) {
     if (!phoneKey) throw new ActionError("errors.phone");
     const passwordHash = await hashPassword(d.password);
     const locale = await getLocale(); // the language the visitor signed up in
+    const profile: Profile = {
+      firstName: d.firstName,
+      lastName: d.lastName,
+      dateOfBirth: d.dateOfBirth,
+      occupation: d.occupation,
+      occupationDetail: d.occupationDetail,
+      email: d.email,
+      phone: d.phone,
+    };
 
     const result = await db.$transaction(async (tx) => {
       if (await tx.user.findUnique({ where: { email: d.email }, select: { id: true } })) throw new ActionError("errors.signupEmailTaken");
@@ -92,11 +201,12 @@ export async function signup(input: unknown) {
         where: { usedById: null, OR: [{ email: d.email }, { phone: phoneKey }] },
         orderBy: { createdAt: "asc" },
       });
-      let status: "ACTIVE" | "PENDING" = "ACTIVE";
-      let role: "parent" | "monitor" | "member" = "parent";
+      let status: "ACTIVE" | "PENDING" = "PENDING";
+      let role: SignupRole = "member";
       let invitation: { id: string; label: string | null } | null = null;
 
       if (entry && isSignupRole(entry.role)) {
+        status = "ACTIVE";
         role = entry.role;
       } else if (d.invite) {
         const inv = await tx.invitation.findUnique({ where: { tokenHash: hashToken(d.invite) } });
@@ -105,7 +215,6 @@ export async function signup(input: unknown) {
         if (state !== "valid") throw new ActionError(`errors.invite${state[0].toUpperCase()}${state.slice(1)}`);
         // Atomic: two sign-ups racing for the last place can't both get it.
         if (!(await takeInvitationPlace(tx, inv.id))) throw new ActionError("errors.inviteFull");
-        status = "PENDING";
         role = inv.role;
         invitation = { id: inv.id, label: inv.label };
       }
@@ -114,7 +223,7 @@ export async function signup(input: unknown) {
       if (status === "ACTIVE" && !roleRow) throw new ActionError("errors.unexpected");
       const user = await tx.user.create({
         data: {
-          name: d.name,
+          name: `${d.firstName} ${d.lastName}`.slice(0, NAME_MAX),
           email: d.email,
           phone: d.phone,
           passwordHash,
@@ -125,7 +234,8 @@ export async function signup(input: unknown) {
           roles: roleRow ? { create: [{ roleId: roleRow.id }] } : undefined,
         },
       });
-      if (status === "ACTIVE") await createLinkedMember(tx, user, role);
+      if (status === "ACTIVE") await createLinkedMember(tx, user.id, role, profile);
+      else await createPendingMember(tx, user.id, role, profile);
       if (entry && status === "ACTIVE") {
         const { count } = await tx.preapprovedPerson.updateMany({ where: { id: entry.id, usedById: null }, data: { usedById: user.id, usedAt: new Date() } });
         if (!count) throw new ActionError("errors.unexpected");
@@ -160,7 +270,7 @@ export async function signup(input: unknown) {
 
 const idsSchema = z.object({ ids: z.array(zs.id).min(1, "errors.required").max(500) });
 
-/** Approve PENDING sign-ups: grant the requested role, mark APPROVED (status ACTIVE), create the Member. */
+/** Approve PENDING sign-ups: grant the requested role, mark APPROVED (status ACTIVE), activate the Member. */
 export async function approveUsers(input: unknown) {
   return runAction(idsSchema, input, async ({ ids }) => {
     const actor = await requirePermission("users.approve");
@@ -168,7 +278,15 @@ export async function approveUsers(input: unknown) {
     const approved = await db.$transaction(async (tx) => {
       const users = await tx.user.findMany({
         where: { id: { in: [...new Set(ids)] }, status: "PENDING" },
-        select: { id: true, name: true, email: true, phone: true, locale: true, requestedRole: true, member: { select: { id: true } } },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          locale: true,
+          requestedRole: true,
+          member: { select: { id: true, membershipStatus: true, firstName: true, lastName: true, dateOfBirth: true, occupation: true, occupationDetail: true, email: true, phone: true } },
+        },
       });
       const done: { id: string; role: string; memberId: string; locale: string }[] = [];
       const now = new Date();
@@ -179,7 +297,7 @@ export async function approveUsers(input: unknown) {
         const { count } = await tx.user.updateMany({ where: { id: u.id, status: "PENDING" }, data: { status: "ACTIVE", approvedById: actor.id, approvedAt: now } });
         if (!count) continue;
         await tx.userRole.upsert({ where: { userId_roleId: { userId: u.id, roleId: roles[role] } }, create: { userId: u.id, roleId: roles[role] }, update: {} });
-        const memberId = u.member?.id ?? (await createLinkedMember(tx, u, role)).id;
+        const memberId = await activateMember(tx, u, role);
         done.push({ id: u.id, role, memberId, locale: u.locale });
       }
       return done;
@@ -197,7 +315,10 @@ export async function approveUsers(input: unknown) {
   });
 }
 
-/** Reject PENDING sign-ups: the account can no longer sign in (sessions revoked). */
+/**
+ * Reject PENDING sign-ups: the account can no longer sign in (sessions revoked) and the PENDING Member
+ * holding its answers is removed (or, if something already points to it, unlinked and made inactive).
+ */
 export async function rejectUsers(input: unknown) {
   return runAction(idsSchema, input, async ({ ids }) => {
     const actor = await requirePermission("users.approve");
@@ -207,6 +328,12 @@ export async function rejectUsers(input: unknown) {
       db.user.updateMany({ where: { id: { in: targets }, status: "PENDING" }, data: { status: "REJECTED", approvedById: actor.id, approvedAt: new Date() } }),
       db.session.deleteMany({ where: { userId: { in: targets } } }),
     ]);
+    const pending = { userId: { in: targets }, membershipStatus: "PENDING" };
+    try {
+      await db.member.deleteMany({ where: pending });
+    } catch {
+      await db.member.updateMany({ where: pending, data: { userId: null, membershipStatus: "INACTIVE" } });
+    }
     for (const id of targets) await audit(actor.id, "reject", "User", id);
     return { count };
   });

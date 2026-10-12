@@ -13,7 +13,7 @@
       "monitor": "Your groups, sessions and tasks for the week.",
       "parent": "Follow your children's activities and progress.",
       "kid": "Ready for a new adventure?",
-      "member": "The association's upcoming moments."
+      "member": "Your events, trips, groups and animator's baggage."
     }
   },
   "kpi": {
@@ -195,10 +195,59 @@
     }
   },
   "member": {
-    "upcoming": "Coming up",
-    "sessions": "Activities this week",
-    "songs": "Songs",
-    "registered": "Registered"
+    "welcome": "Welcome, <n>{name}</n>!",
+    "tagline": "Together, let's help Teboulba's children grow: your events, trips, groups and animator's baggage are all here.",
+    "shortcuts": "Shortcuts",
+    "tiles": {
+      "events": {
+        "title": "Events",
+        "hint": "Editions & programmes"
+      },
+      "trips": {
+        "title": "Trips",
+        "hint": "Outings & camps"
+      },
+      "announcements": {
+        "title": "Announcements",
+        "hint": "News from the team"
+      },
+      "teams": {
+        "title": "Groups",
+        "hint": "My animation teams"
+      },
+      "messages": {
+        "title": "Chats",
+        "hint": "Talk with the team"
+      },
+      "baggage": {
+        "title": "Baggage",
+        "hint": "Songs, dances, games"
+      },
+      "kids": {
+        "title": "Kids",
+        "hint": "Registered kids"
+      }
+    },
+    "unread": "{count, plural, one {# unread} other {# unread}}",
+    "baggageCount": "{songs} songs · {dances} dances · {games} games",
+    "myTeams": "My groups",
+    "noTeams": "You're not in any group yet.",
+    "noTeamsHint": "Edition leaders will add you to a group.",
+    "leader": "Leader",
+    "teamMembers": "{count, plural, one {# animator} other {# animators}}",
+    "teamKids": "{count, plural, one {# child} other {# children}}",
+    "openChat": "Group chat",
+    "editions": "Current & upcoming editions",
+    "noEditions": "No edition scheduled yet.",
+    "ongoing": "On now",
+    "editionNumber": "Edition {number}",
+    "season": "Season {year}",
+    "tripsManaged": "Trips I manage",
+    "noTrips": "You don't manage any upcoming trip.",
+    "participants": "{count}/{capacity} participants",
+    "report": "List & report",
+    "latestAnnouncements": "Latest announcements",
+    "noAnnouncements": "No announcements right now."
   },
   "myChildren": {
     "title": "My children",

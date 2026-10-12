@@ -34,6 +34,22 @@ export function formatPhone(digits: string | null) {
   return m ? `+216 ${m[1]} ${m[2]} ${m[3]}` : `+${digits}`;
 }
 
+/**
+ * Role granted by invitation links and the pre-approved list. Members (= animators) are the only
+ * role offered now; the API still accepts "monitor" for older rows.
+ */
+export function SignupRoleField({ label }: { label: string }) {
+  return (
+    <div className="space-y-1.5">
+      <span className="block text-sm font-bold text-ink-2">{label}</span>
+      <input type="hidden" name="role" value="member" />
+      <div className="flex h-[42px] items-center rounded-xl border border-line bg-surface-2/50 px-3.5">
+        <RoleBadge role="member" />
+      </div>
+    </div>
+  );
+}
+
 /** Role pill in the role's colour. */
 export function RoleBadge({ role }: { role: string }) {
   const t = useTranslations("common.roles");

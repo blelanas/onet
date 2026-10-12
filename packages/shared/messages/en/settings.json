@@ -10,7 +10,8 @@
     "payments": "Payments",
     "categories": "Categories & types",
     "audit": "Audit log",
-    "contact": "Contact messages"
+    "contact": "Contact messages",
+    "bureau": "Local bureau"
   },
   "navHints": {
     "organization": "Identity, contact, social",
@@ -20,7 +21,8 @@
     "payments": "Methods, bank, fee",
     "categories": "Colors and labels",
     "audit": "Action history",
-    "contact": "Public website form"
+    "contact": "Public website form",
+    "bureau": "Members shown on the website"
   },
   "organization": {
     "identity": "Identity",
@@ -267,5 +269,32 @@
     "noSubject": "(no subject)",
     "empty": "No messages yet.",
     "deleteConfirm": "Delete this message permanently?"
+  },
+  "bureau": {
+    "title": "Local bureau members",
+    "intro": "Local bureau members are presented on the public website's home page, in this order. Only active members are shown.",
+    "add": "Add a member",
+    "newTitle": "New bureau member",
+    "editTitle": "Edit bureau member",
+    "name": "Name (French)",
+    "nameAr": "Name (Arabic)",
+    "position": "Position (French)",
+    "positionAr": "Position (Arabic)",
+    "positionPh": "E.g. Treasurer",
+    "photo": "Photo",
+    "photoHint": "A square photo with the face centred looks best in the circle.",
+    "active": "Shown on the website",
+    "activeHint": "Untick to hide them without deleting.",
+    "hidden": "Hidden",
+    "shown": "Shown",
+    "show": "Show on the website",
+    "hide": "Hide from the website",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "deleteTitle": "Remove this bureau member?",
+    "deleteText": "They will disappear from the home page. To only hide them, untick “Shown on the website”.",
+    "empty": "No bureau members yet.",
+    "emptyHint": "Add the local bureau members to present them on the website.",
+    "preview": "View on the website"
   }
 }

@@ -14,7 +14,8 @@ export function FormSection({ title, children, cols = 2 }: { title: string; chil
   return (
     <section className="card p-5 sm:p-6">
       <h2 className="mb-4 text-lg font-bold text-ink">{title}</h2>
-      <div className={cols === 2 ? "grid gap-4 sm:grid-cols-2" : "grid gap-4"}>{children}</div>
+      {/* minmax(0, 1fr): long uploads / inputs shrink with the card instead of overflowing it. */}
+      <div className={cols === 2 ? "grid grid-cols-[minmax(0,1fr)] gap-4 sm:grid-cols-2" : "grid grid-cols-[minmax(0,1fr)] gap-4"}>{children}</div>
     </section>
   );
 }

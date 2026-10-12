@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "use-intl";
-import { Check, Info, Link2, Mail, Phone, UserCheck, X } from "lucide-react";
+import { Briefcase, Cake, Check, GraduationCap, Info, Link2, Mail, Phone, Sparkles, UserCheck, X } from "lucide-react";
 import type { approvalsPendingPage } from "@api/modules/signup/routes";
 import { relativeTime } from "@onet/shared";
 import { approveUsers, rejectUsers } from "@/api/approvals";
@@ -69,6 +69,32 @@ function Pending({ data, sp }: { data: Data; sp: Record<string, string | undefin
       </span>
     </span>
   );
+  /** Age and occupation (+ school / job) given at sign-up. */
+  const profile = (r: Row) =>
+    r.age == null && !r.occupation ? (
+      <span className="text-xs text-muted">{t("noProfile")}</span>
+    ) : (
+      <span className="flex min-w-0 flex-col gap-1">
+        <span className="flex flex-wrap items-center gap-1.5">
+          {r.age != null && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-sun-soft px-2 py-0.5 text-xs font-extrabold text-ink">
+              <Cake className="size-3.5 shrink-0" /> {t("age", { age: r.age })}
+            </span>
+          )}
+          {r.occupation && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-leaf-soft px-2 py-0.5 text-xs font-bold text-emerald-800">
+              {r.occupation === "STUDENT" ? <GraduationCap className="size-3.5 shrink-0" /> : r.occupation === "WORKER" ? <Briefcase className="size-3.5 shrink-0" /> : <Sparkles className="size-3.5 shrink-0" />}{" "}
+              {tc(`enums.OCCUPATIONS.${r.occupation}`)}
+            </span>
+          )}
+        </span>
+        {r.occupationDetail && (
+          <span className="line-clamp-2 text-xs text-ink-2" dir="auto">
+            {r.occupationDetail}
+          </span>
+        )}
+      </span>
+    );
   const invitation = (r: Row) =>
     r.invitationId ? (
       <span className="inline-flex items-center gap-1 text-sm text-ink-2">
@@ -98,6 +124,7 @@ function Pending({ data, sp }: { data: Data; sp: Record<string, string | undefin
     { key: "select", header: <input type="checkbox" className={checkbox} checked={allChecked} onChange={() => setSelected(allChecked ? new Set() : new Set(ids))} aria-label={t("selectAll")} />, cell: select, className: "w-10" },
     { key: "person", header: t("columns.person"), cell: person },
     { key: "role", header: t("columns.role"), cell: (r) => (r.requestedRole ? <RoleBadge role={r.requestedRole} /> : null) },
+    { key: "profile", header: t("columns.profile"), cell: profile },
     { key: "invitation", header: t("columns.invitation"), cell: invitation, hideBelow: "lg" },
     { key: "signedUp", header: t("columns.signedUp"), cell: (r) => <span className="text-sm whitespace-nowrap text-muted">{relativeTime(r.createdAt, locale)}</span>, hideBelow: "xl" },
     { key: "known", header: t("columns.known"), cell: known, hideBelow: "lg" },
@@ -163,6 +190,7 @@ function Pending({ data, sp }: { data: Data; sp: Record<string, string | undefin
                     {invitation(r)}
                     <span className="text-xs text-muted">· {relativeTime(r.createdAt, locale)}</span>
                   </div>
+                  {profile(r)}
                   {known(r)}
                 </div>
               </div>

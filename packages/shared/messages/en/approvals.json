@@ -1,16 +1,17 @@
 {
   "title": "Approvals",
-  "description": "Confirm accounts created by monitors and members, manage invitation links and the pre-approved list.",
+  "description": "Confirm accounts created by new members, manage invitation links and the pre-approved list.",
   "tabs": {
     "pending": "Pending",
     "invitations": "Invitation links",
     "preapproved": "Pre-approved list"
   },
   "pending": {
-    "intro": "These people signed up with an invitation link. They can sign in but can't access anything until you confirm their role.",
+    "intro": "These people created their member account, with or without an invitation link. They can sign in but can't access anything until you confirm them.",
     "columns": {
       "person": "Person",
       "role": "Requested role",
+      "profile": "Age and occupation",
       "invitation": "Link used",
       "signedUp": "Signed up",
       "known": "Already known?"
@@ -27,7 +28,9 @@
     "approved": "{count, plural, =0 {No account approved} one {# account approved} other {# accounts approved}}",
     "rejected": "{count, plural, =0 {No account rejected} one {# account rejected} other {# accounts rejected}}",
     "empty": "No pending accounts",
-    "emptyHint": "Sign-ups made with an invitation link will show up here.",
+    "emptyHint": "New member sign-ups will show up here.",
+    "age": "{age} years old",
+    "noProfile": "Not given",
     "known": "Existing record: {name}",
     "hasAccount": "already has an account",
     "unknown": "No record with this e-mail or phone",
@@ -35,11 +38,11 @@
     "noLabel": "Unlabelled link"
   },
   "invitations": {
-    "intro": "Share a link so monitors or members can create their account. Accounts created with a link stay pending until you approve them.",
+    "intro": "Share a link so new members can create their account. Accounts created with a link stay pending until you approve them; the link's label helps you recognise them.",
     "newTitle": "New invitation link",
     "role": "Role",
     "label": "Label (optional)",
-    "labelPlaceholder": "e.g. Monitors 2026",
+    "labelPlaceholder": "e.g. Animators 2026",
     "expiresAt": "Expires on",
     "maxUses": "Max sign-ups",
     "maxUsesHint": "Between 1 and 500",
@@ -71,7 +74,7 @@
       "revoked": "Revoked"
     },
     "empty": "No invitation links",
-    "emptyHint": "Create a link so monitors can sign up."
+    "emptyHint": "Create a link to invite new members."
   },
   "preapproved": {
     "intro": "When someone on this list creates their account with the same e-mail or phone, they get their role immediately, without approval.",
@@ -109,10 +112,10 @@
     "activated": "Activated",
     "activatedBy": "by {name}, {when}",
     "deleteTitle": "Remove this person from the list?",
-    "deleteText": "If they sign up later, they'll get a parent account (or a pending one with an invitation link).",
+    "deleteText": "If they sign up later, their account will wait for your approval.",
     "remove": "Remove",
     "empty": "The list is empty",
-    "emptyHint": "Import the monitors and members you already know."
+    "emptyHint": "Import the members you already know."
   },
   "notify": {
     "pendingTitle": "Sign-up to approve: {name}",

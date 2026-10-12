@@ -41,8 +41,8 @@
       "description": "A question? Write to us or visit us at the Children's House."
     },
     "join": {
-      "title": "Join us",
-      "description": "Sign your child up to ONET Teboulba in a few minutes."
+      "title": "Become a member",
+      "description": "Join ONET Teboulba's team of animators: create your member account in a few minutes."
     }
   },
   "nav": {
@@ -144,10 +144,16 @@
     },
     "cta": {
       "title": "Ready for the ONET adventure?",
-      "text": "Sign your child up in minutes — we'll call you back to complete the membership.",
-      "join": "Sign my child up",
+      "text": "Want to lead activities, sing and play with children? Become a member of the team in a few minutes.",
+      "join": "Become a member",
       "contact": "Ask a question"
     }
+  },
+  "bureau": {
+    "eyebrow": "Our team",
+    "title": "Local bureau members",
+    "subtitle": "The elected volunteers who keep ONET Teboulba going every day.",
+    "list": "Local bureau members"
   },
   "common": {
     "seeAll": "See all",
@@ -327,49 +333,36 @@
   },
   "join": {
     "eyebrow": "Membership",
-    "title": "Sign your child up",
-    "subtitle": "Fill in this form: a team member will call you back to complete the registration and answer your questions.",
+    "title": "Become a member",
+    "subtitle": "ONET Teboulba's members are its animators: young people and adults who give their time to children. Create your account, the association approves it and you join the team.",
     "steps": {
       "one": {
-        "title": "You fill in the form",
-        "text": "2 minutes, no account needed."
+        "title": "You create your account",
+        "text": "2 minutes: identity, contact, occupation."
       },
       "two": {
-        "title": "We call you back",
-        "text": "To choose the group and activities."
+        "title": "The association approves",
+        "text": "The bureau checks your request."
       },
       "three": {
-        "title": "Welcome to the family!",
-        "text": "Your family space is activated."
+        "title": "Welcome to the team!",
+        "text": "Events, trips, groups and baggage."
       }
     },
-    "parentSection": "Parent / guardian",
-    "childSection": "The child",
-    "parentName": "Full name",
-    "email": "Email",
-    "phone": "Phone",
-    "phoneHint": "We'll call you on this number.",
-    "childName": "Child's full name",
-    "childDob": "Date of birth",
-    "message": "Interests, questions…",
-    "messagePh": "E.g. she loves singing and would like to join the choir.",
-    "consent": "I agree to be contacted by ONET Teboulba about this request.",
-    "submit": "Send request",
-    "sent": "Request sent!",
-    "successTitle": "Welcome aboard!",
-    "successText": "Your request is saved. We'll call you in the coming days to complete the membership.",
-    "successNext": "Meanwhile, discover our activities",
-    "another": "Sign up another child",
+    "cta": "Create my member account",
+    "ctaHint": "Free · Approved by the association",
+    "whoTitle": "Who can become a member?",
+    "who": "Anyone aged 12 and over, at school, studying, working or not, who wants to lead activities, sing, play and share with Teboulba's children.",
     "already": "Already a member?",
-    "parentAccount": "Already have children registered?",
-    "parentAccountCta": "Create a parent account",
     "why": "Why join us?",
     "perks": {
-      "a": "Weekly clubs led by trained monitors",
-      "b": "Trips, camps and big parties all year round",
-      "c": "A family space to follow attendance, registrations and payments",
-      "d": "A fair annual membership fee"
-    }
+      "a": "Lead events, clubs and trips for children",
+      "b": "Join groups and chat with the whole team",
+      "c": "A shared baggage: songs, dances and games",
+      "d": "Get trained and belong to a big family"
+    },
+    "contactTitle": "A question before signing up?",
+    "contactCta": "Write to us"
   },
   "form": {
     "honeypot": "Leave this field empty",

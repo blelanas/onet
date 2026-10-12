@@ -45,7 +45,7 @@ function ResourcesPage({ data }: { data: Data }) {
       <ContentHero
         theme="resources"
         icon={<BookOpen />}
-        eyebrow={tn("sections.content")}
+        eyebrow={tn("sections.baggage")}
         title={t("resources.title")}
         description={t("resources.description")}
         breadcrumbs={[{ label: tn("items.dashboard"), href: "/dashboard" }, { label: t("resources.title") }]}

@@ -7,6 +7,7 @@ import { listAuditLogs, listContactMessages, listPermissions, listRoles, listUse
 import { createRole, deleteRole, setRolePermission } from "./role-actions";
 import { getSetting, type BankDetails, type OrganizationProfile } from "./store";
 import { createUser, resetUserPassword, setUserActive, updateUserRoles } from "./user-actions";
+import { deleteBureauMember, listBureau, moveBureauMember, saveBureauMember } from "./bureau";
 
 /** settings module routes (mounted under /api). */
 export const router = Router();
@@ -109,3 +110,14 @@ export async function contactMessagesPage(req: Request) {
 router.get("/settings/contact", query(contactMessagesPage));
 router.post("/settings/contact/:id/read", mutation((req) => setContactMessageRead(param(req, "id"), req.body?.isRead === true)));
 router.delete("/settings/contact/:id", mutation((req) => deleteContactMessage(param(req, "id"))));
+
+// ─── Local bureau (public landing page) ─────────────────────────────────────
+
+/** Bureau members shown on the landing page, in order, active or not (content.manage). */
+export async function bureauSettingsPage() {
+  return { rows: await listBureau() };
+}
+router.get("/settings/bureau", query(bureauSettingsPage));
+router.post("/settings/bureau", mutation((req) => saveBureauMember(req.body)));
+router.post("/settings/bureau/:id/move", mutation((req) => moveBureauMember({ id: param(req, "id"), direction: req.body?.direction })));
+router.delete("/settings/bureau/:id", mutation((req) => deleteBureauMember(param(req, "id"))));

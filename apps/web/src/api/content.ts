@@ -23,7 +23,10 @@ export const recordSongPlay = staleOnSuccess((id: string) => apiSend<{ plays: nu
 export const saveGame = staleOnSuccess(formAction<{ id: string }>("POST", "/content/games"));
 export const deleteGame = staleOnSuccess((id: string) => apiSend("DELETE", `/content/games/${id}`));
 
-export const saveConference = staleOnSuccess(formAction<{ id: string }>("POST", "/content/conferences"));
+export const saveDance = staleOnSuccess(formAction<{ id: string }>("POST", "/content/dances"));
+export const deleteDance = staleOnSuccess((id: string) => apiSend("DELETE", `/content/dances/${id}`));
+
+export const saveConference =staleOnSuccess(formAction<{ id: string }>("POST", "/content/conferences"));
 export const deleteConference = staleOnSuccess((id: string) => apiSend("DELETE", `/content/conferences/${id}`));
 
 export const saveResource = staleOnSuccess(formAction<{ id: string }>("POST", "/content/resources"));

@@ -59,20 +59,12 @@ export function LoginForm({ next }: { next?: string }) {
           </>
         )}
       </ActionForm>
-      <div className="mt-6 space-y-1.5 text-center text-sm text-ink-2">
-        <p>
-          {t("noLogin")}{" "}
-          <Link href="/signup" className="font-bold text-brand-600 hover:underline">
-            {t("createAccount")}
-          </Link>
-        </p>
-        <p>
-          {t("noAccount")}{" "}
-          <Link href="/join" className="font-bold text-brand-600 hover:underline">
-            {t("join")}
-          </Link>
-        </p>
-      </div>
+      <p className="mt-6 text-center text-sm text-ink-2">
+        {t("noAccount")}{" "}
+        <Link href="/signup" className="font-bold text-brand-600 hover:underline">
+          {t("join")}
+        </Link>
+      </p>
 
       <div className="mt-8 rounded-2xl border border-dashed border-brand-200 bg-surface p-4" ref={formRef as never}>
         <p className="text-sm font-bold text-ink">{t("demoTitle")}</p>

@@ -1,7 +1,25 @@
-import { SIGNUP_ROLE_KEYS, type SignupRole } from "@onet/shared";
+import { APP_TIME_ZONE, SIGNUP_ROLE_KEYS, type SignupRole } from "@onet/shared";
 
-/** Member type created for an account of a given role. */
-export const MEMBER_TYPE_FOR_ROLE = { parent: "PARENT", monitor: "MONITOR", member: "MEMBER" } as const;
+/** Member type created for an account of a given sign-up role. */
+export const MEMBER_TYPE_FOR_ROLE = { monitor: "MONITOR", member: "MEMBER" } as const satisfies Record<SignupRole, string>;
+
+/** Age bounds of a self sign-up (members are animators: teenagers and adults). */
+export const SIGNUP_MIN_AGE = 12;
+export const SIGNUP_MAX_AGE = 100;
+
+const tunisDay = new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit" });
+
+/**
+ * Whole years between a date of birth (a calendar date, stored as UTC midnight) and today in
+ * Tunisia, whatever the server's time zone.
+ */
+export function ageOn(dob: Date, now = new Date()) {
+  const [y, m, d] = tunisDay.format(now).split("-").map(Number);
+  const bm = dob.getUTCMonth() + 1;
+  let age = y - dob.getUTCFullYear();
+  if (m < bm || (m === bm && d < dob.getUTCDate())) age--;
+  return age;
+}
 
 export function isSignupRole(v: unknown): v is SignupRole {
   return typeof v === "string" && (SIGNUP_ROLE_KEYS as readonly string[]).includes(v);

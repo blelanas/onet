@@ -16,10 +16,10 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { ConfirmButton } from "@/components/ui/confirm-button";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Input, Select, inputClasses } from "@/components/ui/input";
+import { Input, inputClasses } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Pagination } from "@/components/ui/pagination";
-import { ApprovalTabs, Intro, RoleBadge, useFirstPageWhenPastEnd } from "./shared";
+import { ApprovalTabs, Intro, RoleBadge, SignupRoleField, useFirstPageWhenPastEnd } from "./shared";
 
 type Data = Loaded<typeof approvalsInvitationsPage>;
 type Row = Data["rows"][number];
@@ -37,7 +37,6 @@ const inviteLink = (token: string) => `${window.location.origin}/signup?invite=$
 function Invitations({ data, sp }: { data: Data; sp: Record<string, string | undefined> }) {
   const t = useTranslations("approvals.invitations");
   const ta = useTranslations("approvals");
-  const tr = useTranslations("common.roles");
   const locale = useLocale();
   const [created, setCreated] = useState<CreatedInvitation | null>(null);
   const pastEnd = useFirstPageWhenPastEnd(data);
@@ -99,7 +98,7 @@ function Invitations({ data, sp }: { data: Data; sp: Record<string, string | und
           <ActionForm action={createInvitation} successMessage="toast.created" resetOnSuccess onSuccess={(d) => d && setCreated(d)} className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
             {(pending) => (
               <>
-                <Select name="role" label={t("role")} options={[{ value: "monitor", label: tr("monitor") }, { value: "member", label: tr("member") }]} defaultValue="monitor" required />
+                <SignupRoleField label={t("role")} />
                 <Input name="label" label={t("label")} placeholder={t("labelPlaceholder")} maxLength={80} />
                 <Input name="expiresAt" type="datetime-local" label={t("expiresAt")} defaultValue={defaultExpiry} required />
                 <Input name="maxUses" type="number" inputMode="numeric" min={1} max={500} label={t("maxUses")} hint={t("maxUsesHint")} defaultValue={50} required />

@@ -127,6 +127,9 @@ export function sortAgenda(items: AgendaItem[], limit?: number) {
   return limit ? sorted.slice(0, limit) : sorted;
 }
 
+/** Fields of an announcement shown on dashboards (AnnouncementList widget). */
+export const ANNOUNCEMENT_SELECT = { id: true, title: true, body: true, priority: true, isPinned: true, publishedAt: true, audience: true, group: { select: { name: true, color: true } } } satisfies Prisma.AnnouncementSelect;
+
 /** Announcements currently visible for the given audiences (+ optional group-specific ones). */
 export function announcementsFor(audiences: string[], groupIds: string[] = [], take = 4) {
   const now = new Date();
@@ -138,7 +141,7 @@ export function announcementsFor(audiences: string[], groupIds: string[] = [], t
     },
     orderBy: [{ isPinned: "desc" }, { publishedAt: "desc" }],
     take,
-    select: { id: true, title: true, body: true, priority: true, isPinned: true, publishedAt: true, audience: true, group: { select: { name: true, color: true } } },
+    select: ANNOUNCEMENT_SELECT,
   });
 }
 export type AnnouncementRow = Awaited<ReturnType<typeof announcementsFor>>[number];
