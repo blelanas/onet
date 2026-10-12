@@ -106,7 +106,22 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<RoleKey, Permission[]> = {
     "messages.use",
     "documents.read",
   ],
-  member: [...COMMON, "activities.read", "events.read", "events.register", "trips.read", "messages.use", "documents.read"],
+  // Members (= monitors / animators): the core users of the platform. Edition leaders and trip managers
+  // get extra rights on *their* edition / trip in code (EventTeam.leaderId, TripMonitor), not via a role.
+  member: [
+    ...COMMON,
+    "members.read",
+    "groups.read",
+    "activities.read",
+    "activities.manage",
+    "attendance.read",
+    "attendance.manage",
+    "events.read",
+    "trips.read",
+    "messages.use",
+    "documents.read",
+    "tasks.manage",
+  ],
   kid: [...COMMON, "activities.read", "events.read", "trips.read"],
 };
 

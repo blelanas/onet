@@ -37,27 +37,27 @@ model User {
   approvedById  String? // User who approved / rejected the sign-up
   approvedAt    DateTime?
 
-  roles         UserRole[]
-  sessions      Session[]
-  member        Member?
-  notifications Notification[]
-  auditLogs     AuditLog[]
-  sentMessages  Message[]                 @relation("MessageSender")
-  conversations ConversationParticipant[]
-  announcements Announcement[]
-  documents     Document[]
-  payments      Payment[]                 @relation("PaymentRecorder")
-  expenses      Expense[]
-  attendance    Attendance[]              @relation("AttendanceRecorder")
-  eventRegs     EventRegistration[]       @relation("EventRegisteredBy")
-  tripRegs      TripRegistration[]        @relation("TripRegisteredBy")
-  newsPosts     NewsPost[]
-  activityReports ActivityReport[]
-  calendarEntries CalendarEntry[]
-  tasks         Task[]
-  invitations   Invitation[]        @relation("InvitationCreatedBy")
-  preapprovedCreated PreapprovedPerson[] @relation("PreapprovedCreatedBy")
-  preapprovedUsed    PreapprovedPerson[] @relation("PreapprovedUsedBy")
+  roles              UserRole[]
+  sessions           Session[]
+  member             Member?
+  notifications      Notification[]
+  auditLogs          AuditLog[]
+  sentMessages       Message[]                 @relation("MessageSender")
+  conversations      ConversationParticipant[]
+  announcements      Announcement[]
+  documents          Document[]
+  payments           Payment[]                 @relation("PaymentRecorder")
+  expenses           Expense[]
+  attendance         Attendance[]              @relation("AttendanceRecorder")
+  eventRegs          EventRegistration[]       @relation("EventRegisteredBy")
+  tripRegs           TripRegistration[]        @relation("TripRegisteredBy")
+  newsPosts          NewsPost[]
+  activityReports    ActivityReport[]
+  calendarEntries    CalendarEntry[]
+  tasks              Task[]
+  invitations        Invitation[]              @relation("InvitationCreatedBy")
+  preapprovedCreated PreapprovedPerson[]       @relation("PreapprovedCreatedBy")
+  preapprovedUsed    PreapprovedPerson[]       @relation("PreapprovedUsedBy")
 
   @@index([status])
 }
@@ -140,8 +140,8 @@ model RolePermission {
 model UserRole {
   userId String
   roleId String
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
 }
@@ -187,6 +187,8 @@ model Member {
   notes            String?
   medicalNotes     String?
   points           Int       @default(0) // gamification for kids
+  occupation       String? // STUDENT | WORKER | OTHER (members)
+  occupationDetail String? // school / field of study, or job
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -207,6 +209,8 @@ model Member {
   eventRegistrations  EventRegistration[]
   tripRegistrations   TripRegistration[]
   tripMonitoring      TripMonitor[]
+  ledTeams            EventTeam[]           @relation("TeamLeader")
+  teamMemberships     EventTeamMember[]
   invoicesAsPayer     Invoice[]             @relation("InvoicePayer")
   invoicesAsChild     Invoice[]             @relation("InvoiceChild")
   badges              MemberBadge[]
@@ -312,14 +316,14 @@ model ContactMessage {
 // ───────────────────────────── Activities ─────────────────────────────
 
 model Activity {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
   description String?
   category    String // SPORTS | MUSIC | SONGS | EDUCATIONAL | GAMES | WORKSHOP | CULTURAL | CREATIVE | OUTDOOR
   coverUrl    String?
   ageMin      Int?
   ageMax      Int?
-  durationMin Int      @default(60)
+  durationMin Int       @default(60)
   location    String?
   materials   String?
   schedule    String? // human readable
@@ -327,11 +331,11 @@ model Activity {
   startTime   String? // "14:00"
   startDate   DateTime?
   endDate     DateTime?
-  capacity    Int      @default(25)
-  status      String   @default("ACTIVE") // DRAFT | ACTIVE | COMPLETED | CANCELLED
-  isPublic    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  capacity    Int       @default(25)
+  status      String    @default("ACTIVE") // DRAFT | ACTIVE | COMPLETED | CANCELLED
+  isPublic    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   monitorId String?
   monitor   Member? @relation("ActivityMonitor", fields: [monitorId], references: [id], onDelete: SetNull)
@@ -371,24 +375,24 @@ model ActivityReport {
 }
 
 model Attendance {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   date         DateTime // day (00:00 local)
   status       String // PRESENT | ABSENT | LATE | EXCUSED
   note         String?
   memberId     String
-  member       Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  member       Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
   groupId      String?
-  group        Group?   @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  group        Group?    @relation(fields: [groupId], references: [id], onDelete: SetNull)
   activityId   String?
   activity     Activity? @relation(fields: [activityId], references: [id], onDelete: SetNull)
   eventId      String?
-  event        Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  event        Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
   tripId       String?
-  trip         Trip?    @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  trip         Trip?     @relation(fields: [tripId], references: [id], onDelete: SetNull)
   recordedById String?
-  recordedBy   User?    @relation("AttendanceRecorder", fields: [recordedById], references: [id], onDelete: SetNull)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  recordedBy   User?     @relation("AttendanceRecorder", fields: [recordedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   // One record per member, per day, per context. `contextKey` = "group:<id>" | "activity:<id>" | ...
   contextKey String
@@ -399,8 +403,25 @@ model Attendance {
 
 // ───────────────────────────── Events & trips ─────────────────────────────
 
+// A recurring programme (تظاهرة الطفولة, نادي الأطفال, Techno club…); each Event is one edition of it.
+model EventSeries {
+  id          String   @id @default(cuid())
+  name        String
+  nameAr      String?
+  kind        String   @default("CLUB") // FESTIVAL | CLUB | OTHER
+  description String?
+  coverUrl    String?
+  color       String   @default("#12924A")
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  editions Event[]
+}
+
 model Event {
-  id                   String    @id @default(cuid())
+  id                   String       @id @default(cuid())
   title                String
   description          String?
   category             String // CULTURAL | CHILDREN | COMPETITION | CELEBRATION | WORKSHOP | PUBLIC | MEETING
@@ -408,16 +429,21 @@ model Event {
   startAt              DateTime
   endAt                DateTime
   location             String?
-  capacity             Int       @default(100)
+  capacity             Int          @default(100)
   organizer            String?
   registrationDeadline DateTime?
-  price                Int       @default(0) // millimes
-  requiresPayment      Boolean   @default(false)
-  status               String    @default("PUBLISHED") // DRAFT | PUBLISHED | CANCELLED | COMPLETED
-  isPublic             Boolean   @default(true)
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  price                Int          @default(0) // millimes
+  requiresPayment      Boolean      @default(false)
+  status               String       @default("PUBLISHED") // DRAFT | PUBLISHED | CANCELLED | COMPLETED
+  isPublic             Boolean      @default(true)
+  seriesId             String?
+  series               EventSeries? @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+  editionNumber        Int? // e.g. 16 for "تظاهرة الطفولة 16"
+  seasonYear           Int? // e.g. 2026 (or the first year of a 2026-2027 club season)
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
 
+  teams         EventTeam[]
   registrations EventRegistration[]
   activities    Activity[]
   attendance    Attendance[]
@@ -426,24 +452,58 @@ model Event {
   gallery       GalleryItem[]
 
   @@index([startAt])
+  @@index([seriesId, seasonYear])
+}
+
+// A leader's team inside one edition: members (animators) + the kids assigned to it.
+model EventTeam {
+  id             String        @id @default(cuid())
+  eventId        String
+  event          Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name           String
+  color          String        @default("#12924A")
+  leaderId       String?
+  leader         Member?       @relation("TeamLeader", fields: [leaderId], references: [id], onDelete: SetNull)
+  conversationId String?       @unique
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  members EventTeamMember[]
+  kids    EventRegistration[]
+
+  @@index([eventId])
+}
+
+model EventTeamMember {
+  teamId   String
+  memberId String
+  team     EventTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  member   Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@id([teamId, memberId])
+  @@index([memberId])
 }
 
 model EventRegistration {
-  id             String   @id @default(cuid())
+  id             String     @id @default(cuid())
   eventId        String
-  event          Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event          Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
   memberId       String
-  member         Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  member         Member     @relation(fields: [memberId], references: [id], onDelete: Cascade)
   registeredById String?
-  registeredBy   User?    @relation("EventRegisteredBy", fields: [registeredById], references: [id], onDelete: SetNull)
-  status         String   @default("CONFIRMED") // PENDING | CONFIRMED | WAITLIST | CANCELLED
+  registeredBy   User?      @relation("EventRegisteredBy", fields: [registeredById], references: [id], onDelete: SetNull)
+  status         String     @default("CONFIRMED") // PENDING | CONFIRMED | WAITLIST | CANCELLED
   notes          String?
-  invoiceId      String?  @unique
-  invoice        Invoice? @relation("EventRegInvoice", fields: [invoiceId], references: [id], onDelete: SetNull)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  invoiceId      String?    @unique
+  invoice        Invoice?   @relation("EventRegInvoice", fields: [invoiceId], references: [id], onDelete: SetNull)
+  teamId         String?
+  team           EventTeam? @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
 
   @@unique([eventId, memberId])
+  @@index([teamId])
 }
 
 model Trip {
@@ -465,6 +525,8 @@ model Trip {
   ageMax               Int?
   status               String    @default("OPEN") // DRAFT | OPEN | FULL | CLOSED | COMPLETED | CANCELLED
   isPublic             Boolean   @default(true)
+  listClosedAt         DateTime? // participant list finalized by a trip manager → report sent to accountants
+  listClosedById       String? // User id (no FK: kept after the user is deleted)
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
@@ -547,6 +609,37 @@ model Game {
   updatedAt    DateTime @updatedAt
 }
 
+model Dance {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  steps       String? // one step per line
+  category    String   @default("GROUP") // GROUP | TRADITIONAL | MODERN | KIDS | SHOW
+  ageGroup    String   @default("ALL")
+  durationMin Int?
+  imageUrl    String?
+  audioUrl    String?
+  videoUrl    String?
+  isPublic    Boolean  @default(true)
+  createdById String? // User id
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Members of the local bureau (المكتب المحلي), shown on the landing page.
+model BureauMember {
+  id         String   @id @default(cuid())
+  name       String
+  nameAr     String?
+  position   String
+  positionAr String?
+  photoUrl   String?
+  sortOrder  Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
 model Conference {
   id          String   @id @default(cuid())
   title       String
@@ -578,19 +671,19 @@ model Resource {
 }
 
 model NewsPost {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
-  slug        String    @unique
+  slug        String   @unique
   excerpt     String?
   body        String
   coverUrl    String?
-  category    String    @default("NEWS")
-  isPublished Boolean   @default(true)
-  publishedAt DateTime  @default(now())
+  category    String   @default("NEWS")
+  isPublished Boolean  @default(true)
+  publishedAt DateTime @default(now())
   authorId    String?
-  author      User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  author      User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model GalleryItem {
@@ -633,7 +726,7 @@ model Invoice {
   activityId String?
   activity   Activity? @relation(fields: [activityId], references: [id], onDelete: SetNull)
 
-  payments         Payment[]
+  payments          Payment[]
   eventRegistration EventRegistration? @relation("EventRegInvoice")
   tripRegistration  TripRegistration?  @relation("TripRegInvoice")
 
@@ -716,17 +809,21 @@ model Announcement {
 
 model Conversation {
   id           String                    @id @default(cuid())
-  subject      String?
+  subject      String? // direct threads: optional subject; groups: the group name
+  kind         String                    @default("DIRECT") // DIRECT | GROUP
+  createdById  String? // User id (groups)
   createdAt    DateTime                  @default(now())
   updatedAt    DateTime                  @updatedAt
   participants ConversationParticipant[]
   messages     Message[]
+  team         EventTeam?
 }
 
 model ConversationParticipant {
   conversationId String
   userId         String
   lastReadAt     DateTime?
+  isAdmin        Boolean      @default(false) // group admin (creator, team leader)
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -765,18 +862,18 @@ model Document {
 // Free calendar entries (meetings, holidays, important dates). Activities/events/trips/
 // conferences are projected onto the calendar from their own tables.
 model CalendarEntry {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
   description String?
-  type        String   @default("MEETING") // MEETING | HOLIDAY | IMPORTANT | OTHER
+  type        String    @default("MEETING") // MEETING | HOLIDAY | IMPORTANT | OTHER
   startAt     DateTime
   endAt       DateTime?
-  allDay      Boolean  @default(false)
+  allDay      Boolean   @default(false)
   location    String?
-  audience    String   @default("ALL")
+  audience    String    @default("ALL")
   createdById String?
-  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
+  createdBy   User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
 }
 
 model Task {
