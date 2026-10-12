@@ -9,6 +9,9 @@ import { Modal } from "@/components/ui/modal";
 import type { ContactOption } from "./compose-form";
 import { PeoplePicker } from "./people-picker";
 
+/** The create endpoint takes at most 200 invitees (the creator comes on top). */
+const MAX_INVITEES = 200;
+
 /** "New group" button: a modal with the group name and a multi-select over the user's contacts. */
 export function NewGroupButton({ contacts, variant = "outline", size = "sm", className }: { contacts: ContactOption[]; variant?: ButtonVariant; size?: ButtonSize; className?: string }) {
   const t = useTranslations("communication.messages.groups");
@@ -19,7 +22,7 @@ export function NewGroupButton({ contacts, variant = "outline", size = "sm", cla
     setSelected((s) => {
       const next = new Set(s);
       if (next.has(id)) next.delete(id);
-      else next.add(id);
+      else if (next.size < MAX_INVITEES) next.add(id);
       return next;
     });
   const close = () => {
@@ -48,7 +51,7 @@ export function NewGroupButton({ contacts, variant = "outline", size = "sm", cla
                   </span>
                   <span className="text-xs font-semibold text-muted">{t("selected", { count: selected.size })}</span>
                 </p>
-                <PeoplePicker contacts={contacts} selected={selected} onToggle={toggle} />
+                <PeoplePicker contacts={contacts} selected={selected} onToggle={toggle} max={MAX_INVITEES} />
               </div>
               <div className="flex justify-end gap-2 border-t border-line pt-4">
                 <Button variant="outline" onClick={close}>

@@ -24,7 +24,7 @@ export function Component() {
 function AnimatePage({ data }: { data: Data }) {
   const { game, steps, materials } = data;
   const t = useTranslations("content");
-  const color = CATEGORY_COLORS[game.category] ?? "#12924A";
+  const color = CATEGORY_COLORS[game.category] ?? "#0F7A3E";
 
   return (
     <div className="space-y-4">

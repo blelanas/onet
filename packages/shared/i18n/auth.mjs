@@ -59,8 +59,10 @@ export default {
     firstName: T("Prénom", "الاسم", "First name"),
     lastName: T("Nom", "اللقب", "Last name"),
     dateOfBirth: T("Date de naissance", "تاريخ الولادة", "Date of birth"),
-    age: T("Âge : {age, plural, one {# an} other {# ans}}", "العمر: {age} سنة", "Age: {age, plural, one {# year} other {# years}}"),
+    age: T("Âge : {age, plural, one {# an} other {# ans}}", "العمر: {age, plural, one {سنة واحدة} two {سنتان} few {# سنوات} many {# سنةً} other {# سنة}}", "Age: {age, plural, one {# year} other {# years}}"),
     ageEmpty: T("Âge : —", "العمر: —", "Age: —"),
+    /** Shown instead of the age while the date of birth gives less than the sign-up minimum. */
+    ageTooYoung: T("Moins de {min} ans", "أقل من {min} سنة", "Under {min}"),
     ageHint: T("12 ans minimum", "12 سنة على الأقل", "12 years old minimum"),
     email: T("Adresse e-mail", "البريد الإلكتروني", "Email address"),
     phone: T("Téléphone", "رقم الهاتف", "Phone"),

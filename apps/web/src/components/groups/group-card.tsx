@@ -81,7 +81,7 @@ export function GroupCard({ g, mine }: { g: GroupCardData; mine?: boolean }) {
             </span>
             <span className={full ? "text-red-600" : "text-muted"}>{full ? tc("status.FULL") : `${fill}%`}</span>
           </div>
-          <Progress value={g._count.children} max={g.capacity} color={full ? "#12924A" : g.color} />
+          <Progress value={g._count.children} max={g.capacity} color={full ? "#E30613" : g.color} />
         </div>
 
         <div className="min-h-4 flex-1" />

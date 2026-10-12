@@ -23,11 +23,13 @@ export function ViewToggle() {
   };
   const btn = (active: boolean) => cn("inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-bold transition", active ? "bg-surface text-brand-700 shadow-[var(--shadow-soft)]" : "text-muted hover:text-ink");
   return (
-    <div className="inline-flex shrink-0 gap-1 rounded-xl bg-surface-2 p-1" role="radiogroup" aria-label={t("label")}>
-      <button type="button" role="radio" aria-checked={view === "table"} className={btn(view === "table")} onClick={() => go("table")}>
+    // A labelled group of toggle buttons (aria-pressed): each is a normal tab stop activated with Enter/Space,
+    // so there is no radio-group arrow-key contract to honour.
+    <div className="inline-flex shrink-0 gap-1 rounded-xl bg-surface-2 p-1" role="group" aria-label={t("label")}>
+      <button type="button" aria-pressed={view === "table"} className={btn(view === "table")} onClick={() => go("table")}>
         <List className="size-4" /> {t("table")}
       </button>
-      <button type="button" role="radio" aria-checked={view === "cards"} className={btn(view === "cards")} onClick={() => go("cards")}>
+      <button type="button" aria-pressed={view === "cards"} className={btn(view === "cards")} onClick={() => go("cards")}>
         <LayoutGrid className="size-4" /> {t("cards")}
       </button>
     </div>

@@ -4,7 +4,7 @@ export type PublicNavItem = { key: string; href: string; icon: LucideIcon; color
 
 /** Public site navigation. `primary` items are shown inline on desktop, the rest under "More". */
 export const PUBLIC_NAV: PublicNavItem[] = [
-  { key: "about", href: "/about", icon: Info, color: "#12924A", primary: true },
+  { key: "about", href: "/about", icon: Info, color: "#0F7A3E", primary: true },
   { key: "activities", href: "/activities", icon: Palette, color: "#2BB673", primary: true },
   { key: "events", href: "/events", icon: CalendarDays, color: "#FF6B4A", primary: true },
   { key: "trips", href: "/trips", icon: Tent, color: "#1E9BD7", primary: true },

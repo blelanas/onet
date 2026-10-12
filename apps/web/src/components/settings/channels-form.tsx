@@ -9,7 +9,7 @@ import { NOTIFICATION_CHANNELS } from "@onet/shared";
 import { cn } from "@/lib/utils";
 
 const ICONS = { IN_APP: Bell, EMAIL: Mail, SMS: MessageSquareText, PUSH: Smartphone } as const;
-const COLORS = { IN_APP: "#12924A", EMAIL: "#1E9BD7", SMS: "#2BB673", PUSH: "#7C4DFF" } as const;
+const COLORS = { IN_APP: "#0F7A3E", EMAIL: "#1E9BD7", SMS: "#2BB673", PUSH: "#7C4DFF" } as const;
 
 export function ChannelsForm({ enabled }: { enabled: string[] }) {
   const t = useTranslations("settings.notifications");

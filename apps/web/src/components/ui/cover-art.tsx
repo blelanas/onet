@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 export function CoverArt({
   src,
   seed,
-  color = "#12924A",
+  color = "#0F7A3E",
   icon,
   className,
   alt = "",

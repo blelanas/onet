@@ -7,8 +7,8 @@ import { EVENT_CATEGORIES, SERIES_KINDS } from "@api/lib/constants";
 import { defaultEditionTitle, tunisYear } from "./series";
 import { syncTeamChat } from "./team-chat";
 
-/** "#12924A"-style colour (empty → the default green). */
-export const hexColor = z.preprocess((v) => (v === "" || v == null ? "#12924A" : String(v).trim()), z.string().regex(/^#[0-9a-fA-F]{6}$/, "errors.validation"));
+/** "#0F7A3E"-style colour (empty → the default green). */
+export const hexColor = z.preprocess((v) => (v === "" || v == null ? "#0F7A3E" : String(v).trim()), z.string().regex(/^#[0-9a-fA-F]{6}$/, "errors.validation"));
 
 /** Checkbox that may be absent: undefined stays undefined (keep the current value). Forms send a hidden "0" before the box. */
 const optBool = z.preprocess((v) => (v === undefined || v === null || v === "" ? undefined : v === true || v === "true" || v === "on" || v === "1"), z.boolean().optional());

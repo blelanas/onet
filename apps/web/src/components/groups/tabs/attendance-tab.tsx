@@ -112,7 +112,7 @@ function AttendancePanel({ group, stats }: { group: Group; stats: Data }) {
                         </span>
                         <span className="font-extrabold tabular-nums text-ink-2">{c.rate}%</span>
                       </span>
-                      <Progress value={c.rate ?? 0} className="mt-1 h-1.5" color={(c.rate ?? 0) >= 80 ? "#2BB673" : (c.rate ?? 0) >= 60 ? "#FFB400" : "#12924A"} />
+                      <Progress value={c.rate ?? 0} className="mt-1 h-1.5" color={(c.rate ?? 0) >= 80 ? "#2BB673" : (c.rate ?? 0) >= 60 ? "#FFB400" : "#E30613"} />
                     </span>
                   </Link>
                 </li>

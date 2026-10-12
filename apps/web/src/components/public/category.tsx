@@ -71,15 +71,15 @@ const EXTRA_COLORS: Record<string, string> = {
   NEWS: "#1E9BD7",
   EVENT: "#FF6B4A",
   ANNOUNCEMENT: "#7C4DFF",
-  GENERAL: "#12924A",
+  GENERAL: "#0F7A3E",
   EVENTS: "#FF6B4A",
   TRIPS: "#1E9BD7",
   ACTIVITIES: "#2BB673",
 };
 
 export function categoryColor(category?: string | null) {
-  if (!category) return "#12924A";
-  return CATEGORY_COLORS[category] ?? EXTRA_COLORS[category] ?? "#12924A";
+  if (!category) return "#0F7A3E";
+  return CATEGORY_COLORS[category] ?? EXTRA_COLORS[category] ?? "#0F7A3E";
 }
 
 export function CategoryIcon({ category, className }: { category?: string | null; className?: string }) {

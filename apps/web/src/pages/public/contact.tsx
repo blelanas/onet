@@ -13,7 +13,7 @@ export function Component() {
   const org = useOrg();
   usePageTitle(tm("title"));
   const items = [
-    org.address && { icon: MapPin, color: "#12924A", label: t("address"), value: org.address },
+    org.address && { icon: MapPin, color: "#0F7A3E", label: t("address"), value: org.address },
     org.phone && { icon: Phone, color: "#2BB673", label: t("phone"), value: org.phone, href: `tel:${org.phone.replace(/\s/g, "")}`, ltr: true },
     org.email && { icon: Mail, color: "#1E9BD7", label: t("email"), value: org.email, href: `mailto:${org.email}`, ltr: true },
     { icon: Clock, color: "#FFB400", label: t("hours"), value: t("hoursValue") },

@@ -19,7 +19,7 @@ export function Honeypot() {
 export function SuccessCard({ title, text, icon, actions }: { title: string; text: string; icon: React.ReactNode; actions?: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => ref.current?.focus(), []);
-  const confetti = ["#12924A", "#FFB400", "#1E9BD7", "#2BB673", "#7C4DFF", "#FF6B4A", "#00A3A3", "#E8457C"];
+  const confetti = ["#0F7A3E", "#FFB400", "#1E9BD7", "#2BB673", "#7C4DFF", "#FF6B4A", "#00A3A3", "#E8457C"];
   return (
     <div ref={ref} tabIndex={-1} role="status" className="relative animate-[var(--animate-pop)] overflow-hidden rounded-3xl bg-gradient-to-br from-leaf-soft via-surface to-sun-soft p-8 text-center outline-none sm:p-12">
       {confetti.map((c, i) => (

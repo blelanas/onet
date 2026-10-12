@@ -5,7 +5,7 @@ import { formatDate } from "@onet/shared";
 import { cn } from "@/lib/utils";
 
 /** Default colours offered for programmes and teams (the theme accents, no brand red). */
-export const SWATCHES = ["#12924A", "#2BB673", "#E8A400", "#FFB400", "#1E9BD7", "#00A3A3", "#7C4DFF", "#E8457C", "#FF6B4A", "#5C6BC0", "#8D6E63", "#455A64"];
+export const SWATCHES = ["#0F7A3E", "#2BB673", "#E8A400", "#FFB400", "#1E9BD7", "#00A3A3", "#7C4DFF", "#E8457C", "#FF6B4A", "#5C6BC0", "#8D6E63", "#455A64"];
 
 export function SeriesKindIcon({ kind, className }: { kind: string; className?: string }) {
   const Icon = kind === "FESTIVAL" ? PartyPopper : kind === "CLUB" ? Users : Layers;
@@ -57,13 +57,13 @@ export function ColorPicker({ name, defaultValue, label }: { name: string; defau
     <fieldset className="space-y-1.5">
       <legend className="mb-1.5 block text-sm font-bold text-ink-2">{label}</legend>
       <input type="hidden" name={name} value={value} />
-      <div className="flex flex-wrap items-center gap-2" role="radiogroup" aria-label={label}>
+      {/* Toggle buttons (aria-pressed) in a labelled group: each swatch is a plain tab stop picked with Enter/Space. */}
+      <div className="flex flex-wrap items-center gap-2" role="group" aria-label={label}>
         {SWATCHES.map((c) => (
           <button
             key={c}
             type="button"
-            role="radio"
-            aria-checked={value === c}
+            aria-pressed={value === c}
             aria-label={c}
             onClick={() => setValue(c)}
             className={cn("grid size-8 place-items-center rounded-full ring-offset-2 transition focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:outline-none", value === c && "ring-2 ring-ink/70")}

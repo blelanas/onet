@@ -18,4 +18,4 @@ export function CategoryIcon({ category, className }: { category: string; classN
   return <I className={className} aria-hidden />;
 }
 
-export const categoryColor = (c: string) => CATEGORY_COLORS[c] ?? "#12924A";
+export const categoryColor = (c: string) => CATEGORY_COLORS[c] ?? "#0F7A3E";

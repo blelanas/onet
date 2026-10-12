@@ -101,6 +101,7 @@
       "searchPeople": "Rechercher une personne…",
       "selected": "{count, plural, =0 {Personne sélectionnée} one {# personne sélectionnée} other {# personnes sélectionnées}}",
       "noContacts": "Aucune personne à ajouter",
+      "limit": "{max} personnes au maximum par groupe : retirez quelqu'un pour en ajouter un autre.",
       "create": "Créer le groupe",
       "created": "Groupe créé",
       "group": "Groupe",
