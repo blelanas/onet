@@ -9,9 +9,9 @@ import { Input, Textarea, inputClasses } from "@/components/ui/input";
 import { ROLE_KEYS } from "@onet/shared";
 import { cn } from "@/lib/utils";
 
-export type ContactOption = { id: string; name: string; avatarUrl: string | null; roles: string[]; kind: "STAFF" | "MONITOR" | "PARENT" | "OTHER"; via: string[] };
+export type ContactOption = { id: string; name: string; avatarUrl: string | null; roles: string[]; kind: "STAFF" | "MONITOR" | "MEMBER" | "PARENT" | "OTHER"; via: string[] };
 
-const KIND_ORDER = ["MONITOR", "PARENT", "STAFF", "OTHER"] as const;
+const KIND_ORDER = ["MONITOR", "MEMBER", "PARENT", "STAFF", "OTHER"] as const;
 
 export function ComposeForm({ contacts, initialTo }: { contacts: ContactOption[]; initialTo?: string }) {
   const t = useTranslations("communication.messages");

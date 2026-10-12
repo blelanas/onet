@@ -78,16 +78,64 @@
       "message": "Message",
       "noContacts": "Aucun contact disponible",
       "noMatch": "Aucun contact ne correspond",
-      "rules": "Vous ne voyez que les personnes que vous pouvez contacter : l'équipe, et selon votre rôle, les moniteurs de vos enfants ou les parents de vos groupes.",
+      "rules": "Vous ne voyez que les personnes que vous pouvez contacter : l'équipe, et selon votre rôle, les autres membres et moniteurs, les moniteurs de vos enfants ou les parents de vos groupes.",
       "notAllowed": "Vous ne pouvez pas écrire à cette personne."
     },
     "kinds": {
       "STAFF": "Équipe",
       "MONITOR": "Moniteurs",
+      "MEMBER": "Membres",
       "PARENT": "Parents",
       "OTHER": "Autres"
     },
-    "via": "Lien : {names}"
+    "via": "Lien : {names}",
+    "seenBy": "{count, plural, one {Vu par #} other {Vu par #}}",
+    "lastSender": "{name} : {text}",
+    "groups": {
+      "new": "Nouveau groupe",
+      "createTitle": "Créer un groupe de discussion",
+      "createHint": "Réunissez des membres, des moniteurs ou l'équipe dans une même discussion.",
+      "name": "Nom du groupe",
+      "namePlaceholder": "Ex. : Bureau des moniteurs",
+      "people": "Participants",
+      "searchPeople": "Rechercher une personne…",
+      "selected": "{count, plural, =0 {Personne sélectionnée} one {# personne sélectionnée} other {# personnes sélectionnées}}",
+      "noContacts": "Aucune personne à ajouter",
+      "create": "Créer le groupe",
+      "created": "Groupe créé",
+      "group": "Groupe",
+      "team": "Équipe",
+      "teamHint": "Discussion de l'équipe « {team} » ({edition}). Les membres sont gérés depuis l'équipe.",
+      "members": "{count, plural, one {# membre} other {# membres}}",
+      "membersTitle": "Membres du groupe",
+      "showMembers": "Voir les membres",
+      "admin": "Admin",
+      "you": "Vous",
+      "makeAdmin": "Nommer admin",
+      "remove": "Retirer {name}",
+      "removeText": "{name} ne recevra plus les messages de ce groupe.",
+      "add": "Ajouter des membres",
+      "addButton": "Ajouter",
+      "rename": "Renommer",
+      "leave": "Quitter le groupe",
+      "leaveTitle": "Quitter ce groupe ?",
+      "leaveText": "Vous ne recevrez plus ses messages. Un admin du groupe pourra vous y ajouter à nouveau.",
+      "left": "Vous avez quitté le groupe",
+      "readOnly": "Vous consultez ce groupe en tant qu'administrateur de la plateforme : vous pouvez le gérer, mais pas y écrire.",
+      "mine": "Mes conversations",
+      "all": "Tous les groupes",
+      "allEmpty": "Aucun groupe pour l'instant",
+      "createdBy": "Créé par {name}",
+      "messagesCount": "{count, plural, =0 {Aucun message} one {# message} other {# messages}}",
+      "errors": {
+        "teamManaged": "Cette discussion appartient à une équipe : son nom et ses membres se gèrent depuis l'équipe.",
+        "tooMany": "Un groupe compte au maximum 200 participants en plus de son créateur.",
+        "notMember": "Seul un membre du groupe peut être nommé admin."
+      },
+      "notify": {
+        "addedBody": "{name} vous a ajouté au groupe « {title} »."
+      }
+    }
   },
   "notifications": {
     "title": "Notifications",

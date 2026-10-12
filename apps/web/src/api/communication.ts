@@ -10,6 +10,15 @@ export const togglePin = (id: string) => apiSend("POST", `/announcements/${id}/p
 export const startConversation = formAction<{ id: string }>("POST", "/messages/conversations");
 export const sendMessage = formAction<{ id: string }>("POST", "/messages");
 
+// Chat groups
+/** FormData: title, userIds[] */
+export const createGroup = formAction<{ id: string }>("POST", "/messages/groups");
+/** FormData: id, title (rename). */
+export const renameGroup = formAction<{ id: string }>("POST", (v) => `/messages/groups/${v.id}`);
+export type GroupPatch = { title?: string; addUserIds?: string[]; removeUserIds?: string[]; makeAdminIds?: string[] };
+export const updateGroup = (id: string, patch: GroupPatch) => apiSend<{ id: string }>("POST", `/messages/groups/${id}`, patch);
+export const leaveGroup = (id: string) => apiSend<{ id: string }>("POST", `/messages/groups/${id}/leave`);
+
 // Notifications
 export const markNotificationRead = (id: string) => apiSend("POST", `/notifications/${id}/read`);
 export const markNotificationUnread = (id: string) => apiSend("POST", `/notifications/${id}/unread`);
