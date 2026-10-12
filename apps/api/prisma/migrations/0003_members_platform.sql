@@ -94,6 +94,9 @@ ALTER TABLE "EventRegistration" ADD COLUMN "teamId" TEXT REFERENCES "EventTeam" 
 -- CreateIndex
 CREATE INDEX "Event_seriesId_seasonYear_idx" ON "Event"("seriesId", "seasonYear");
 
+-- CreateIndex (NULLs are distinct in SQLite: events outside a series never clash)
+CREATE UNIQUE INDEX "Event_seriesId_editionNumber_key" ON "Event"("seriesId", "editionNumber");
+
 -- CreateIndex
 CREATE INDEX "EventRegistration_teamId_idx" ON "EventRegistration"("teamId");
 

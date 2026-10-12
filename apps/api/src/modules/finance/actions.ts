@@ -8,8 +8,9 @@ import { createNumberedInvoice, paidAmount } from "@api/lib/services/invoices";
 import { getPaymentProvider } from "@api/lib/services/payments";
 import { invoiceScope, requireFinance } from "./access";
 import { notifyNewInvoice, settleInvoice } from "./settle";
+import { MANUAL_PAYMENT_METHODS, recordManualPayment } from "./manual-payment";
 
-const MANUAL_METHODS = ["CASH", "BANK_TRANSFER", "CHECK", "OTHER"] as const;
+const MANUAL_METHODS = MANUAL_PAYMENT_METHODS;
 
 function revalidateFinance(invoiceId?: string) {
   revalidatePath("/dashboard/finance", "layout");
@@ -114,18 +115,9 @@ const paymentSchema = z.object({
 export async function recordPayment(fd: FormData | Record<string, unknown>) {
   return runAction(paymentSchema, formToObject(fd), async (data) => {
     const { user } = await requireFinance({ manage: true });
-    const inv = await db.invoice.findUnique({ where: { id: data.invoiceId }, include: { payments: true } });
-    if (!inv) throw new AuthError("NOT_FOUND");
-    if (inv.status === "CANCELLED" || inv.status === "DRAFT") throw new ActionError("errors.validation");
-    const remaining = inv.amount - paidAmount(inv);
-    if (data.amount > remaining) throw new ActionError("errors.amountTooHigh");
-    const paidAt = data.paidAt && data.paidAt <= new Date() ? data.paidAt : new Date();
-    const p = await db.payment.create({
-      data: { invoiceId: inv.id, amount: data.amount, method: data.method, reference: data.reference, paidAt, notes: data.notes, provider: "manual", recordedById: user.id, status: "COMPLETED" },
-    });
-    const status = await settleInvoice(inv.id, { amount: data.amount, notify: true });
-    await audit(user.id, "payment", "Invoice", inv.id, { paymentId: p.id, number: inv.number, amount: data.amount, method: data.method, status });
-    revalidateFinance(inv.id);
+    // Balance check + payment in one write transaction, then settle / notify / audit (see manual-payment.ts).
+    const { status } = await recordManualPayment(user, { invoiceId: data.invoiceId, amount: data.amount, method: data.method, reference: data.reference ?? null, paidAt: data.paidAt ?? null, notes: data.notes ?? null });
+    revalidateFinance(data.invoiceId);
     return { status };
   });
 }

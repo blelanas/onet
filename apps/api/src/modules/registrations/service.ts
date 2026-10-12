@@ -151,6 +151,9 @@ async function assertCanRegister(user: CurrentUser, kind: RegKind, memberId: str
  */
 type RegisterOpts = { parentConsent?: boolean; notes?: string; manager?: boolean };
 
+/** Trip statuses where even a manager can't add anyone. */
+const MANAGER_CLOSED_TRIP = ["CANCELLED", "COMPLETED"];
+
 async function register(user: CurrentUser, kind: RegKind, targetId: string, memberId: string, opts: RegisterOpts = {}): Promise<RegisterResult> {
   const manager = kind === "trip" && !!opts.manager;
   const staff = manager ? true : await assertCanRegister(user, kind, memberId);
@@ -167,7 +170,15 @@ async function register(user: CurrentUser, kind: RegKind, targetId: string, memb
       kind === "event"
         ? await tx.eventRegistration.findUnique({ where: { eventId_memberId: { eventId: targetId, memberId } } })
         : await tx.tripRegistration.findUnique({ where: { tripId_memberId: { tripId: targetId, memberId } } });
-    const reason = manager ? (existing && existing.status !== "CANCELLED" ? "registered" : null) : eligibility(target, member, existing?.status ?? null, staff);
+    // Managers skip the window, deadline and age range, not the trip's end: nothing is added to a cancelled
+    // or completed trip.
+    const reason = manager
+      ? existing && existing.status !== "CANCELLED"
+        ? "registered"
+        : MANAGER_CLOSED_TRIP.includes(target.status)
+          ? "closed"
+          : null
+      : eligibility(target, member, existing?.status ?? null, staff);
     if (reason) await fail(reason);
 
     const full = (await countActive(tx, target)) >= target.capacity;
@@ -197,17 +208,22 @@ async function register(user: CurrentUser, kind: RegKind, targetId: string, memb
 
   const { target } = result;
   await audit(user.id, "register", kind === "event" ? "EventRegistration" : "TripRegistration", result.reg.id, { targetId, memberId, status: result.status, invoiceId: result.invoiceId });
-  const guardians = await guardianUserIds(memberId);
-  await notifyLocalized(guardians, kind === "event" ? "EVENT_NEW" : "TRIP_REGISTRATION", target.link, (t) => ({
-    title: t(`notify.registered.${result.status}`, { name: member.firstName, title: target.title }),
-    body: t(result.invoiceId && result.status === "PENDING" ? "notify.payBody" : "notify.registeredBody", { title: target.title }),
-  }));
-  if (kind === "trip") {
-    const staffIds = (await roleUserIds(["admin", "super_admin"])).filter((id) => id !== user.id);
-    await notifyLocalized(staffIds, "TRIP_REGISTRATION", `${target.link}?tab=participants`, (t) => ({
-      title: t("notify.staffNew", { name: memberName, title: target.title }),
-      body: t(`notify.staffStatus.${result.status}`),
+  // The registration is saved: a notification failure must not report it as failed.
+  try {
+    const guardians = await guardianUserIds(memberId);
+    await notifyLocalized(guardians, kind === "event" ? "EVENT_NEW" : "TRIP_REGISTRATION", target.link, (t) => ({
+      title: t(`notify.registered.${result.status}`, { name: member.firstName, title: target.title }),
+      body: t(result.invoiceId && result.status === "PENDING" ? "notify.payBody" : "notify.registeredBody", { title: target.title }),
     }));
+    if (kind === "trip") {
+      const staffIds = (await roleUserIds(["admin", "super_admin"])).filter((id) => id !== user.id);
+      await notifyLocalized(staffIds, "TRIP_REGISTRATION", `${target.link}?tab=participants`, (t) => ({
+        title: t("notify.staffNew", { name: memberName, title: target.title }),
+        body: t(`notify.staffStatus.${result.status}`),
+      }));
+    }
+  } catch (e) {
+    console.error("[registrations] notification failed for registration", result.reg.id, e);
   }
   return { id: result.reg.id, status: result.status, invoiceId: result.invoiceId, memberId };
 }

@@ -17,6 +17,23 @@ describe("csv", () => {
     expect(csv.charCodeAt(0)).toBe(0xfeff);
     expect(csv.slice(1)).toBe('a,"say ""hi""","x,y"\r\n1,,طبلبة');
   });
+
+  it("neutralises spreadsheet formulas in text cells, not numbers", () => {
+    const row = (v: string | number) => toCsv([[v]]).slice(1);
+    expect(row("=HYPERLINK(\"http://x\",\"a\")")).toBe(`"'=HYPERLINK(""http://x"",""a"")"`);
+    expect(row("+cmd|' /C calc'!A0")).toBe("'+cmd|' /C calc'!A0");
+    expect(row("-2+3")).toBe("'-2+3");
+    expect(row("@SUM(A1:A9)")).toBe("'@SUM(A1:A9)");
+    expect(row("\t=1")).toBe("'\t=1");
+    expect(row("\r=1")).toBe(`"'\r=1"`);
+    // Values stay values: numbers, signed numbers formatted as text, ordinary text.
+    expect(row(-12.5)).toBe("-12.5");
+    expect(row("-12.500")).toBe("-12.500");
+    expect(row("Ben Ali")).toBe("Ben Ali");
+    expect(row("a=b")).toBe("a=b");
+    // A phone typed with "+" is kept as text (Excel shows it without the quote).
+    expect(row("+216 22 345 678")).toBe("'+216 22 345 678");
+  });
 });
 
 describe("utils", () => {

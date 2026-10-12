@@ -55,7 +55,7 @@ export async function tripReport(tripId: string) {
 }
 export type TripReport = Awaited<ReturnType<typeof tripReport>>;
 
-/** The report as CSV (UTF-8 with BOM, localized headers; amounts in TND). */
+/** The report as CSV (UTF-8 with BOM, localized headers; amounts in TND), with the refunds to make at the end. */
 export async function tripReportCsv(report: TripReport) {
   const t = await getTranslations("trips.report.csv");
   const tc = await getTranslations("common");
@@ -81,6 +81,24 @@ export async function tripReportCsv(report: TripReport) {
     [t("collected"), tnd(report.totals.collected)],
     [t("outstanding"), tnd(report.totals.outstanding)],
     ...report.totals.byMethod.map((m) => [tc(`enums.paymentMethod.${m.method}`), tnd(m.amount)]),
+    // Cancelled registrations that were (partly) paid: the accountant pays them back.
+    ...(report.refunds.length
+      ? [
+          [],
+          [t("refunds")],
+          [t("name"), t("type"), t("phone"), t("guardian"), t("refundAmount"), t("methods"), t("membershipNumber")],
+          ...report.refunds.map((r) => [
+            `${r.member.firstName} ${r.member.lastName}`,
+            t(`types.${r.type}`),
+            r.phone,
+            r.guardian?.name,
+            tnd(r.paid),
+            r.methods.map((m) => tc(`enums.paymentMethod.${m}`)).join(" + "),
+            r.member.membershipNumber,
+          ]),
+          [t("totalRefunds"), tnd(report.totals.refundDue)],
+        ]
+      : []),
   ];
   return { filename: `report-${slugify(report.trip.title)}-${toDateInput(report.trip.departAt)}.csv`, csv: toCsv(rows) };
 }

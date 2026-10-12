@@ -6,7 +6,7 @@ import { createApp } from "@api/app";
 import { db } from "@api/lib/db";
 import { hashToken } from "@api/lib/auth/session";
 import { takeInvitationPlace } from "@api/modules/signup/actions";
-import { ageOn, parsePeopleList, splitFields } from "@api/modules/signup/lib";
+import { ageOn, normalizePhone, parsePeopleList, splitFields } from "@api/modules/signup/lib";
 
 let server: Server;
 let base = "";
@@ -290,6 +290,47 @@ describe("approvals", () => {
     expect(await db.member.count({ where: { email: p.email } })).toBe(0);
   });
 
+  it("a rejected e-mail may sign up again: same account, new answers, back in the approval queue", async () => {
+    const p = person();
+    await signup(p);
+    const user = await db.user.findUniqueOrThrow({ where: { email: p.email } });
+    expect((await call("POST", "/approvals/reject", { token: adminToken, body: { ids: [user.id] } })).body).toMatchObject({ ok: true, data: { count: 1 } });
+    expect(await db.user.findUniqueOrThrow({ where: { id: user.id } })).toMatchObject({ status: "REJECTED", approvedById: expect.any(String) });
+
+    const q = person({ email: p.email.toUpperCase(), password: "Another2026x", occupation: "WORKER", occupationDetail: "Boulanger" });
+    const again = await signup(q);
+    expect(again.body).toMatchObject({ ok: true, data: { status: "PENDING" } });
+    const after = await db.user.findUniqueOrThrow({ where: { email: p.email }, include: { member: true, roles: true } });
+    expect(after).toMatchObject({ id: user.id, status: "PENDING", name: q.name, phone: q.phone, requestedRole: "member", invitationId: null, approvedById: null, approvedAt: null, roles: [] });
+    expect(after.member).toMatchObject({ type: "MEMBER", membershipStatus: "PENDING", lastName: q.lastName, occupation: "WORKER", occupationDetail: "Boulanger", phone: q.phone });
+    // The new password works, the old one doesn't; the approvers see the request again.
+    expect((await call("POST", "/auth/login", { body: { email: p.email, password: p.password } })).body).toMatchObject({ ok: false, error: "errors.invalidCredentials" });
+    const token = await login(p.email, "Another2026x");
+    const pending = await call("GET", "/approvals/pending", { token: adminToken });
+    expect((pending.body!.rows as { id: string }[]).some((x) => x.id === user.id)).toBe(true);
+    expect((await call("POST", "/approvals/approve", { token: adminToken, body: { ids: [user.id] } })).body).toMatchObject({ ok: true, data: { count: 1 } });
+    expect((await call("GET", "/auth/me", { token })).body).toMatchObject({ status: "ACTIVE", roles: ["member"], memberType: "MEMBER" });
+    // An account that wasn't rejected still blocks its e-mail.
+    expect((await signup(person({ email: p.email }))).body).toMatchObject({ ok: false, error: "errors.signupEmailTaken" });
+  });
+
+  it("a rejected e-mail on the pre-approved list comes back active with that role", async () => {
+    const p = person();
+    await signup(p);
+    const user = await db.user.findUniqueOrThrow({ where: { email: p.email } });
+    await call("POST", "/approvals/reject", { token: adminToken, body: { ids: [user.id] } });
+    // Pre-approved by phone (an e-mail that already has an account is not imported).
+    const q = person({ email: p.email });
+    const imp = await call("POST", "/approvals/preapproved/import", { token: adminToken, body: { role: "monitor", text: `${q.name};; ${q.phone}` } });
+    expect(imp.body).toMatchObject({ ok: true, data: { added: 1 } });
+    const again = await signup(q);
+    expect(again.body).toMatchObject({ ok: true, data: { status: "ACTIVE" } });
+    const after = await db.user.findUniqueOrThrow({ where: { id: user.id }, include: { member: true, roles: { include: { role: true } } } });
+    expect(after).toMatchObject({ status: "ACTIVE", requestedRole: null, approvedById: null });
+    expect(after.roles.map((r) => r.role.key)).toEqual(["monitor"]);
+    expect(after.member).toMatchObject({ type: "MONITOR", membershipStatus: "ACTIVE" });
+  });
+
   it("only users.approve holders can use the admin endpoints", async () => {
     const monitor = await login("moniteur@onet-teboulba.tn");
     const accountant = await login("comptable@onet-teboulba.tn");
@@ -307,6 +348,14 @@ describe("approvals", () => {
     expect((await call("GET", "/approvals/pending", { token: await login("admin@onet-teboulba.tn") })).status).toBe(200);
     const me = await call("GET", "/auth/me", { token: adminToken });
     expect((me.body as { pendingApprovals: number }).pendingApprovals).toBeGreaterThan(0);
+  });
+
+  it("clamps absurd page numbers", async () => {
+    for (const tab of ["pending", "invitations", "preapproved"]) {
+      const r = await call("GET", `/approvals/${tab}?page=1e308`, { token: adminToken });
+      expect(r.status, tab).toBe(200);
+      expect(r.body).toMatchObject({ page: 10_000, rows: [] });
+    }
   });
 
   it("bulk endpoints cap the batch size", async () => {
@@ -450,5 +499,19 @@ describe("pre-approved list parsing", () => {
 
   it("rejects names longer than 80 characters", () => {
     expect(parsePeopleList(`${"x".repeat(81)};a@b.tn;`).invalid).toEqual([{ line: 1, reason: "name" }]);
+  });
+
+  it("checks e-mails like the sign-up form, and phones are digits and separators only", () => {
+    const { people, invalid } = parsePeopleList(`A B; member@example..tn;\nC D; c@x;\nE F; e@x.tn; tel 22 345 678\nG H; g@x.tn; +216 (22) 345-678`);
+    expect(invalid).toEqual([
+      { line: 1, reason: "email" },
+      { line: 2, reason: "email" },
+      { line: 3, reason: "phone" },
+    ]);
+    expect(people).toEqual([{ line: 4, name: "G H", email: "g@x.tn", phone: "21622345678" }]);
+    expect(normalizePhone("call 22 345 678")).toBeNull();
+    expect(normalizePhone("------")).toBeNull();
+    expect(normalizePhone("22.345.678")).toBe("21622345678");
+    expect(normalizePhone("0021622345678")).toBe("21622345678");
   });
 });

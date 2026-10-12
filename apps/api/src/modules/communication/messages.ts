@@ -2,15 +2,14 @@ import type { Prisma } from "@prisma/client";
 import { db } from "@api/lib/db";
 import type { CurrentUser } from "@api/lib/auth/session";
 import { AuthError, hasRole } from "@api/lib/auth/guards";
+import { conversationLink } from "./links";
+
+// The link of a conversation (also the key of its MESSAGE notifications) lives in ./links (no dependencies).
+export { conversationLink };
 
 /** Platform administrators may list, open and manage every group (not only the ones they belong to). */
 export function isPlatformAdmin(user: CurrentUser) {
   return hasRole(user, "super_admin", "admin");
-}
-
-/** Link of a conversation (also the key used to de-duplicate its MESSAGE notifications). */
-export function conversationLink(id: string) {
-  return `/dashboard/messages?c=${id}`;
 }
 
 const userSelect = { id: true, name: true, avatarUrl: true, roles: { select: { role: { select: { key: true } } } } } satisfies Prisma.UserSelect;

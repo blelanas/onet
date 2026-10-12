@@ -273,7 +273,10 @@
       "types": {
         "kid": "Enfant",
         "member": "Membre"
-      }
+      },
+      "refunds": "Remboursements à effectuer",
+      "refundAmount": "À rembourser (TND)",
+      "totalRefunds": "Total à rembourser (TND)"
     }
   },
   "notify": {
@@ -287,6 +290,7 @@
     "notClosed": "La liste n'est pas finalisée.",
     "notParticipant": "Cette personne ne fait pas partie de la liste.",
     "noInvoice": "Rien à encaisser : cette inscription n'a pas de facture (sortie gratuite).",
-    "memberType": "Seuls les enfants et les membres peuvent être ajoutés à la liste."
+    "memberType": "Seuls les enfants et les membres peuvent être ajoutés à la liste.",
+    "memberInactive": "Cette personne n'est pas active (en attente, inactive ou suspendue) : elle ne peut pas être ajoutée à la liste."
   }
 }

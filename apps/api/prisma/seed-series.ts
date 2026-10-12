@@ -1,7 +1,7 @@
 // Demo data for the recurring programmes (series), their editions, teams, kids and team chats.
 // Called once at the end of seed.ts main(), after people, events and conversations exist.
 import type { PrismaClient } from "@prisma/client";
-import { ageFrom, zonedTimeToDate } from "@onet/shared";
+import { zonedTimeToDate } from "@onet/shared";
 import { syncTeamChat } from "../src/modules/events/team-chat";
 
 type TeamDef = { name: string; color: string; leader: string; members: string[] };
@@ -169,6 +169,15 @@ const CHAT_MESSAGES: Record<string, [string, string, string, number][]> = {
 
 const DAY = 86400_000;
 
+/** Whole years between a date of birth and a day (null without a birth date). */
+function ageOn(dob: Date | null, at: Date) {
+  if (!dob) return null;
+  let age = at.getUTCFullYear() - dob.getUTCFullYear();
+  const m = at.getUTCMonth() - dob.getUTCMonth();
+  if (m < 0 || (m === 0 && at.getUTCDate() < dob.getUTCDate())) age--;
+  return age;
+}
+
 export async function seedSeries(db: PrismaClient) {
   console.log("→ series, editions & teams");
   // Re-runs: editions were deleted with the events by reset(); clear what remains.
@@ -183,10 +192,7 @@ export async function seedSeries(db: PrismaClient) {
     return m;
   };
   const admin = await db.user.findUniqueOrThrow({ where: { email: HELA } });
-  const kids = (await db.member.findMany({ where: { type: "CHILD", membershipStatus: "ACTIVE" }, orderBy: { membershipNumber: "asc" }, select: { id: true, dateOfBirth: true } })).map((k) => ({
-    id: k.id,
-    age: ageFrom(k.dateOfBirth) ?? 0,
-  }));
+  const kids = await db.member.findMany({ where: { type: "CHILD", membershipStatus: "ACTIVE" }, orderBy: { membershipNumber: "asc" }, select: { id: true, dateOfBirth: true } });
   // The demo family's kids (enfant@ and siblings) come first so their history is rich.
   const demoKid = await db.member.findFirst({ where: { user: { email: "enfant@onet-teboulba.tn" } }, select: { id: true, parentLinks: { select: { parent: { select: { childrenLinks: { select: { childId: true } } } } } } } });
   const demoIds = new Set(demoKid?.parentLinks.flatMap((l) => l.parent.childrenLinks.map((c) => c.childId)) ?? []);
@@ -229,8 +235,12 @@ export async function seedSeries(db: PrismaClient) {
         teams.push(team);
       }
 
-      // Kids: some come back from the previous edition, the others are new faces of the right age.
-      const eligible = ordered.filter((k) => k.age >= e.kids.ageMin && k.age <= e.kids.ageMax);
+      // Kids: some come back from the previous edition, the others are new faces of the right age — their
+      // age on the edition's first day, not today (a 2025 edition had last year's ages).
+      const eligible = ordered.filter((k) => {
+        const age = ageOn(k.dateOfBirth, startAt);
+        return age !== null && age >= e.kids.ageMin && age <= e.kids.ageMax;
+      });
       const back = e.kids.returningFrom ? (kidsByEdition.get(e.kids.returningFrom) ?? []).filter((id) => eligible.some((k) => k.id === id)).slice(0, e.kids.returning ?? 0) : [];
       const fresh = eligible.filter((k) => !back.includes(k.id) && !(kidsByEdition.get(e.kids.returningFrom ?? "") ?? []).includes(k.id));
       const chosen = [...back, ...fresh.map((k) => k.id)].slice(0, e.kids.count);

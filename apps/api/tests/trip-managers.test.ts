@@ -137,6 +137,43 @@ describe("trip managers", () => {
     expect((await call("POST", `/trips/${tripId}/participants`, { token: T.manager, body: { memberId: kid.id } })).body).toMatchObject({ ok: false, error: "errors.alreadyRegistered" });
   });
 
+  it("refuses people who aren't active, and phones that aren't phone numbers", async () => {
+    const stamp = Date.now();
+    for (const membershipStatus of ["SUSPENDED", "PENDING", "INACTIVE"]) {
+      const m = await db.member.create({ data: { type: "MEMBER", firstName: "Test", lastName: membershipStatus, membershipNumber: `TST-TRIP-${membershipStatus}-${stamp}`, membershipStatus } });
+      try {
+        expect((await call("POST", `/trips/${tripId}/participants`, { token: T.manager, body: { memberId: m.id } })).body).toMatchObject({ ok: false, error: ERR.memberInactive });
+      } finally {
+        await db.member.delete({ where: { id: m.id } });
+      }
+    }
+    const bad = await call("POST", `/trips/${tripId}/participants`, { token: T.manager, body: { firstName: "Tel", lastName: "Faux", dateOfBirth: "2015-02-02", parentName: "Parent Faux", parentPhone: "appeler le 22 345 678" } });
+    expect(bad.body).toMatchObject({ ok: false, fieldErrors: { parentPhone: "errors.phone" } });
+  });
+
+  it("nobody is added to a cancelled or completed trip, and the person created for it is removed", async () => {
+    const departAt = new Date(Date.now() + 40 * DAY);
+    const kid = await db.member.findFirstOrThrow({ where: { type: "CHILD", membershipStatus: "ACTIVE" } });
+    for (const status of ["CANCELLED", "COMPLETED"]) {
+      const trip = await db.trip.create({
+        data: { title: `Sortie ${status}`, destination: "Mahdia", category: "EXCURSION", departureLocation: "Teboulba", departAt, returnAt: new Date(departAt.getTime() + 3600_000), price: 10_000, status, monitors: { create: [{ memberId: managerMemberId }] } },
+      });
+      try {
+        expect((await call("POST", `/trips/${trip.id}/participants`, { token: T.manager, body: { memberId: kid.id } })).body).toMatchObject({ ok: false, error: fr.events.errors.closed });
+        const r = await call("POST", `/trips/${trip.id}/participants`, {
+          token: T.manager,
+          body: { firstName: "Annulé", lastName: `Testeur ${status}`, dateOfBirth: "2016-01-01", parentName: `Parent ${status}`, parentPhone: `+216 52 99${status.length} 888` },
+        });
+        expect(r.body).toMatchObject({ ok: false, error: fr.events.errors.closed });
+        expect(await db.member.count({ where: { lastName: `Testeur ${status}` } })).toBe(0);
+        expect(await db.member.count({ where: { firstName: "Parent", lastName: status } })).toBe(0);
+        expect(await db.tripRegistration.count({ where: { tripId: trip.id } })).toBe(0);
+      } finally {
+        await db.trip.delete({ where: { id: trip.id } });
+      }
+    }
+  });
+
   it("records payments up to the remaining balance", async () => {
     const pay = (amount: string, method?: string) => call("POST", `/trips/${tripId}/participants/${newKidReg}/payments`, { token: T.manager, body: { amount, method } });
     expect((await pay("10")).status).toBe(200);
@@ -146,7 +183,10 @@ describe("trip managers", () => {
     expect(reg.invoice!.payments[0]).toMatchObject({ amount: 10_000, method: "CASH", recordedById: managerUser.id, status: "COMPLETED" });
     expect((await pay("25")).body).toMatchObject({ ok: false, error: "errors.amountTooHigh" });
     expect((await pay("5", "ONLINE")).status).toBe(400);
-    expect((await pay("20", "BANK_TRANSFER")).status).toBe(200);
+    // Two managers recording the remaining 20 TND at the same time: only one payment goes through.
+    const both = await Promise.all([pay("20", "BANK_TRANSFER"), pay("20", "BANK_TRANSFER")]);
+    expect(both.map((r) => (r.body as { ok: boolean }).ok).sort()).toEqual([false, true]);
+    expect(both.find((r) => !(r.body as { ok: boolean }).ok)?.body).toMatchObject({ error: "errors.amountTooHigh" });
     const after = await db.tripRegistration.findUniqueOrThrow({ where: { id: newKidReg }, include: { invoice: true } });
     expect(after.invoice!.status).toBe("PAID");
     expect(after.status).toBe("CONFIRMED");
@@ -191,6 +231,13 @@ describe("trip managers", () => {
   });
 
   it("the report (JSON + CSV) is readable by managers and accountants only", async () => {
+    // A registration cancelled after a payment: money to refund (its name tries a spreadsheet formula).
+    const stamp = Date.now();
+    const refunded = await db.member.create({ data: { type: "CHILD", firstName: "=HYPERLINK(\"http://x\")", lastName: "Rembourse", membershipNumber: `TST-REFUND-${stamp}` } });
+    const inv = await db.invoice.create({ data: { number: `TEST-REFUND-${stamp}`, description: "Test", amount: 30_000, dueDate: new Date(), status: "PARTIALLY_PAID", payerId: refunded.id, childId: refunded.id, tripId } });
+    await db.payment.create({ data: { invoiceId: inv.id, amount: 12_000, method: "CASH", provider: "manual", status: "COMPLETED" } });
+    await db.tripRegistration.create({ data: { tripId, memberId: refunded.id, status: "CANCELLED", invoiceId: inv.id } });
+
     const r = await call("GET", `/trips/${tripId}/report`, { token: T.accountant });
     expect(r.status, JSON.stringify(r.body)).toBe(200);
     expect(r.body).toMatchObject({ trip: { title: "Sortie test à Sousse", price: 30_000 }, finalized: { by: "Amel Kefi" }, totals: { participants: 1, expected: 30_000, collected: 30_000, outstanding: 0 } });
@@ -209,6 +256,13 @@ describe("trip managers", () => {
     const text = new TextDecoder().decode(bytes);
     expect(text).toContain("Rayen Testeur");
     expect(text).toContain("30.000");
+    // The refunds to make come after the totals; the formula is written as text.
+    const csvT = fr.trips.report.csv;
+    expect(text).toContain(`\r\n${csvT.refunds}\r\n${csvT.name},${csvT.type},${csvT.phone},${csvT.guardian},${csvT.refundAmount},`);
+    expect(text).toContain(`"'=HYPERLINK(""http://x"") Rembourse",${csvT.types.kid},,,12.000,`);
+    expect(text).toContain(`${csvT.totalRefunds},12.000`);
+    expect(text.indexOf(csvT.refunds)).toBeGreaterThan(text.indexOf(csvT.collected));
+    expect((r.body!.refunds as Row[]).map((x) => x.member.id)).toEqual([refunded.id]);
     expect((await call("GET", `/trips/${tripId}/report.csv`, { token: T.monitor })).status).toBe(403);
   });
 

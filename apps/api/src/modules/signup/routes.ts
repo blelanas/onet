@@ -32,9 +32,12 @@ router.post("/auth/signup", limited(10, 15 * 60_000), mutation((req) => signup(r
 
 // ─── Approvals (users.approve) ──────────────────────────────────────────────
 
+/** Highest page asked for: `?page=1e308` must not turn into an infinite `skip`. */
+const MAX_PAGE = 10_000;
+
 function pageOf(req: Request, size: number) {
   const n = Math.floor(Number(qs(req, "page")));
-  const page = Number.isFinite(n) && n >= 1 ? n : 1;
+  const page = Number.isFinite(n) && n >= 1 ? Math.min(n, MAX_PAGE) : 1;
   return { page, pageSize: size, skip: (page - 1) * size, take: size };
 }
 

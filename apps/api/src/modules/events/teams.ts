@@ -11,6 +11,16 @@ import { getEvent } from "./queries";
 /** Member types that can lead or join a team (animators). */
 export const TEAM_MEMBER_TYPES = ["MEMBER", "MONITOR", "STAFF"];
 
+/**
+ * People who may be put on a team: animators whose membership is ACTIVE (not pending approval, inactive or
+ * suspended) and, when they have a login, whose account is active (the team chat adds that login).
+ */
+export const TEAM_ELIGIBLE: Prisma.MemberWhereInput = {
+  type: { in: TEAM_MEMBER_TYPES },
+  membershipStatus: "ACTIVE",
+  OR: [{ userId: null }, { user: { status: "ACTIVE", isActive: true } }],
+};
+
 export const personSelect = { id: true, firstName: true, lastName: true, photoUrl: true, phone: true, type: true } satisfies Prisma.MemberSelect;
 
 const teamInclude = {
@@ -44,10 +54,19 @@ export async function editionTeams(eventId: string) {
   return rows.map(toTeam);
 }
 
+/**
+ * The animators' phone numbers are for the people working on the edition: admins (members.read_all /
+ * events.manage) and the members on one of its teams (`access.seeKids`). Everyone else gets `phone: null`.
+ */
+export function withTeamPhones<T extends { leader: { phone: string | null } | null; members: { phone: string | null }[] }>(team: T, showPhones: boolean): T {
+  if (showPhones) return team;
+  return { ...team, leader: team.leader ? { ...team.leader, phone: null } : null, members: team.members.map((m) => ({ ...m, phone: null })) };
+}
+
 /** People who may lead / join a team. */
 export async function teamCandidates() {
   return db.member.findMany({
-    where: { type: { in: TEAM_MEMBER_TYPES }, membershipStatus: { not: "SUSPENDED" } },
+    where: TEAM_ELIGIBLE,
     orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
     select: { id: true, firstName: true, lastName: true, photoUrl: true, type: true },
   });
@@ -62,7 +81,7 @@ export async function editionTeamsPage(req: Request) {
   const [teams, candidates] = await Promise.all([editionTeams(id), access.manage || access.isLeader ? teamCandidates() : Promise.resolve([])]);
   return {
     edition: { id: e.id, title: e.title },
-    teams,
+    teams: teams.map((t) => withTeamPhones(t, access.seeKids)),
     candidates,
     canManage: access.manage,
     isLeader: access.isLeader,

@@ -8,9 +8,11 @@ import { audit } from "@api/lib/audit";
 import { GENDERS, GUARDIAN_RELATIONS } from "@api/lib/constants";
 import { nextMembershipNumber } from "@api/modules/members/actions";
 import { assertCanManageKids, canEditKid } from "@api/modules/events/access";
+import { normalizePhone } from "@api/modules/signup/lib";
 
 const optEnum = <T extends readonly [string, ...string[]]>(values: T) => z.preprocess((v) => (v === "" || v == null ? undefined : v), z.enum(values).optional());
-const phone = z.preprocess((v) => (typeof v === "string" ? v.trim() : v), z.string().max(40).regex(/^\+?[\d\s().-]{6,}$/, "errors.phone"));
+/** A real phone number (8–15 digits, no letters: see normalizePhone), kept as typed. */
+const phone = z.preprocess((v) => (typeof v === "string" ? v.trim() : v), z.string().max(40).refine((v) => normalizePhone(v) !== null, "errors.phone"));
 
 /** "Ali Ben Salah" → { firstName: "Ali", lastName: "Ben Salah" }; a single word takes the kid's last name. */
 export function splitName(full: string, fallbackLast: string) {
@@ -52,8 +54,8 @@ async function upsertGuardian(tx: Prisma.TransactionClient, childId: string, chi
 const DAY = 86400_000;
 
 /** A CHILD member with the same names and birth date (±1 day: dates may have been typed in another time zone). */
-async function findSameKid(firstName: string, lastName: string, dateOfBirth: Date) {
-  const rows = await db.member.findMany({ where: { type: "CHILD", firstName, lastName, dateOfBirth: { gte: new Date(+dateOfBirth - DAY), lte: new Date(+dateOfBirth + DAY) } }, select: { id: true } });
+async function findSameKid(tx: Prisma.TransactionClient, firstName: string, lastName: string, dateOfBirth: Date) {
+  const rows = await tx.member.findMany({ where: { type: "CHILD", firstName, lastName, dateOfBirth: { gte: new Date(+dateOfBirth - DAY), lte: new Date(+dateOfBirth + DAY) } }, select: { id: true } });
   return rows[0] ?? null;
 }
 
@@ -90,9 +92,11 @@ const addKidSchema = z
 /**
  * POST /events/:id/kids — adds a kid to an edition (admins and the edition's leaders): an existing kid
  * ({memberId}) or a new one (CHILD member + parent contact without login + primary guardianship), then
- * a CONFIRMED registration without invoice — all in one transaction. A kid can't be added twice
- * (errors.alreadyRegistered); a new kid identical to an existing one (names + birth date) is refused with
- * errors.kidExists so the existing record is used instead.
+ * a CONFIRMED registration without invoice. The duplicate checks and the writes run in one write
+ * transaction (libSQL serialises writers), so two identical requests can't both create the kid. A kid can't
+ * be added twice (errors.alreadyRegistered); a new kid identical to an existing one (names + birth date) is
+ * refused with errors.kidExists so the existing record is used instead. Re-adding a kid whose registration
+ * was cancelled restores it; an invoice cancelled with it is detached (no link to a dead invoice).
  */
 export async function addKid(fd: FormData | Record<string, unknown>) {
   return runAction(addKidSchema, formToObject(fd), async (d) => {
@@ -102,23 +106,23 @@ export async function addKid(fd: FormData | Record<string, unknown>) {
     await assertCanManageKids(user, event.id);
     const teamId = await editionTeamOrNull(event.id, d.teamId);
 
-    let memberId = d.memberId;
-    if (memberId) {
-      const kid = await db.member.findUnique({ where: { id: memberId }, select: { type: true } });
-      if (kid?.type !== "CHILD") throw new ActionError("errors.validation");
-    } else {
-      const same = await findSameKid(d.firstName!, d.lastName!, d.dateOfBirth!);
-      if (same) {
-        const reg = await db.eventRegistration.findUnique({ where: { eventId_memberId: { eventId: event.id, memberId: same.id } }, select: { status: true } });
-        throw new ActionError(reg && reg.status !== "CANCELLED" ? "errors.alreadyRegistered" : "errors.kidExists");
-      }
-    }
-    if (memberId) {
-      const reg = await db.eventRegistration.findUnique({ where: { eventId_memberId: { eventId: event.id, memberId } }, select: { status: true } });
-      if (reg && reg.status !== "CANCELLED") throw new ActionError("errors.alreadyRegistered");
-    }
-
     const result = await db.$transaction(async (tx) => {
+      let memberId = d.memberId;
+      const registration = (kidId: string) =>
+        tx.eventRegistration.findUnique({ where: { eventId_memberId: { eventId: event.id, memberId: kidId } }, select: { id: true, status: true, invoice: { select: { status: true } } } });
+      let existing: Awaited<ReturnType<typeof registration>> = null;
+      if (memberId) {
+        const kid = await tx.member.findUnique({ where: { id: memberId }, select: { type: true } });
+        if (kid?.type !== "CHILD") throw new ActionError("errors.validation");
+        existing = await registration(memberId);
+        if (existing && existing.status !== "CANCELLED") throw new ActionError("errors.alreadyRegistered");
+      } else {
+        const same = await findSameKid(tx, d.firstName!, d.lastName!, d.dateOfBirth!);
+        if (same) {
+          const reg = await registration(same.id);
+          throw new ActionError(reg && reg.status !== "CANCELLED" ? "errors.alreadyRegistered" : "errors.kidExists");
+        }
+      }
       if (!memberId) {
         const kid = await tx.member.create({
           data: {
@@ -137,11 +141,13 @@ export async function addKid(fd: FormData | Record<string, unknown>) {
         memberId = kid.id;
         await upsertGuardian(tx, kid.id, kid, d.parentName!, d.parentPhone!, d.parentRelation ?? "PARENT");
       }
-      const reg = await tx.eventRegistration.upsert({
-        where: { eventId_memberId: { eventId: event.id, memberId: memberId! } },
-        create: { eventId: event.id, memberId: memberId!, status: "CONFIRMED", teamId, registeredById: user.id },
-        update: { status: "CONFIRMED", teamId, registeredById: user.id },
-      });
+      const reg = existing
+        ? await tx.eventRegistration.update({
+            where: { id: existing.id },
+            // A paid invoice stays attached (money to refund or keep); a cancelled one doesn't come back.
+            data: { status: "CONFIRMED", teamId, registeredById: user.id, ...(existing.invoice?.status === "CANCELLED" ? { invoiceId: null } : {}) },
+          })
+        : await tx.eventRegistration.create({ data: { eventId: event.id, memberId: memberId!, status: "CONFIRMED", teamId, registeredById: user.id } });
       return { registrationId: reg.id, memberId: memberId! };
     });
     await audit(user.id, d.memberId ? "add_kid" : "create_kid", "EventRegistration", result.registrationId, { eventId: event.id, memberId: result.memberId, teamId });

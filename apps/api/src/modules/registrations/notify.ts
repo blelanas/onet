@@ -1,6 +1,6 @@
 import { getTranslations } from "@api/lib/i18n";
 import { db } from "@api/lib/db";
-import { notifyUsers } from "@api/lib/services/notifications";
+import { notifyUsers, type NotifyClient } from "@api/lib/services/notifications";
 import { isLocale, DEFAULT_LOCALE } from "@onet/shared";
 import type { NotificationType } from "@api/lib/constants";
 
@@ -9,12 +9,13 @@ type Builder = (t: Translator, locale: string) => { title: string; body?: string
 
 /**
  * Sends one in-app notification per recipient, rendered in each recipient's own language.
- * `namespace` picks the message tree the builder's `t` reads from (events by default).
+ * `namespace` picks the message tree the builder's `t` reads from (events by default); `client` the
+ * transaction to write them in (see notifyUsers).
  */
-export async function notifyLocalized(userIds: string[], type: NotificationType, link: string, build: Builder, namespace = "events") {
+export async function notifyLocalized(userIds: string[], type: NotificationType, link: string, build: Builder, namespace = "events", client: NotifyClient = db) {
   const ids = [...new Set(userIds.filter(Boolean))];
   if (!ids.length) return;
-  const users = await db.user.findMany({ where: { id: { in: ids }, isActive: true }, select: { id: true, locale: true } });
+  const users = await client.user.findMany({ where: { id: { in: ids }, isActive: true }, select: { id: true, locale: true } });
   const byLocale = new Map<string, string[]>();
   for (const u of users) {
     const l = isLocale(u.locale) ? u.locale : DEFAULT_LOCALE;
@@ -23,7 +24,7 @@ export async function notifyLocalized(userIds: string[], type: NotificationType,
   for (const [locale, group] of byLocale) {
     const t = await getTranslations({ locale, namespace });
     const { title, body } = build(t, locale);
-    await notifyUsers(group, { type, title, body, link });
+    await notifyUsers(group, { type, title, body, link }, client);
   }
 }
 

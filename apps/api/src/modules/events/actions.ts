@@ -7,6 +7,11 @@ import { audit } from "@api/lib/audit";
 import { EVENT_CATEGORIES, EVENT_STATUSES } from "@api/lib/constants";
 import { saveRollCall } from "@api/modules/registrations/roll-call";
 import { deleteTeamChat, syncEditionChats } from "./team-chat";
+import { isEditionNumberClash } from "./series-actions";
+
+/** Optional integer field: missing → undefined (keep), "" / null → null (clear), else the number. */
+const optNullableInt = (min: number, max: number) =>
+  z.preprocess((v) => (v === undefined ? undefined : v === "" || v === null ? null : Number(v)), z.number().int().min(min).max(max).nullable().optional());
 
 const eventSchema = z
   .object({
@@ -25,9 +30,9 @@ const eventSchema = z
     requiresPayment: zs.bool,
     status: z.enum(EVENT_STATUSES),
     isPublic: zs.bool,
-    // Editions of a series only (absent from the form of other events → left unchanged).
-    editionNumber: z.preprocess((v) => (v === "" || v == null ? undefined : Number(v)), z.number().int().min(1).max(9999).optional()),
-    seasonYear: z.preprocess((v) => (v === "" || v == null ? undefined : Number(v)), z.number().int().min(1990).max(2100).optional()),
+    // Editions of a series only: absent from the form of other events → left unchanged; submitted blank → cleared.
+    editionNumber: optNullableInt(1, 9999),
+    seasonYear: optNullableInt(1990, 2100),
   })
   .refine((d) => d.endAt >= d.startAt, { path: ["endAt"], message: "errors.validation" })
   .refine((d) => !d.registrationDeadline || d.registrationDeadline <= d.startAt, { path: ["registrationDeadline"], message: "errors.validation" });
@@ -45,7 +50,11 @@ export async function saveEvent(fd: FormData | Record<string, unknown>) {
       requiresPayment: d.price > 0 && d.requiresPayment,
     };
     const before = id ? await db.event.findUnique({ where: { id }, select: { title: true } }) : null;
-    const e = id ? await db.event.update({ where: { id }, data }) : await db.event.create({ data });
+    const e = await (id ? db.event.update({ where: { id }, data }) : db.event.create({ data })).catch((err: unknown) => {
+      // Another edition of the series already has that number.
+      if (isEditionNumberClash(err)) throw new ActionError("errors.inUse");
+      throw err;
+    });
     // Team group chats are named after the edition.
     if (before && before.title !== e.title) await syncEditionChats(db, e.id);
     await audit(user.id, id ? "update" : "create", "Event", e.id, { title: e.title, status: e.status, price: e.price });

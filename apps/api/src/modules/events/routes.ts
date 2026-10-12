@@ -12,7 +12,7 @@ import { deadlinePassed, isOpen, loadTarget } from "@api/modules/registrations/s
 import { editionAccess } from "./access";
 import { KIDS_OF_EDITION, seriesFormPage, seriesListPage, seriesPage } from "./series";
 import { createEdition, deleteSeries, saveSeries } from "./series-actions";
-import { allTeamsPage, editionTeams, editionTeamsPage, myTeamsPage } from "./teams";
+import { allTeamsPage, editionTeams, editionTeamsPage, myTeamsPage, withTeamPhones } from "./teams";
 import { deleteTeam, saveTeam } from "./team-actions";
 
 /** events module routes (mounted under /api). */
@@ -57,7 +57,7 @@ export async function eventPage(req: Request) {
     db.eventRegistration.count({ where: { eventId: id, ...KIDS_OF_EDITION } }),
   ]);
   return {
-    teams: teams.map((t) => ({ id: t.id, name: t.name, color: t.color, leader: t.leader, memberCount: t.memberCount, kidsCount: t.kidsCount, members: t.members.map((m) => ({ id: m.id, firstName: m.firstName, lastName: m.lastName, photoUrl: m.photoUrl })), conversationId: access.myTeamIds.includes(t.id) ? t.conversationId : null })),
+    teams: teams.map((t) => ({ id: t.id, name: t.name, color: t.color, leader: withTeamPhones(t, access.seeKids).leader, memberCount: t.memberCount, kidsCount: t.kidsCount, members: t.members.map((m) => ({ id: m.id, firstName: m.firstName, lastName: m.lastName, photoUrl: m.photoUrl })), conversationId: access.myTeamIds.includes(t.id) ? t.conversationId : null })),
     kidsCount,
     canManage: access.manage,
     isLeader: access.isLeader,

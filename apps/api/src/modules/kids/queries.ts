@@ -6,9 +6,9 @@ import type { CurrentUser } from "@api/lib/auth/session";
 import { AuthError, requirePermission } from "@api/lib/auth/guards";
 import { param, qs } from "@api/lib/http";
 import { memberSearchWhere } from "@api/modules/members/queries";
-import { ACTIVE_KID_REG, assertCanSeeKids, canEditKid, canSeeKid, kidScopeWhere, seesAllKids } from "@api/modules/events/access";
+import { ACTIVE_KID_REG, assertCanSeeKids, canEditKid, kidScopeWhere, memberViewScope, myEditionIds, seesAllKids } from "@api/modules/events/access";
 import { getEvent } from "@api/modules/events/queries";
-import { seriesOptions, tunisYear } from "@api/modules/events/series";
+import { editionVisibleWhere, seriesOptions, tunisYear } from "@api/modules/events/series";
 
 /** Primary guardian first (then the oldest link): the parent contact shown on kid cards. */
 const guardianInclude = {
@@ -90,7 +90,24 @@ export async function editionKidsPage(req: Request) {
   };
 }
 
-/** GET /events/:id/kids/candidates?q= — existing kids (not yet in the edition) to add. */
+type KidCandidate = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  age: number | null;
+  photoUrl: string | null;
+  dateOfBirth: Date | null;
+  gender: string | null;
+  membershipNumber: string | null;
+  guardianName: string | null;
+  lastEdition: { title: string; seasonYear: number | null } | null;
+};
+
+/**
+ * GET /events/:id/kids/candidates?q= — existing kids (not yet in the edition) to add. The search covers every
+ * kid: edition leaders only get the names and age (enough to pick the right one); photo, birth date, gender,
+ * guardian and past editions are for the admins who see every kid.
+ */
 export async function kidCandidatesPage(req: Request) {
   const user = await requirePermission("events.read");
   const id = param(req, "id");
@@ -98,7 +115,7 @@ export async function kidCandidatesPage(req: Request) {
   const access = await assertCanSeeKids(user, id);
   if (!access.manageKids) throw new AuthError("FORBIDDEN");
   const q = qs(req, "q")?.trim();
-  if (!q || q.length < 2) return { rows: [] };
+  if (!q || q.length < 2) return { rows: [] as KidCandidate[] };
   const kids = await db.member.findMany({
     where: { type: "CHILD", ...memberSearchWhere(q), eventRegistrations: { none: { eventId: id, ...ACTIVE_KID_REG } } },
     orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
@@ -108,10 +125,25 @@ export async function kidCandidatesPage(req: Request) {
       eventRegistrations: { where: { ...ACTIVE_KID_REG, event: { seriesId: { not: null } } }, orderBy: { event: { startAt: "desc" } }, take: 1, select: { event: { select: { title: true, seasonYear: true } } } },
     },
   });
-  // Kids outside the user's editions: no parent phone number (only the name, to tell homonyms apart).
-  return {
-    rows: kids.map((k) => ({ ...kidCard(k), guardianName: guardianOf(k)?.name ?? null, lastEdition: k.eventRegistrations[0]?.event ?? null })),
-  };
+  const full = seesAllKids(user);
+  const rows: KidCandidate[] = kids.map((k) => {
+    const age = ageFrom(k.dateOfBirth);
+    if (!full) return { id: k.id, firstName: k.firstName, lastName: k.lastName, age, photoUrl: null, dateOfBirth: null, gender: null, membershipNumber: null, guardianName: null, lastEdition: null };
+    // Never the parent phone number here (only the name, to tell homonyms apart).
+    return {
+      id: k.id,
+      firstName: k.firstName,
+      lastName: k.lastName,
+      age,
+      photoUrl: k.photoUrl,
+      dateOfBirth: k.dateOfBirth,
+      gender: k.gender,
+      membershipNumber: k.membershipNumber,
+      guardianName: guardianOf(k)?.name ?? null,
+      lastEdition: k.eventRegistrations[0]?.event ?? null,
+    };
+  });
+  return { rows };
 }
 
 // ───────────── Global kids directory ─────────────
@@ -168,20 +200,28 @@ export function kidFilters(req: Request): KidFilters {
 
 const PAGE_SIZE = 24;
 
-/** GET /kids — CHILD members (scoped like the edition kids lists) with filters and the options to filter by. */
+/**
+ * GET /kids — CHILD members (scoped like the edition kids lists) with filters and the options to filter by.
+ * Filter options: everything for the admins who see every kid; others get the active series, the editions
+ * they may see (non-draft, public or with a team of theirs) and the teams of those editions.
+ */
 export async function kidsPage(req: Request) {
   const user = await requirePermission("members.read");
   const f = kidFilters(req);
   const page = Math.max(1, Number(qs(req, "page")) || 1);
+  const all = seesAllKids(user);
+  const visibleEditions: Prisma.EventWhereInput = all ? {} : editionVisibleWhere(user);
   const [{ rows, total }, series, editions, teams] = await Promise.all([
     listKids(user, { ...f, skip: (page - 1) * PAGE_SIZE, take: PAGE_SIZE }),
-    seriesOptions(),
+    seriesOptions().then((list) => (all ? list : list.filter((s) => s.isActive))),
     db.event.findMany({
-      where: { seriesId: f.seriesId ? f.seriesId : { not: null } },
+      where: { AND: [{ seriesId: f.seriesId ? f.seriesId : { not: null } }, visibleEditions, all ? {} : { series: { isActive: true } }] },
       orderBy: [{ startAt: "desc" }],
       select: { id: true, title: true, editionNumber: true, seasonYear: true, startAt: true, seriesId: true },
     }),
-    f.eventId ? db.eventTeam.findMany({ where: { eventId: f.eventId }, orderBy: { createdAt: "asc" }, select: { id: true, name: true, color: true } }) : Promise.resolve([]),
+    f.eventId
+      ? db.eventTeam.findMany({ where: { eventId: f.eventId, event: visibleEditions }, orderBy: { createdAt: "asc" }, select: { id: true, name: true, color: true } })
+      : Promise.resolve([]),
   ]);
   const years = [...new Set(editions.map((e) => e.seasonYear ?? tunisYear(e.startAt)))].sort((a, b) => b - a);
   return { rows, total, page, pageSize: PAGE_SIZE, series, editions, years, teams, seesAll: seesAllKids(user), canExport: true };
@@ -189,13 +229,16 @@ export async function kidsPage(req: Request) {
 
 // ───────────── Kid history ─────────────
 
-/** Event registrations (grouped by season year, newest first) and trips of a kid. */
-export async function kidHistory(kidId: string) {
+/**
+ * Event registrations (grouped by season year, newest first) and trips of a kid. `onlyEditions`: restricts
+ * the history to these editions, without trips (a kid seen only through an edition team).
+ */
+export async function kidHistory(kidId: string, onlyEditions?: Set<string>) {
   const kid = await db.member.findUnique({ where: { id: kidId }, select: { id: true, firstName: true, lastName: true, photoUrl: true, dateOfBirth: true, type: true } });
   if (!kid) throw new AuthError("NOT_FOUND");
   const [regs, trips] = await Promise.all([
     db.eventRegistration.findMany({
-      where: { memberId: kidId, ...ACTIVE_KID_REG },
+      where: { memberId: kidId, ...ACTIVE_KID_REG, ...(onlyEditions ? { eventId: { in: [...onlyEditions] } } : {}) },
       select: {
         id: true,
         status: true,
@@ -215,7 +258,7 @@ export async function kidHistory(kidId: string) {
       },
     }),
     db.tripRegistration.findMany({
-      where: { memberId: kidId, status: { not: "CANCELLED" } },
+      where: { memberId: kidId, status: { not: "CANCELLED" }, ...(onlyEditions ? { id: { in: [] } } : {}) }, // team view: no trips
       select: { id: true, status: true, trip: { select: { id: true, title: true, destination: true, departAt: true, returnAt: true } } },
     }),
   ]);
@@ -236,10 +279,15 @@ export async function kidHistory(kidId: string) {
   };
 }
 
-/** GET /kids/:id/history — admins, the kid's edition teams, and the regular member scope (parents, group monitors). */
+/**
+ * GET /kids/:id/history — admins and the regular member scope (parents, group monitors) see everything;
+ * the members on a team of one of the kid's editions only see those editions.
+ */
 export async function kidHistoryPage(req: Request) {
   const user = await requirePermission("members.read");
   const id = param(req, "id");
-  if (!(await canSeeKid(user, id))) throw new AuthError("FORBIDDEN");
-  return { ...(await kidHistory(id)), canEdit: await canEditKid(user, id) };
+  const scope = await memberViewScope(user, id);
+  if (!scope) throw new AuthError("FORBIDDEN");
+  const history = await kidHistory(id, scope === "team" ? await myEditionIds(user) : undefined);
+  return { ...history, teamView: scope === "team", canEdit: await canEditKid(user, id) };
 }

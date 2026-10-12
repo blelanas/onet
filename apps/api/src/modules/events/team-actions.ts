@@ -5,7 +5,7 @@ import { ActionError, formToObject, runAction, zs } from "@api/lib/actions";
 import { audit } from "@api/lib/audit";
 import { teamEditRights } from "./access";
 import { hexColor } from "./series-actions";
-import { TEAM_MEMBER_TYPES } from "./teams";
+import { TEAM_ELIGIBLE, TEAM_MEMBER_TYPES } from "./teams";
 import { deleteTeamChat, syncTeamChat } from "./team-chat";
 
 const idList = z.preprocess((v) => (v == null || v === "" ? [] : Array.isArray(v) ? v : [v]), z.array(z.string().min(1)).max(200));
@@ -29,7 +29,9 @@ export async function saveTeam(fd: FormData | Record<string, unknown>) {
     const user = await requirePermission("events.read");
     const event = await db.event.findUnique({ where: { id: d.eventId }, select: { id: true, title: true } });
     if (!event) throw new ActionError("errors.notFound");
-    const existing = d.id ? await db.eventTeam.findUnique({ where: { id: d.id }, select: { id: true, eventId: true, leaderId: true } }) : null;
+    const existing = d.id
+      ? await db.eventTeam.findUnique({ where: { id: d.id }, select: { id: true, eventId: true, leaderId: true, leader: { select: { membershipStatus: true } }, members: { select: { memberId: true } } } })
+      : null;
     if (d.id && (!existing || existing.eventId !== event.id)) throw new ActionError("errors.notFound");
     const rights = existing ? teamEditRights(user, existing) : user.permissions.has("events.manage") ? "full" : null;
     if (!rights) throw new AuthError("FORBIDDEN");
@@ -37,10 +39,13 @@ export async function saveTeam(fd: FormData | Record<string, unknown>) {
     const leaderId = rights === "full" ? (d.leaderId ?? null) : (existing?.leaderId ?? null);
     const memberIds = [...new Set(d.memberIds)].filter((id) => id !== leaderId);
     const people = [...memberIds, ...(leaderId && rights === "full" ? [leaderId] : [])];
-    if (people.length) {
-      const ok = await db.member.count({ where: { id: { in: people }, type: { in: TEAM_MEMBER_TYPES } } });
-      if (ok !== people.length) throw new ActionError("errors.validation");
-    }
+    // Newcomers must be eligible (ACTIVE animators with an active login, if any). People already on the team
+    // are kept as they are, so saving the team never fails because one of them was suspended since.
+    const current = new Set([...(existing?.members.map((m) => m.memberId) ?? []), ...(existing?.leaderId ? [existing.leaderId] : [])]);
+    const added = people.filter((id) => !current.has(id));
+    const kept = people.filter((id) => current.has(id));
+    if (added.length && (await db.member.count({ where: { id: { in: added }, ...TEAM_ELIGIBLE } })) !== added.length) throw new ActionError("errors.validation");
+    if (kept.length && (await db.member.count({ where: { id: { in: kept }, type: { in: TEAM_MEMBER_TYPES } } })) !== kept.length) throw new ActionError("errors.validation");
 
     const result = await db.$transaction(async (tx) => {
       const team = existing
