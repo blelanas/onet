@@ -86,11 +86,11 @@ function MessagesView({ data, sp }: { data: Data; sp: Record<string, string | un
             {t("title")}
             {totalUnread > 0 && <span className="rounded-full bg-brand-600 px-2 py-0.5 text-xs font-extrabold text-white">{totalUnread}</span>}
           </h1>
-          <div className="flex gap-2">
-            <LinkButton href="/dashboard/messages?new=1" size="sm" scroll={false} className="min-w-0 flex-1">
+          <div className="flex flex-wrap gap-2">
+            <LinkButton href="/dashboard/messages?new=1" size="sm" scroll={false} className="flex-auto">
               <PenSquare className="size-4" /> <span className="truncate">{t("new")}</span>
             </LinkButton>
-            <NewGroupButton contacts={contacts} className="min-w-0 flex-1" />
+            <NewGroupButton contacts={contacts} className="flex-auto" />
           </div>
           {platformAdmin && (
             <div className="grid grid-cols-2 gap-1 rounded-xl bg-surface-2 p-1 text-xs font-bold" role="tablist">

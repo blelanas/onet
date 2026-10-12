@@ -28,7 +28,7 @@ export function TripParticipantsPanel({ tripId, data }: { tripId: string; data: 
   const tc = useTranslations("common");
   const locale = useLocale();
   const [showCancelled, setShowCancelled] = useState(false);
-  const { rows, totals, capacity, price, closed, canManage, canReopen, unpaidCount } = data;
+  const { rows, totals, capacity, price, closed, canManage, canReopen, unpaidCount, regManage } = data;
   const money = (v: number) => formatMoney(v, locale);
   const live = rows.filter((r) => r.status !== "CANCELLED");
   const cancelled = rows.filter((r) => r.status === "CANCELLED");
@@ -103,7 +103,7 @@ export function TripParticipantsPanel({ tripId, data }: { tripId: string; data: 
         )}
       </div>
 
-      <ParticipantsTable tripId={tripId} rows={live} canManage={canManage} locked={locked} />
+      <ParticipantsTable tripId={tripId} rows={live} canManage={canManage} canFollowUp={canManage || regManage} locked={locked} />
 
       {cancelled.length > 0 && (
         <section className="card overflow-hidden">
@@ -135,7 +135,7 @@ function MoneyValue({ children }: { children: React.ReactNode }) {
   return <span className="block text-lg break-words sm:text-2xl lg:text-3xl">{children}</span>;
 }
 
-function ParticipantsTable({ tripId, rows, canManage, locked }: { tripId: string; rows: Row[]; canManage: boolean; locked: boolean }) {
+function ParticipantsTable({ tripId, rows, canManage, canFollowUp, locked }: { tripId: string; rows: Row[]; canManage: boolean; canFollowUp: boolean; locked: boolean }) {
   const t = useTranslations("trips.manage");
   const tc = useTranslations("common");
   const locale = useLocale();
@@ -213,7 +213,7 @@ function ParticipantsTable({ tripId, rows, canManage, locked }: { tripId: string
       key: "followup",
       header: t("columns.followUp"),
       hideBelow: "xl",
-      cell: (r) => <TripRegistrationControls id={r.id} parentConsent={r.parentConsent} documentsStatus={r.documentsStatus} disabled={!canManage} />,
+      cell: (r) => <TripRegistrationControls id={r.id} parentConsent={r.parentConsent} documentsStatus={r.documentsStatus} disabled={!canFollowUp} />,
     },
     ...(canManage ? [{ key: "actions", header: <span className="sr-only">{tc("fields.actions")}</span>, align: "end" as const, cell: actions }] : []),
   ];
@@ -238,7 +238,7 @@ function ParticipantsTable({ tripId, rows, canManage, locked }: { tripId: string
             {amounts(r)}
             {actions(r)}
           </div>
-          <TripRegistrationControls id={r.id} parentConsent={r.parentConsent} documentsStatus={r.documentsStatus} disabled={!canManage} />
+          <TripRegistrationControls id={r.id} parentConsent={r.parentConsent} documentsStatus={r.documentsStatus} disabled={!canFollowUp} />
         </div>
       )}
       empty={

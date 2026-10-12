@@ -26,9 +26,15 @@ const PRINT_CSS = `
   html, body { background: #fff !important; }
   body * { visibility: hidden !important; }
   .trip-report-print, .trip-report-print * { visibility: visible !important; }
-  .trip-report-print { position: absolute !important; inset: 0 0 auto 0 !important; margin: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 0 !important; font-size: 11px; }
+  .trip-report-print { position: absolute !important; inset: 0 0 auto 0 !important; margin: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
   .trip-report-print .print-color { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  /* Compact table so every column fits the sheet; rows never split across pages. */
+  .trip-report-print .overflow-hidden { overflow: visible !important; }
+  .trip-report-print table, .trip-report-print table * { font-size: 9.5px !important; line-height: 1.3 !important; }
+  .trip-report-print th, .trip-report-print td { padding: 4px 6px !important; }
   .trip-report-print tr { break-inside: avoid; }
+  .trip-report-print h2 { break-after: avoid; }
+  .trip-report-print thead { display: table-header-group; }
   .no-print { display: none !important; }
 }`;
 
@@ -120,7 +126,7 @@ function TripReport({ id, data }: { id: string; data: Data }) {
 
       <article className="trip-report-print card relative overflow-hidden bg-white">
         <div className="print-color h-2 bg-gradient-to-r from-brand-600 via-sun to-sky" aria-hidden />
-        <div className="space-y-6 p-4 sm:p-8">
+        <div className="space-y-6 p-4 sm:p-8 print:space-y-4 print:p-0 print:pt-3">
           <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-3">
               <img src="/brand/onet-mark.svg" alt="" className="size-12 shrink-0" />
@@ -138,12 +144,12 @@ function TripReport({ id, data }: { id: string; data: Data }) {
             </div>
           </header>
 
-          <dl className="grid gap-3 rounded-2xl border border-line p-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
+          <dl className="grid gap-3 rounded-2xl border border-line p-4 text-sm sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:p-3">
             <Info label={t("destination")} value={trip.destination} />
             <Info label={t("dates")} value={sameDay ? formatDate(trip.departAt, locale, "long") : `${formatDate(trip.departAt, locale)} → ${formatDate(trip.returnAt, locale)}`} />
             <Info label={t("meeting")} value={trip.departureLocation} />
             <Info label={t("price")} value={trip.price > 0 ? money(trip.price) : tm("free")} />
-            <div className="sm:col-span-2 lg:col-span-4">
+            <div className="sm:col-span-2 lg:col-span-4 print:col-span-4">
               <dt className="text-xs font-bold text-muted">{t("managers")}</dt>
               <dd className="mt-0.5 flex flex-wrap gap-x-4 gap-y-1 font-semibold text-ink">
                 {managers.length
@@ -162,7 +168,7 @@ function TripReport({ id, data }: { id: string; data: Data }) {
             </div>
           </dl>
 
-          <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <section className="grid grid-cols-2 gap-3 lg:grid-cols-4 print:grid-cols-4">
             <Total label={tm("kpi.participants")} value={String(totals.participants)} hint={totals.waitlist ? t("waitlist", { count: totals.waitlist }) : undefined} />
             <Total label={tm("kpi.expected")} value={money(totals.expected)} />
             <Total label={tm("kpi.collected")} value={money(totals.collected)} tone="text-emerald-700" />
