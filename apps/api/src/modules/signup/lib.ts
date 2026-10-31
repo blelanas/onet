@@ -2,7 +2,7 @@ import { z } from "zod";
 import { APP_TIME_ZONE, SIGNUP_ROLE_KEYS, type SignupRole } from "@onet/shared";
 
 /** Member type created for an account of a given sign-up role. */
-export const MEMBER_TYPE_FOR_ROLE = { monitor: "MONITOR", member: "MEMBER" } as const satisfies Record<SignupRole, string>;
+export const MEMBER_TYPE_FOR_ROLE = { member: "MEMBER" } as const satisfies Record<SignupRole, string>;
 
 /** Age bounds of a self sign-up (members are animators: teenagers and adults). */
 export const SIGNUP_MIN_AGE = 12;

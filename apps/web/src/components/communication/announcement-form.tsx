@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Checkbox, Input, Select, Textarea } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { ANNOUNCEMENT_PRIORITIES, AUDIENCES } from "@onet/shared";
+
+// Parents and kids have no accounts: their audiences are not offered (older announcements keep theirs).
+const OFFERED_AUDIENCES = AUDIENCES.filter((a) => a !== "PARENTS" && a !== "KIDS");
 import { toDateInput } from "@onet/shared";
 import { cn } from "@/lib/utils";
 
@@ -54,7 +57,7 @@ export function AnnouncementFormButton({ initial, groups }: { initial?: Announce
               <Input name="title" label={t("form.title")} defaultValue={initial?.title} required maxLength={160} autoFocus />
               <Textarea name="body" label={t("form.body")} defaultValue={initial?.body} required rows={5} />
               <div className="grid gap-4 sm:grid-cols-2">
-                <Select name="audience" label={t("form.audience")} value={audience} onChange={(e) => setAudience(e.target.value)} options={AUDIENCES.map((a) => ({ value: a, label: tc(`enums.audience.${a}`) }))} />
+                <Select name="audience" label={t("form.audience")} value={audience} onChange={(e) => setAudience(e.target.value)} options={(initial?.audience && !(OFFERED_AUDIENCES as readonly string[]).includes(initial.audience) ? [...OFFERED_AUDIENCES, initial.audience] : [...OFFERED_AUDIENCES]).map((a) => ({ value: a, label: tc(`enums.audience.${a}`) }))} />
                 {audience === "GROUP" ? (
                   <Select name="groupId" label={t("form.group")} defaultValue={initial?.groupId ?? ""} placeholder="—" required hint={t("form.groupHint")} options={groups.map((g) => ({ value: g.id, label: g.name }))} />
                 ) : (

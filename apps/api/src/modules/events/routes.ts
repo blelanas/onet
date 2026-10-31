@@ -5,14 +5,14 @@ import { audit } from "@api/lib/audit";
 import { mutation, param, qs, query, sendCsv } from "@api/lib/http";
 import { slugify } from "@api/lib/utils";
 import { toCsv, toDateInput } from "@onet/shared";
-import { eventTabCounts, familyRegistrationsFor, getEvent, getEventForEdit, listEvents, type EventTab } from "./queries";
+import { eventDirector, eventTabCounts, familyRegistrationsFor, getEvent, getEventForEdit, listEvents, type EventTab } from "./queries";
 import { deleteEvent, saveEvent, saveEventCheckIn } from "./actions";
 import { addableMembers, canSeeMoney, eventParticipants, familyEntries, hideInvoiceMoney, hidePrice, paymentState, registrationStats, rollCall } from "@api/modules/registrations/queries";
 import { deadlinePassed, isOpen, loadTarget } from "@api/modules/registrations/service";
 import { editionAccess } from "./access";
 import { KIDS_OF_EDITION, seriesFormPage, seriesListPage, seriesPage } from "./series";
 import { createEdition, deleteSeries, saveSeries } from "./series-actions";
-import { allTeamsPage, editionTeams, editionTeamsPage, myTeamsPage, withTeamPhones } from "./teams";
+import { allTeamsPage, editionTeams, editionTeamsPage, myTeamsPage, teamCandidates, withTeamPhones } from "./teams";
 import { deleteTeam, saveTeam } from "./team-actions";
 
 /** events module routes (mounted under /api). */
@@ -50,13 +50,19 @@ export async function eventPage(req: Request) {
   const showMoney = canSeeMoney(user);
   const target = await loadTarget("event", id);
   const isKid = user.roles.includes("kid") && !can(user, "events.register");
-  const [entries, access, teams, kidsCount] = await Promise.all([
+  const [entries, access, teams, kidsCount, directorWithPhone] = await Promise.all([
     familyEntries(user, target),
     editionAccess(user, id),
     editionTeams(id),
     db.eventRegistration.count({ where: { eventId: id, ...KIDS_OF_EDITION } }),
+    eventDirector(id, true),
   ]);
+  // The director's phone follows the animators' phone rule (admins, the edition's teams and director).
+  const director = directorWithPhone && !access.seeKids ? { ...directorWithPhone, phone: null } : directorWithPhone;
   return {
+    director,
+    isDirector: access.isDirector,
+    canManageTeams: access.manageTeams,
     teams: teams.map((t) => ({ id: t.id, name: t.name, color: t.color, leader: withTeamPhones(t, access.seeKids).leader, memberCount: t.memberCount, kidsCount: t.kidsCount, members: t.members.map((m) => ({ id: m.id, firstName: m.firstName, lastName: m.lastName, photoUrl: m.photoUrl })), conversationId: access.myTeamIds.includes(t.id) ? t.conversationId : null })),
     kidsCount,
     canManage: access.manage,
@@ -107,6 +113,13 @@ export async function eventFormPage(req: Request) {
   await requirePermission("events.manage");
   return getEventForEdit(param(req, "id"));
 }
+
+/** GET /events/director-candidates — people who may direct an event (same pool as the team leaders), for the event forms. */
+export async function directorCandidatesPage() {
+  await requirePermission("events.manage");
+  return { candidates: await teamCandidates() };
+}
+router.get("/events/director-candidates", query(directorCandidatesPage));
 
 router.get(
   "/events/:id/participants/export.csv",

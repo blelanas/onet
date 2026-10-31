@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { db } from "@api/lib/db";
 import type { CurrentUser } from "@api/lib/auth/session";
+import { RETIRED_ROLE_KEYS } from "@onet/shared";
 
 export async function listNotifications(user: CurrentUser, f: { unread?: boolean; type?: string; skip?: number; take?: number }) {
   const where: Prisma.NotificationWhereInput = { userId: user.id, ...(f.unread ? { readAt: null } : {}), ...(f.type ? { type: f.type } : {}) };
@@ -13,5 +14,5 @@ export async function listNotifications(user: CurrentUser, f: { unread?: boolean
 }
 
 export async function roleOptions() {
-  return db.role.findMany({ orderBy: { createdAt: "asc" }, select: { key: true, name: true, color: true, isSystem: true, _count: { select: { users: true } } } });
+  return db.role.findMany({ where: { key: { notIn: [...RETIRED_ROLE_KEYS] } }, orderBy: { createdAt: "asc" }, select: { key: true, name: true, color: true, isSystem: true, _count: { select: { users: true } } } });
 }

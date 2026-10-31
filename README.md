@@ -32,10 +32,11 @@ Comptes de démonstration — mot de passe **`Onet2026!`** (boutons de pré-remp
 | Super administrateur | admin@onet-teboulba.tn |
 | Administrateur | gestion@onet-teboulba.tn |
 | Comptable | comptable@onet-teboulba.tn |
-| Moniteur | moniteur@onet-teboulba.tn |
-| Parent (3 enfants) | parent@onet-teboulba.tn |
-| Enfant | enfant@onet-teboulba.tn |
-| Membre | membre@onet-teboulba.tn |
+| Membre (animatrice, responsable d'équipe) | membre@onet-teboulba.tn |
+| Membre | moniteur@onet-teboulba.tn |
+
+Les comptes n'ont que 4 rôles : super administrateur, administrateur, comptable et membre (= animateur).
+Les enfants et leurs parents ne se connectent pas : ce sont des fiches (carte de l'enfant avec le contact du parent).
 
 ## Scripts
 
@@ -58,7 +59,7 @@ Chaque pull request lance `.github/workflows/ci.yml` (3 jobs en parallèle, les 
 |---|---|
 | Lint, types & i18n | traductions à jour, migrations ↔ schéma, TypeScript (API + web), ESLint sans avertissement, `npm audit` (bloquant si critique) |
 | Unit & integration tests | tests de l'API (permissions, isolation des données, factures, endpoints HTTP) sur une base fraîche |
-| Build & end-to-end smoke test | builds de production, API + web démarrés, site public et permissions des 7 rôles dans Chromium |
+| Build & end-to-end smoke test | builds de production, API + web démarrés, site public et permissions des 4 rôles (5 comptes de démonstration) dans Chromium |
 
 `.github/workflows/deploy-web.yml` publie le site sur Firebase Hosting à chaque push sur `main` et crée un **lien de prévisualisation** sur chaque pull request (une fois les secrets configurés). Render redéploie l'API automatiquement.
 Dependabot propose chaque semaine les mises à jour npm (mineures et correctives regroupées, majeures séparément) et GitHub Actions (regroupées).

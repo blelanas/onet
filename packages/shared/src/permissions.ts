@@ -138,10 +138,18 @@ export const ROLE_COLORS: Record<RoleKey, string> = {
 /** Roles staff only (super admins) may grant: never obtainable through sign-up, invitations or the pre-approved list. */
 export const STAFF_ROLE_KEYS = ["super_admin", "admin", "accountant"] as const satisfies readonly RoleKey[];
 /**
- * Roles that self sign-up, invitation links and the pre-approved list may grant (confirmed by the
- * organisation). "member" first: it is the default; "monitor" is still accepted for existing rows.
+ * Accounts get the super admin, admin, accountant or member (= animator) system roles, or custom roles
+ * created in Settings → Roles (e.g. a media lead). Parents and kids are records, not accounts (kid cards
+ * with their guardian's contact), and "monitor" was merged into "member". These legacy system roles
+ * stay in the database for old rows, but are never offered, granted or shown any more.
  */
-export const SIGNUP_ROLE_KEYS = ["member", "monitor"] as const satisfies readonly RoleKey[];
+export const RETIRED_ROLE_KEYS = ["monitor", "parent", "kid"] as const satisfies readonly RoleKey[];
+export const isRetiredRole = (key: string) => (RETIRED_ROLE_KEYS as readonly string[]).includes(key);
+/** Members and the former "monitor" role are the same people (animators): same audiences, same home. */
+export const ANIMATOR_ROLE_KEYS = ["member", "monitor"] as const satisfies readonly RoleKey[];
+export const isAnimatorRole = (roles: readonly string[]) => ANIMATOR_ROLE_KEYS.some((k) => roles.includes(k));
+/** Roles that self sign-up, invitation links and the pre-approved list may grant (confirmed by the organisation). */
+export const SIGNUP_ROLE_KEYS = ["member"] as const satisfies readonly RoleKey[];
 export type SignupRole = (typeof SIGNUP_ROLE_KEYS)[number];
 export const USER_STATUSES = ["ACTIVE", "PENDING", "REJECTED"] as const;
 export type UserStatus = (typeof USER_STATUSES)[number];

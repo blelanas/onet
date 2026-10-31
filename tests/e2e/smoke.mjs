@@ -27,14 +27,6 @@ const ROLES = {
     allow: ["/dashboard", "/dashboard/children", "/dashboard/groups", "/dashboard/attendance", "/dashboard/calendar", "/dashboard/messages", "/dashboard/content/dances"],
     deny: ["/dashboard/members", "/dashboard/finance/invoices", "/dashboard/reports", "/dashboard/settings/users", "/dashboard/settings/bureau", "/dashboard/approvals"],
   },
-  "parent@onet-teboulba.tn": {
-    allow: ["/dashboard", "/dashboard/my-children", "/dashboard/events", "/dashboard/trips", "/dashboard/finance/invoices", "/dashboard/messages", "/dashboard/content/songs"],
-    deny: ["/dashboard/members", "/dashboard/groups", "/dashboard/finance/expenses", "/dashboard/finance/reports", "/dashboard/reports", "/dashboard/settings/users"],
-  },
-  "enfant@onet-teboulba.tn": {
-    allow: ["/dashboard", "/dashboard/achievements", "/dashboard/activities", "/dashboard/content/songs", "/dashboard/content/games", "/dashboard/content/dances", "/dashboard/announcements"],
-    deny: ["/dashboard/children", "/dashboard/finance/invoices", "/dashboard/finance/payments", "/dashboard/messages", "/dashboard/documents", "/dashboard/attendance"],
-  },
   "membre@onet-teboulba.tn": {
     allow: ["/dashboard", "/dashboard/events", "/dashboard/trips", "/dashboard/announcements", "/dashboard/messages", "/dashboard/content/songs", "/dashboard/content/dances"],
     deny: ["/dashboard/finance/invoices", "/dashboard/settings/users", "/dashboard/settings/bureau", "/dashboard/content/dances/new", "/dashboard/approvals"],

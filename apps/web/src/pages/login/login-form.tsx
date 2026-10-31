@@ -6,6 +6,7 @@ import { isLocale } from "@onet/shared";
 import { apiSend, formToObject, type ActionResult } from "@/lib/api";
 import { signIn } from "@/lib/auth";
 import { useLocaleSwitch } from "@/lib/i18n";
+import { GoogleSignIn } from "@/components/auth/google-button";
 import { ActionForm } from "@/components/ui/action-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,9 +16,6 @@ const DEMO = [
   { role: "super_admin", email: "admin@onet-teboulba.tn" },
   { role: "admin", email: "gestion@onet-teboulba.tn" },
   { role: "accountant", email: "comptable@onet-teboulba.tn" },
-  { role: "monitor", email: "moniteur@onet-teboulba.tn" },
-  { role: "parent", email: "parent@onet-teboulba.tn" },
-  { role: "kid", email: "enfant@onet-teboulba.tn" },
   { role: "member", email: "membre@onet-teboulba.tn" },
 ] as const;
 const DEMO_PASSWORD = "Onet2026!";
@@ -59,6 +57,7 @@ export function LoginForm({ next }: { next?: string }) {
           </>
         )}
       </ActionForm>
+      <GoogleSignIn next={next} />
       <p className="mt-6 text-center text-sm text-ink-2">
         {t("noAccount")}{" "}
         <Link href="/signup" className="font-bold text-brand-600 hover:underline">

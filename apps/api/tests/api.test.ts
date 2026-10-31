@@ -3,6 +3,7 @@ import type { AddressInfo } from "net";
 import type { Server } from "http";
 import superjson from "superjson";
 import { createApp } from "@api/app";
+import { db } from "@api/lib/db";
 
 let server: Server;
 let base = "";
@@ -38,9 +39,9 @@ describe("auth", () => {
   });
 
   it("issues a bearer token and resolves the current user", async () => {
-    const token = await login("parent@onet-teboulba.tn");
+    const token = await login("comptable@onet-teboulba.tn");
     const me = await call("GET", "/auth/me", { token });
-    expect(me.body).toMatchObject({ email: "parent@onet-teboulba.tn", roles: ["parent"] });
+    expect(me.body).toMatchObject({ email: "comptable@onet-teboulba.tn", roles: ["accountant"] });
   });
 
   it("logout revokes the token", async () => {
@@ -55,17 +56,81 @@ describe("permission enforcement on the API", () => {
     expect((await call("GET", "/members?type=CHILD")).status).toBe(401);
   });
 
-  it("403 when a kid lists children or a parent lists all members", async () => {
-    expect((await call("GET", "/members?type=CHILD", { token: await login("enfant@onet-teboulba.tn") })).status).toBe(403);
-    expect((await call("GET", "/members", { token: await login("parent@onet-teboulba.tn") })).status).toBe(403);
+  it("403 when an accountant lists groups", async () => {
+    expect((await call("GET", "/groups", { token: await login("comptable@onet-teboulba.tn") })).status).toBe(403);
   });
 
-  it("a parent only sees their own children", async () => {
-    const token = await login("parent@onet-teboulba.tn");
-    const r = await call("GET", "/members?type=CHILD", { token });
-    const rows = r.body!.rows as { lastName: string }[];
-    expect(rows).toHaveLength(3);
-    expect(rows.every((m) => m.lastName === "Gharbi")).toBe(true);
+  it("accounts never get the retired parent, kid or monitor roles", async () => {
+    const token = await login("admin@onet-teboulba.tn");
+    for (const role of ["parent", "kid", "monitor"]) {
+      const r = await call("POST", "/settings/users", { token, body: { name: "No", email: `no-${role}@x.tn`, password: "Abcdefg123", roles: [role] } });
+      expect(r.status, role).toBe(400);
+      expect(r.body).toMatchObject({ ok: false, error: "errors.validation" });
+    }
+    const ok = await call("POST", "/settings/users", { token, body: { name: "Yes", email: "yes-member@x.tn", password: "Abcdefg123", roles: ["member"] } });
+    expect(ok.body).toMatchObject({ ok: true });
+    const id = (ok.body!.data as { id: string }).id;
+    try {
+      const edit = await call("POST", `/settings/users/${id}/roles`, { token, body: { roles: ["member", "kid"] } });
+      expect(edit.body).toMatchObject({ ok: false, error: "errors.validation" });
+      // The roles offered by the settings pages are the four account roles.
+      const roles = ((await call("GET", "/settings/users", { token })).body!.roles as { key: string }[]).map((r) => r.key);
+      expect(roles).toEqual(expect.arrayContaining(["super_admin", "admin", "accountant", "member"]));
+      expect(roles.some((k) => ["parent", "kid", "monitor"].includes(k))).toBe(false);
+    } finally {
+      await db.user.delete({ where: { id } });
+    }
+  });
+
+  it("an old parent-only account can't be reactivated as such", async () => {
+    const token = await login("admin@onet-teboulba.tn");
+    const role = await db.role.findUniqueOrThrow({ where: { key: "parent" } });
+    const u = await db.user.create({ data: { email: "old-parent@x.tn", name: "Old parent", passwordHash: "x", isActive: false, roles: { create: [{ roleId: role.id }] } } });
+    try {
+      expect((await call("POST", `/settings/users/${u.id}/active`, { token, body: { active: true } })).body).toMatchObject({ ok: false, error: "errors.validation" });
+      expect((await db.user.findUniqueOrThrow({ where: { id: u.id } })).isActive).toBe(false);
+    } finally {
+      await db.user.delete({ where: { id: u.id } });
+    }
+  });
+
+  it("editing an old parent-only account drops its retired role and hides it from the users list", async () => {
+    const token = await login("admin@onet-teboulba.tn");
+    const role = await db.role.findUniqueOrThrow({ where: { key: "parent" } });
+    const u = await db.user.create({ data: { email: "old-parent-roles@x.tn", name: "Old parent roles", passwordHash: "x", isActive: false, roles: { create: [{ roleId: role.id }] } } });
+    try {
+      // The users list doesn't show the retired role, and the role filter still works.
+      const listed = await call("GET", "/settings/users?q=old-parent-roles", { token });
+      const row = (listed.body!.rows as { id: string; roles: { role: { key: string } }[] }[]).find((r) => r.id === u.id);
+      expect(row?.roles).toEqual([]);
+      const byRole = (await call("GET", "/settings/users?role=member", { token })).body!.rows as { roles: { role: { key: string } }[] }[];
+      expect(byRole.length).toBeGreaterThan(0);
+      expect(byRole.every((r) => r.roles.some((x) => x.role.key === "member"))).toBe(true);
+      // Filtering by a retired role is ignored (it would list accounts without any visible badge).
+      const total = async (path: string) => (await call("GET", path, { token })).body!.total;
+      expect(await total("/settings/users?role=parent")).toBe(await total("/settings/users"));
+
+      // Re-submitting the retired role along with an account role keeps only the account role.
+      const r = await call("POST", `/settings/users/${u.id}/roles`, { token, body: { roles: ["member", "parent"] } });
+      expect(r.body).toMatchObject({ ok: true });
+      const keys = (await db.userRole.findMany({ where: { userId: u.id }, select: { role: { select: { key: true } } } })).map((x) => x.role.key);
+      expect(keys).toEqual(["member"]);
+      // Submitting only the retired role would leave no account role: refused.
+      await db.userRole.deleteMany({ where: { userId: u.id } });
+      await db.userRole.create({ data: { userId: u.id, roleId: role.id } });
+      expect((await call("POST", `/settings/users/${u.id}/roles`, { token, body: { roles: ["parent"] } })).body).toMatchObject({ ok: false, error: "errors.validation" });
+    } finally {
+      await db.user.delete({ where: { id: u.id } });
+    }
+  });
+
+  it("kids and parents are records: no login account can be created for them", async () => {
+    const token = await login("admin@onet-teboulba.tn");
+    for (const type of ["CHILD", "PARENT"] as const) {
+      const m = await db.member.findFirstOrThrow({ where: { type, userId: null } });
+      const r = await call("POST", `/members/${m.id}/account`, { token, body: { email: `rec-${type.toLowerCase()}@x.tn`, password: "Abcdefg123", role: "member" } });
+      expect(r.status, type).toBe(400);
+    }
   });
 
   it("forbids mutations without the manage permission", async () => {

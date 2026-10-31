@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox, Input, Select, Textarea } from "@/components/ui/input";
 import { Upload } from "@/components/ui/upload";
 import { FormSection } from "@/components/registrations/form-section";
+import { DirectorSelect } from "./director-select";
 
 export type EventFormValues = {
   id?: string;
@@ -29,12 +30,15 @@ export type EventFormValues = {
   seriesId?: string | null;
   editionNumber?: number | null;
   seasonYear?: number | null;
+  directorId?: string | null;
+  director?: { id: string; firstName: string; lastName: string; photoUrl: string | null; type: string } | null;
 };
 
 export function EventForm({ initial }: { initial: EventFormValues }) {
   const t = useTranslations("events.form");
   const te = useTranslations("events.edition");
   const tc = useTranslations("common");
+  const td = useTranslations("events.director");
   const [price, setPrice] = useState(initial.price ? String(initial.price / 1000) : "");
   const paid = Number(price.replace(",", ".")) > 0;
 
@@ -62,6 +66,10 @@ export function EventForm({ initial }: { initial: EventFormValues }) {
             <Input name="endAt" type="datetime-local" label={t("endAt")} defaultValue={toDateTimeInput(initial.endAt)} required />
             <Input name="location" label={tc("fields.location")} defaultValue={initial.location ?? ""} />
             <Input name="organizer" label={t("organizer")} defaultValue={initial.organizer ?? "ONET Teboulba"} />
+          </FormSection>
+
+          <FormSection title={td("section")}>
+            <DirectorSelect defaultValue={initial.directorId} current={initial.director} hint={td("hint")} className="sm:col-span-2" />
           </FormSection>
 
           <FormSection title={t("registration")}>

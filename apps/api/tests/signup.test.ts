@@ -78,7 +78,7 @@ async function signup(body: Record<string, unknown>) {
 }
 
 async function newInvitation(token: string, body: Record<string, unknown> = {}) {
-  const r = await call("POST", "/approvals/invitations", { token, body: { role: "monitor", label: "Tests", ...body } });
+  const r = await call("POST", "/approvals/invitations", { token, body: { role: "member", label: "Tests", ...body } });
   expect(r.status, JSON.stringify(r.body)).toBe(200);
   return r.body!.data as { id: string; token: string };
 }
@@ -153,8 +153,8 @@ describe("self sign-up", () => {
     const r = await signup(p);
     const me = await call("GET", "/auth/me", { token: (r.body!.data as { token: string }).token });
     expect(me.body).toMatchObject({ roles: [], status: "PENDING", requestedRole: "member" });
-    // Invitations and the pre-approved list only accept monitor / member.
-    for (const role of ["super_admin", "admin", "accountant", "parent", "kid"]) {
+    // Invitations and the pre-approved list only grant the member role.
+    for (const role of ["super_admin", "admin", "accountant", "parent", "kid", "monitor"]) {
       expect((await call("POST", "/approvals/invitations", { token: adminToken, body: { role } })).status).toBe(400);
       expect((await call("POST", "/approvals/preapproved/import", { token: adminToken, body: { role, text: "X Y; x@y.tn;" } })).status).toBe(400);
     }
@@ -163,12 +163,12 @@ describe("self sign-up", () => {
   it("an invitation sign-up is PENDING: no permissions (403) and /auth/me exposes the status", async () => {
     const inv = await newInvitation(adminToken);
     const preview = await call("GET", `/auth/invitations/${inv.token}`);
-    expect(preview.body).toMatchObject({ valid: true, role: "monitor", label: "Tests" });
+    expect(preview.body).toMatchObject({ valid: true, role: "member", label: "Tests" });
     const r = await signup(person({ invite: inv.token }));
     expect(r.body).toMatchObject({ ok: true, data: { status: "PENDING" } });
     const token = (r.body!.data as { token: string }).token;
     const me = await call("GET", "/auth/me", { token });
-    expect(me.body).toMatchObject({ status: "PENDING", requestedRole: "monitor", roles: [], perms: [] });
+    expect(me.body).toMatchObject({ status: "PENDING", requestedRole: "member", roles: [], perms: [] });
     expect((await call("GET", "/members?type=CHILD", { token })).status).toBe(403);
     expect((await call("GET", "/activities", { token })).status).toBe(403);
     expect((await call("GET", "/approvals/pending", { token })).status).toBe(403);
@@ -202,7 +202,7 @@ describe("self sign-up", () => {
     expect(await db.invitation.findFirst({ where: { tokenHash: hashToken("not-a-real-token") } })).toBeNull();
     expect(await db.user.findUnique({ where: { email: unknown.email } })).toBeNull();
     expect(await db.member.count({ where: { email: unknown.email } })).toBe(0);
-    expect((await call("POST", "/approvals/invitations", { token: adminToken, body: { role: "monitor", maxUses: 501 } })).status).toBe(400);
+    expect((await call("POST", "/approvals/invitations", { token: adminToken, body: { role: "member", maxUses: 501 } })).status).toBe(400);
   });
 
   it("a pre-approved e-mail or phone gets the role immediately and the entry is marked used", async () => {
@@ -210,7 +210,7 @@ describe("self sign-up", () => {
     const byPhone = person();
     const imp = await call("POST", "/approvals/preapproved/import", {
       token: adminToken,
-      body: { role: "monitor", text: `Nom;E-mail;Téléphone\n${byEmail.name}; ${byEmail.email.toUpperCase()};\n${byPhone.name}, , 00216${byPhone.phone.replace(/\D/g, "").slice(3)}\n\nNo contact;;\n;x@y.tn;\nBad mail; nope;\n${byEmail.name}; ${byEmail.email};` },
+      body: { role: "member", text: `Nom;E-mail;Téléphone\n${byEmail.name}; ${byEmail.email.toUpperCase()};\n${byPhone.name}, , 00216${byPhone.phone.replace(/\D/g, "").slice(3)}\n\nNo contact;;\n;x@y.tn;\nBad mail; nope;\n${byEmail.name}; ${byEmail.email};` },
     });
     expect(imp.body).toMatchObject({ ok: true, data: { added: 2, duplicates: 1, duplicateLines: [8] } });
     expect((imp.body!.data as { invalid: { line: number; reason: string }[] }).invalid).toEqual([
@@ -224,7 +224,7 @@ describe("self sign-up", () => {
     const r = await signup({ ...byEmail, invite: inv.token });
     expect(r.body).toMatchObject({ ok: true, data: { status: "ACTIVE" } });
     const me = await call("GET", "/auth/me", { token: (r.body!.data as { token: string }).token });
-    expect(me.body).toMatchObject({ roles: ["monitor"], status: "ACTIVE", memberType: "MONITOR" });
+    expect(me.body).toMatchObject({ roles: ["member"], status: "ACTIVE", memberType: "MEMBER" });
     const entry = await db.preapprovedPerson.findFirstOrThrow({ where: { email: byEmail.email } });
     expect(entry.usedById).toBe((me.body as { id: string }).id);
     expect(entry.usedAt).toBeInstanceOf(Date);
@@ -233,7 +233,7 @@ describe("self sign-up", () => {
 
     const r2 = await signup({ ...byPhone, phone: `+216 ${byPhone.phone.replace(/\D/g, "").slice(3)}` });
     const me2 = await call("GET", "/auth/me", { token: (r2.body!.data as { token: string }).token });
-    expect(me2.body).toMatchObject({ roles: ["monitor"], memberType: "MONITOR" });
+    expect(me2.body).toMatchObject({ roles: ["member"], memberType: "MEMBER" });
 
     // Used entries can't be deleted; the list shows who activated them.
     expect((await call("DELETE", `/approvals/preapproved/${entry.id}`, { token: adminToken })).status).toBe(404);
@@ -244,7 +244,7 @@ describe("self sign-up", () => {
 
 describe("approvals", () => {
   it("approve gives the requested role and activates the member with its sign-up details", async () => {
-    const inv = await newInvitation(adminToken, { role: "monitor" });
+    const inv = await newInvitation(adminToken, { role: "member" });
     const p = person({ invite: inv.token, occupation: "STUDENT", occupationDetail: "Lycée de Teboulba — Sciences" });
     const r = await signup(p);
     const userToken = (r.body!.data as { token: string }).token;
@@ -255,10 +255,10 @@ describe("approvals", () => {
     const ok = await call("POST", "/approvals/approve", { token: adminToken, body: { ids: [row.id] } });
     expect(ok.body).toMatchObject({ ok: true, data: { count: 1 } });
     const me = await call("GET", "/auth/me", { token: userToken });
-    expect(me.body).toMatchObject({ status: "ACTIVE", roles: ["monitor"], memberType: "MONITOR" });
+    expect(me.body).toMatchObject({ status: "ACTIVE", roles: ["member"], memberType: "MEMBER" });
     expect((await call("GET", "/activities", { token: userToken })).status).toBe(200);
     const member = await db.member.findUniqueOrThrow({ where: { userId: row.id } });
-    expect(member).toMatchObject({ membershipStatus: "ACTIVE", type: "MONITOR", occupation: "STUDENT", occupationDetail: "Lycée de Teboulba — Sciences" });
+    expect(member).toMatchObject({ membershipStatus: "ACTIVE", type: "MEMBER", occupation: "STUDENT", occupationDetail: "Lycée de Teboulba — Sciences" });
     expect(member.membershipNumber).toMatch(/^ONT-\d{4}$/);
     // Approving again is a no-op.
     expect((await call("POST", "/approvals/approve", { token: adminToken, body: { ids: [row.id] } })).body).toMatchObject({ ok: true, data: { count: 0 } });
@@ -321,14 +321,14 @@ describe("approvals", () => {
     await call("POST", "/approvals/reject", { token: adminToken, body: { ids: [user.id] } });
     // Pre-approved by phone (an e-mail that already has an account is not imported).
     const q = person({ email: p.email });
-    const imp = await call("POST", "/approvals/preapproved/import", { token: adminToken, body: { role: "monitor", text: `${q.name};; ${q.phone}` } });
+    const imp = await call("POST", "/approvals/preapproved/import", { token: adminToken, body: { role: "member", text: `${q.name};; ${q.phone}` } });
     expect(imp.body).toMatchObject({ ok: true, data: { added: 1 } });
     const again = await signup(q);
     expect(again.body).toMatchObject({ ok: true, data: { status: "ACTIVE" } });
     const after = await db.user.findUniqueOrThrow({ where: { id: user.id }, include: { member: true, roles: { include: { role: true } } } });
     expect(after).toMatchObject({ status: "ACTIVE", requestedRole: null, approvedById: null });
-    expect(after.roles.map((r) => r.role.key)).toEqual(["monitor"]);
-    expect(after.member).toMatchObject({ type: "MONITOR", membershipStatus: "ACTIVE" });
+    expect(after.roles.map((r) => r.role.key)).toEqual(["member"]);
+    expect(after.member).toMatchObject({ type: "MEMBER", membershipStatus: "ACTIVE" });
   });
 
   it("only users.approve holders can use the admin endpoints", async () => {
@@ -340,8 +340,8 @@ describe("approvals", () => {
       expect((await call("GET", "/approvals/preapproved", { token })).status).toBe(403);
       expect((await call("POST", "/approvals/approve", { token, body: { ids: ["x"] } })).status).toBe(403);
       expect((await call("POST", "/approvals/reject", { token, body: { ids: ["x"] } })).status).toBe(403);
-      expect((await call("POST", "/approvals/invitations", { token, body: { role: "monitor" } })).status).toBe(403);
-      expect((await call("POST", "/approvals/preapproved/import", { token, body: { role: "monitor", text: "A B; a@b.tn;" } })).status).toBe(403);
+      expect((await call("POST", "/approvals/invitations", { token, body: { role: "member" } })).status).toBe(403);
+      expect((await call("POST", "/approvals/preapproved/import", { token, body: { role: "member", text: "A B; a@b.tn;" } })).status).toBe(403);
     }
     expect((await call("GET", "/approvals/pending")).status).toBe(401);
     // The super admin (all permissions) and the admin (default grants) may.
@@ -398,9 +398,9 @@ describe("existing member records", () => {
   };
 
   it("approval links the one unlinked member of that type with the same e-mail, completing its empty fields", async () => {
-    const inv = await newInvitation(adminToken, { role: "monitor" });
+    const inv = await newInvitation(adminToken, { role: "member" });
     const p = person({ invite: inv.token, occupation: "WORKER", occupationDetail: "Infirmière", dateOfBirth: dobForAge(27) });
-    const existing = await unlinked("MONITOR", p.email.toUpperCase());
+    const existing = await unlinked("MEMBER", p.email.toUpperCase());
     // Known by phone too, whatever its formatting.
     const digits = p.phone.replace(/\D/g, "").slice(3);
     const byPhone = await db.member.create({
@@ -445,8 +445,8 @@ describe("existing member records", () => {
     expect(own.membershipStatus).toBe("ACTIVE");
 
     // Another type.
-    const q = person({ invite: (await newInvitation(adminToken, { role: "monitor" })).token });
-    const other = await unlinked("MEMBER", q.email);
+    const q = person({ invite: (await newInvitation(adminToken, { role: "member" })).token });
+    const other = await unlinked("MONITOR", q.email);
     await signup(q);
     await approve((await db.user.findUniqueOrThrow({ where: { email: q.email } })).id);
     expect((await memberOf(q.email)).id).not.toBe(other.id);

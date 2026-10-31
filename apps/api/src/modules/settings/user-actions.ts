@@ -6,7 +6,7 @@ import type { CurrentUser } from "@api/lib/auth/session";
 import { hashPassword, isStrongPassword } from "@api/lib/auth/password";
 import { ActionError, formToObject, runAction, zs } from "@api/lib/actions";
 import { audit } from "@api/lib/audit";
-import { STAFF_ROLE_KEYS } from "@onet/shared";
+import { STAFF_ROLE_KEYS, isRetiredRole } from "@onet/shared";
 
 /** Roles only holders of roles.manage may grant, revoke, or manage the users of (STAFF_ROLE_KEYS). */
 // accountant carries finance.manage, which admins (users.manage) must not be able to grant themselves.
@@ -17,6 +17,11 @@ const roleKeys = z.array(z.string().min(1)).min(1, "errors.required");
 
 function assertCanTouchPrivileged(actor: CurrentUser, keys: string[]) {
   if (keys.some((k) => PRIVILEGED.includes(k)) && !actor.permissions.has("roles.manage")) throw new ActionError("errors.forbidden");
+}
+
+/** Parents, kids and the former "monitor" role no longer get accounts: refuse granting them. */
+function assertGrantable(keys: string[]) {
+  if (keys.some(isRetiredRole)) throw new ActionError("errors.validation");
 }
 
 async function targetRoleKeys(userId: string) {
@@ -37,6 +42,7 @@ export async function createUser(fd: FormData | Record<string, unknown>) {
     const actor = await requirePermission("users.manage");
     if (!isStrongPassword(d.password)) throw new ActionError("errors.weakPassword");
     assertCanTouchPrivileged(actor, d.roles);
+    assertGrantable(d.roles);
     if (await db.user.findUnique({ where: { email: d.email } })) throw new ActionError("errors.emailTaken");
     const roles = await db.role.findMany({ where: { key: { in: d.roles } }, select: { id: true, key: true } });
     if (roles.length !== new Set(d.roles).size) throw new ActionError("errors.validation");
@@ -55,7 +61,12 @@ export async function updateUserRoles(fd: FormData | Record<string, unknown>) {
   return runAction(rolesSchema, formToObject(fd), async (d) => {
     const actor = await requirePermission("users.manage");
     const current = await targetRoleKeys(d.userId);
-    const next = [...new Set(d.roles)];
+    const submitted = [...new Set(d.roles)];
+    // Retired roles (parent / kid / monitor) can't be granted, and are never kept: an old account
+    // re-submitting its retired role along with an account role silently loses the retired one.
+    assertGrantable(submitted.filter((k) => !current.includes(k)));
+    const next = submitted.filter((k) => !isRetiredRole(k));
+    if (!next.length) throw new ActionError("errors.validation");
     const added = next.filter((k) => !current.includes(k));
     const removed = current.filter((k) => !next.includes(k));
     // Managing an admin account, or granting/revoking an admin role, requires roles.manage.
@@ -79,6 +90,8 @@ export async function setUserActive(userId: string, active: boolean) {
     const keys = await targetRoleKeys(d.userId);
     assertCanTouchPrivileged(actor, keys);
     if (!d.active && keys.includes("super_admin")) await assertAnotherSuperAdmin(d.userId);
+    // An old parent / kid account can't come back as such: give it an account role first.
+    if (d.active && !keys.some((k) => !isRetiredRole(k))) throw new ActionError("errors.validation");
     await db.user.update({ where: { id: d.userId }, data: { isActive: d.active } });
     if (!d.active) await db.session.deleteMany({ where: { userId: d.userId } });
     await audit(actor.id, d.active ? "activate" : "deactivate", "User", d.userId);

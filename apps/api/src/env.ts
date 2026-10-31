@@ -18,5 +18,10 @@ export const env = {
    */
   CORS_ORIGINS: (process.env.CORS_ORIGINS ?? "http://localhost:5173").split(",").map((s) => s.trim()).filter(Boolean),
   PAYMENT_PROVIDER: process.env.PAYMENT_PROVIDER ?? "mock",
+  /**
+   * Optional OAuth client id (Google Cloud console → Credentials) enabling "Continue with Google".
+   * Not a secret. Unset: POST /api/auth/google answers errors.googleNotConfigured.
+   */
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID?.trim() || undefined,
 };
 export const isProd = env.NODE_ENV === "production";

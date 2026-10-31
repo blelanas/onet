@@ -1,7 +1,7 @@
 import type { dashboardPage } from "@api/modules/dashboard/routes";
 import type { Loaded } from "@/lib/types";
 import { useLocale, useTranslations } from "use-intl";
-import { ArrowRight, Backpack, Bus, CalendarRange, ClipboardList, Crown, MapPin, Megaphone, MessagesSquare, PartyPopper, Smile, Users, type LucideIcon } from "lucide-react";
+import { ArrowRight, Backpack, Bus, CalendarRange, ClipboardList, Crown, MapPin, Megaphone, MessagesSquare, PartyPopper, ShieldCheck, Smile, Users, type LucideIcon } from "lucide-react";
 import { CATEGORY_COLORS, formatDate } from "@onet/shared";
 import { assetUrl } from "@/lib/api";
 import { useMe } from "@/lib/auth";
@@ -67,7 +67,7 @@ export function MemberDashboard({ d }: { d: MemberData }) {
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Section title={t("myTeams")} href="/dashboard/teams" actionLabel={tc("actions.viewAll")}>
-          <MyTeams teams={d.teams} />
+          <MyTeams teams={d.teams} directed={d.directed} />
         </Section>
         <Section title={t("editions")} href="/dashboard/events" actionLabel={tc("actions.viewAll")}>
           <Editions editions={d.editions} />
@@ -150,11 +150,32 @@ function ShortcutTile({ tile }: { tile: Tile }) {
   );
 }
 
-function MyTeams({ teams }: { teams: MemberData["teams"] }) {
+/** My groups: the events I direct first, then my edition teams. */
+function MyTeams({ teams, directed }: { teams: MemberData["teams"]; directed: MemberData["directed"] }) {
   const t = useTranslations("dashboard.member");
-  if (!teams.length) return <EmptyState compact title={t("noTeams")} description={t("noTeamsHint")} icon={<Users className="size-4" />} />;
+  if (!teams.length && !directed.length) return <EmptyState compact title={t("noTeams")} description={t("noTeamsHint")} icon={<Users className="size-4" />} />;
   return (
     <ul className="space-y-2.5">
+      {directed.map((e) => (
+        <li key={e.id} className="relative flex items-center gap-3 rounded-2xl border border-line p-3 transition hover:border-transparent hover:shadow-[var(--shadow-soft)]">
+          <span className="grid size-11 shrink-0 place-items-center rounded-xl text-white" style={{ background: e.series?.color ?? "var(--color-brand-600)" }}>
+            <ShieldCheck className="size-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex flex-wrap items-center gap-1.5">
+              <Link href={`/dashboard/events/${e.id}`} className="truncate font-bold text-ink after:absolute after:inset-0 hover:text-brand-700" dir="auto">
+                {e.title}
+              </Link>
+              <span className="inline-flex items-center gap-1 rounded-full bg-sun-soft px-2 py-0.5 text-[11px] font-extrabold text-ink">
+                <ShieldCheck className="size-3" /> {t("director")}
+              </span>
+            </span>
+            <span className="block text-xs font-semibold text-ink-2">
+              {t("directedTeams", { count: e.teams })} · {t("teamKids", { count: e.kids })}
+            </span>
+          </span>
+        </li>
+      ))}
       {teams.map((team) => {
         return (
           <li key={team.id} className="relative flex items-center gap-3 rounded-2xl border border-line p-3 transition hover:border-transparent hover:shadow-[var(--shadow-soft)]">

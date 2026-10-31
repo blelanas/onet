@@ -27,6 +27,7 @@ import { ParticipantsTable } from "@/components/registrations/participants-table
 import { RollCallForm } from "@/components/registrations/roll-call-form";
 import { CategoryIcon, DateTile, PlacesMeter, categoryColor } from "@/components/registrations/visuals";
 import { dateTime, hm } from "@/components/registrations/format";
+import { DirectorCard } from "@/components/events/director-card";
 import { EditionOverview } from "@/components/events/edition-overview";
 import { EditionTeams } from "@/components/events/edition-teams";
 import { SeriesKindIcon, seriesName, useDateRange, useEditionLabel } from "@/components/events/series-visuals";
@@ -61,6 +62,7 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
   const taken = e._count.registrations;
   const left = Math.max(0, e.capacity - taken);
   const base = `/dashboard/events/${id}`;
+  const withTeams = !!series || !!data.director || data.teams.length > 0;
   const tabs = series
     ? [
         { key: "overview", label: t("detail.tabs.overview"), href: base },
@@ -71,6 +73,9 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
         { key: "overview", label: t("detail.tabs.overview"), href: base },
         ...(staff ? [{ key: "participants", label: t("detail.tabs.participants"), href: `${base}?tab=participants`, count: taken }] : []),
         ...(canCheckIn ? [{ key: "checkin", label: t("detail.tabs.checkin"), href: `${base}?tab=checkin` }] : []),
+        // A one-off event with a director gets the director's tools too: teams and kids.
+        ...(withTeams ? [{ key: "teams", label: t("edition.tabs.teams"), href: `${base}?tab=teams`, count: data.teams.length }] : []),
+        ...(withTeams && data.canSeeKids ? [{ key: "kids", label: t("edition.tabs.kids"), href: `${base}?tab=kids`, count: data.kidsCount }] : []),
       ];
   const tab = tabs.some((x) => x.key === tabParam) ? tabParam! : "overview";
 
@@ -192,6 +197,7 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
           </div>
 
           <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
+            {data.director && <DirectorCard director={data.director} color={color} />}
             <RegisterCard data={data} eventId={id} full={left === 0} />
             {e.status === "PUBLISHED" && e.endAt > new Date() && (
               <section className="card p-5">
@@ -209,9 +215,9 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
 
       {tab === "participants" && staff && <ParticipantsSection eventId={id} />}
 
-      {tab === "teams" && series && <EditionTeams eventId={id} />}
+      {tab === "teams" && withTeams && <EditionTeams eventId={id} />}
 
-      {tab === "kids" && series && data.canSeeKids && <EditionKids eventId={id} />}
+      {tab === "kids" && withTeams && data.canSeeKids && <EditionKids eventId={id} />}
 
       {tab === "checkin" && canCheckIn && <CheckInSection eventId={id} />}
     </div>

@@ -125,7 +125,7 @@ export async function unlinkGuardian(childId: string, parentId: string) {
 }
 
 /** Creates (or resets) the login account of a member. */
-const accountSchema = z.object({ memberId: zs.id, email: z.string().trim().toLowerCase().email("errors.email"), password: z.string(), role: z.enum(["parent", "kid", "member", "monitor", "accountant", "admin"]) });
+const accountSchema = z.object({ memberId: zs.id, email: z.string().trim().toLowerCase().email("errors.email"), password: z.string(), role: z.enum(["member", "accountant", "admin"]) });
 
 export async function createMemberAccount(fd: FormData | Record<string, unknown>) {
   return runAction(accountSchema, formToObject(fd), async ({ memberId, email, password, role }) => {
@@ -136,6 +136,8 @@ export async function createMemberAccount(fd: FormData | Record<string, unknown>
     const member = await db.member.findUnique({ where: { id: memberId } });
     if (!member) throw new ActionError("errors.notFound");
     if (member.userId) throw new ActionError("errors.alreadyRegistered");
+    // Kids and parents are records (kid cards, guardian contacts), not accounts.
+    if (member.type === "CHILD" || member.type === "PARENT") throw new ActionError("errors.validation");
     if (await db.user.findUnique({ where: { email } })) throw new ActionError("errors.emailTaken");
     const roleRow = await db.role.findUniqueOrThrow({ where: { key: role } });
     const created = await db.user.create({

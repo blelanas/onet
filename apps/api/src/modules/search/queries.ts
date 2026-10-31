@@ -5,6 +5,7 @@ import { can, hasRole } from "@api/lib/auth/guards";
 import { memberScopeWhere, myChildren } from "@api/lib/auth/scope";
 import { CATEGORY_COLORS } from "@api/lib/constants";
 import { memberSearchWhere } from "@api/modules/members/queries";
+import { isAnimatorRole } from "@onet/shared";
 
 export const SEARCH_SECTIONS = ["members", "groups", "activities", "events", "trips", "songs", "games", "conferences", "resources", "invoices"] as const;
 export type SearchSection = (typeof SEARCH_SECTIONS)[number];
@@ -60,7 +61,7 @@ function resourceAudiences(user: CurrentUser) {
   if (can(user, "content.manage") || can(user, "members.read_all")) return undefined;
   const a = ["ALL"];
   if (hasRole(user, "parent")) a.push("PARENTS");
-  if (hasRole(user, "monitor")) a.push("MONITORS");
+  if (isAnimatorRole(user.roles)) a.push("MONITORS");
   if (hasRole(user, "kid")) a.push("KIDS");
   return a;
 }

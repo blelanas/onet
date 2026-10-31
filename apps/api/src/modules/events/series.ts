@@ -6,7 +6,8 @@ import type { CurrentUser } from "@api/lib/auth/session";
 import { AuthError, requirePermission } from "@api/lib/auth/guards";
 import { param } from "@api/lib/http";
 import { isStaffish } from "@api/modules/registrations/queries";
-import { ACTIVE_KID_REG, canManageEditions, myTeams, onTeamWhere } from "./access";
+import { ACTIVE_KID_REG, canManageEditions, myDirectedEditions, myTeams, onEditionWhere } from "./access";
+import { TEAM_ELIGIBLE } from "./teams";
 
 /** Calendar year of an instant in Tunisian time. */
 export function tunisYear(d: Date = new Date()) {
@@ -18,13 +19,13 @@ export function defaultEditionTitle(series: { name: string; nameAr: string | nul
   return series.kind === "FESTIVAL" ? `${series.nameAr || series.name} ${editionNumber}` : `${series.name} ${seasonYear}-${seasonYear + 1}`;
 }
 
-/** Editions (events) the user may see: managers all, others the non-draft public ones + those they are on a team of. */
+/** Editions (events) the user may see: managers all, others the non-draft public ones + those they are on a team of or direct. */
 export function editionVisibleWhere(user: CurrentUser): Prisma.EventWhereInput {
   if (canManageEditions(user)) return {};
   if (isStaffish(user)) return { status: { not: "DRAFT" } };
   return {
     status: { not: "DRAFT" },
-    OR: [{ isPublic: true }, ...(user.memberId ? [{ teams: { some: onTeamWhere(user.memberId) } }] : [])],
+    OR: [{ isPublic: true }, ...(user.memberId ? [onEditionWhere(user.memberId)] : [])],
   };
 }
 
@@ -93,7 +94,9 @@ export async function seriesPage(req: Request) {
     },
   });
   if (!s || (!s.isActive && !manage)) throw new AuthError("NOT_FOUND");
-  const mine = new Set((await myTeams(user)).map((t) => t.eventId));
+  // "Mine": editions where I am on a team or that I direct.
+  const [teams, directed] = await Promise.all([myTeams(user), myDirectedEditions(user)]);
+  const mine = new Set([...teams.map((t) => t.eventId), ...directed]);
   const now = new Date();
   const { editions, ...series } = s;
   const rows = editions.map(({ _count, ...e }) => ({
@@ -111,16 +114,22 @@ export async function seriesPage(req: Request) {
   return { series: { ...series, editionsCount: editions.length }, years, manage, next: manage ? await nextEditionDefaults(series) : null };
 }
 
-/** Prefill of the "new edition" form: next number, current season, default title, previous edition (for "copy teams"). */
+/**
+ * Prefill of the "new edition" form: next number, current season, default title, previous edition (for "copy
+ * teams") and its director when they can still direct (proposed for the new edition).
+ */
 export async function nextEditionDefaults(series: { id: string; name: string; nameAr: string | null; kind: string }) {
   const [max, previous] = await Promise.all([
     db.event.aggregate({ where: { seriesId: series.id }, _max: { editionNumber: true } }),
     db.event.findFirst({
       where: { seriesId: series.id },
       orderBy: [{ startAt: "desc" }],
-      select: { id: true, title: true, editionNumber: true, _count: { select: { teams: true } } },
+      select: { id: true, title: true, editionNumber: true, directorId: true, _count: { select: { teams: true } } },
     }),
   ]);
+  const director = previous?.directorId
+    ? await db.member.findFirst({ where: { id: previous.directorId, ...TEAM_ELIGIBLE }, select: { id: true, firstName: true, lastName: true, photoUrl: true, type: true } })
+    : null;
   const editionNumber = (max._max.editionNumber ?? 0) + 1;
   const seasonYear = tunisYear();
   return {
@@ -128,6 +137,9 @@ export async function nextEditionDefaults(series: { id: string; name: string; na
     seasonYear,
     title: defaultEditionTitle(series, editionNumber, seasonYear),
     previous: previous ? { id: previous.id, title: previous.title, editionNumber: previous.editionNumber, teamsCount: previous._count.teams } : null,
+    directorId: director?.id ?? null,
+    /** Shown by the director picker even before (or without) its candidates list. */
+    director,
   };
 }
 

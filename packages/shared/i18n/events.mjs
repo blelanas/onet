@@ -182,6 +182,23 @@ export default {
       PENDING: T("Inscription de {name} en attente de paiement (« {title} »)", "تسجيل {name} في انتظار الدفع («{title}»)", "{name}'s registration is awaiting payment (\"{title}\")"),
     },
     monitorAssigned: T("Vous encadrez la sortie « {title} »", "أنت مؤطِّر رحلة «{title}»", "You are supervising the trip \"{title}\""),
+    directorAssigned: T("Vous êtes le directeur de « {title} »", "أنت مدير «{title}»", "You are the director of \"{title}\""),
+    directorAssignedBody: T("Vous gérez ses équipes et ses enfants : ouvrez la page pour commencer.", "أنت من يدير فرقه وأطفاله: افتح الصفحة للبدء.", "You manage its teams and kids: open the page to get started."),
+  },
+
+  // ── The director of an event: one animator managing all its teams and kids ──
+  director: {
+    label: T("Directeur", "المدير", "Director"),
+    section: T("Direction", "الإدارة", "Direction"),
+    none: T("Pas de directeur", "بدون مدير", "No director"),
+    hint: T(
+      "Un animateur qui gère toutes les équipes (responsables, animateurs) et les enfants de l'événement. Il est prévenu par une notification.",
+      "منشّط يدير كل فرق الحدث (القادة والمنشطين) وأطفاله. يصله إشعار بذلك.",
+      "An animator who manages all the event's teams (leaders, animators) and kids. They get a notification.",
+    ),
+    hintPrevious: T("Proposé : le directeur de l'édition précédente.", "مقترح: مدير الدورة السابقة.", "Suggested: the previous edition's director."),
+    inactive: T("Adhésion non active : sans droits sur l'événement", "انخراط غير نشط: دون صلاحيات على الحدث", "Membership not active: no rights on the event"),
+    call: T("Appeler {name}", "الاتصال بـ{name}", "Call {name}"),
   },
 
   // ── Programmes (series), their editions and the edition teams ──
@@ -232,6 +249,11 @@ export default {
     tabs: { teams: T("Équipes", "الفرق", "Teams"), kids: T("Enfants", "الأطفال", "Kids") },
     roleLeader: T("Vous êtes responsable d'une équipe de cette édition : vous pouvez inscrire les enfants et les répartir dans les équipes.", "أنت قائد فريق في هذه الدورة: يمكنك تسجيل الأطفال وتوزيعهم على الفرق.", "You lead a team in this edition: you can register kids and assign them to teams."),
     roleMember: T("Vous faites partie d'une équipe de cette édition.", "أنت عضو في فريق من هذه الدورة.", "You are on a team in this edition."),
+    roleDirector: T(
+      "Vous dirigez cette édition : vous créez et gérez ses équipes (responsables et animateurs), inscrivez les enfants et les répartissez.",
+      "أنت مدير هذه الدورة: تُنشئ فرقها وتديرها (القادة والمنشطين)، وتسجّل الأطفال وتوزّعهم.",
+      "You direct this edition: you create and manage its teams (leaders and animators), register the kids and assign them.",
+    ),
     kpi: { kids: T("Enfants", "الأطفال", "Kids"), teams: T("Équipes", "الفرق", "Teams"), animators: T("Animateurs", "المنشطون", "Animators") },
     seeAllTeams: T("Voir les équipes", "عرض الفرق", "See the teams"),
   },
@@ -267,7 +289,7 @@ export default {
       name: T("Nom de l'équipe", "اسم الفريق", "Team name"),
       color: T("Couleur", "اللون", "Colour"),
       leader: T("Responsable", "قائد الفريق", "Leader"),
-      leaderLocked: T("Seuls les administrateurs changent le responsable.", "المسؤولون فقط يغيّرون قائد الفريق.", "Only administrators change the leader."),
+      leaderLocked: T("Seuls les administrateurs et le directeur changent le responsable.", "المسؤولون ومدير الدورة فقط يغيّرون قائد الفريق.", "Only administrators and the director change the leader."),
       members: T("Animateurs de l'équipe", "منشطو الفريق", "Team animators"),
       membersHint: T("Membres, moniteurs et équipe de l'ONET.", "الأعضاء والمنشطون وإطارات المنظمة.", "ONET members, monitors and staff."),
       search: T("Rechercher un animateur…", "ابحث عن منشط…", "Search an animator…"),
