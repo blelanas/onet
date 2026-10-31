@@ -2,7 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { db } from "@api/lib/db";
 import type { CurrentUser } from "@api/lib/auth/session";
 import { memberScopeWhere } from "@api/lib/auth/scope";
-import { AuthError } from "@api/lib/auth/guards";
+import { AuthError, can } from "@api/lib/auth/guards";
 import { memberViewScope, myEditionIds } from "@api/modules/events/access";
 
 export type MemberFilters = { q?: string; type?: string; status?: string; groupId?: string; sort?: string; skip?: number; take?: number };
@@ -85,6 +85,8 @@ export async function getMemberProfile(user: CurrentUser, id: string) {
     },
   });
   if (!member) throw new AuthError("NOT_FOUND");
+  // The account's enabled state is only for those who manage accounts (the UI shows it to them alone).
+  if (member.user && !can(user, "users.manage")) member.user = { ...member.user, isActive: true };
   if (scope === "full") return { member, teamView: false };
   const editions = await myEditionIds(user);
   return {

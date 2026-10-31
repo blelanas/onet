@@ -19,11 +19,14 @@ beforeAll(async () => {
 });
 const created: string[] = [];
 afterAll(async () => {
-  await db.user.deleteMany({ where: { id: { in: created } } });
-  setGoogleVerifier(null);
-  env.GOOGLE_CLIENT_ID = undefined;
-  await new Promise((r) => server.close(r));
-  await db.$disconnect();
+  try {
+    await db.user.deleteMany({ where: { id: { in: created } } });
+  } finally {
+    setGoogleVerifier(null);
+    env.GOOGLE_CLIENT_ID = undefined;
+    await new Promise((r) => server.close(r));
+    await db.$disconnect();
+  }
 });
 
 // Each request comes from its own client IP (trusted proxy hop) so the per-IP limiters don't interfere.
