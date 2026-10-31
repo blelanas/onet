@@ -64,7 +64,7 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           projectId: ${{ vars.FIREBASE_PROJECT_ID }}
-          expires: 7d
+          expires: 30d # Firebase maximum; a new push or re-run gives a fresh link
       - name: Deploy production (main)
         if: steps.cfg.outputs.ready == 'true' && github.event_name == 'push'
         uses: FirebaseExtended/action-hosting-deploy@v0
