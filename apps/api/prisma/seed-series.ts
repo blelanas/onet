@@ -193,9 +193,9 @@ export async function seedSeries(db: PrismaClient) {
   };
   const admin = await db.user.findUniqueOrThrow({ where: { email: HELA } });
   const kids = await db.member.findMany({ where: { type: "CHILD", membershipStatus: "ACTIVE" }, orderBy: { membershipNumber: "asc" }, select: { id: true, dateOfBirth: true } });
-  // The demo family's kids (enfant@ and siblings) come first so their history is rich.
-  const demoKid = await db.member.findFirst({ where: { user: { email: "enfant@onet-teboulba.tn" } }, select: { id: true, parentLinks: { select: { parent: { select: { childrenLinks: { select: { childId: true } } } } } } } });
-  const demoIds = new Set(demoKid?.parentLinks.flatMap((l) => l.parent.childrenLinks.map((c) => c.childId)) ?? []);
+  // The demo family's kids (Mohamed Gharbi's children) come first so their history is rich.
+  const demoParent = await db.member.findFirst({ where: { type: "PARENT", email: "mohamed.gharbi0@example.tn" }, select: { childrenLinks: { select: { childId: true } } } });
+  const demoIds = new Set(demoParent?.childrenLinks.map((c) => c.childId) ?? []);
   const ordered = [...kids.filter((k) => demoIds.has(k.id)), ...kids.filter((k) => !demoIds.has(k.id))];
 
   const kidsByEdition = new Map<string, string[]>();

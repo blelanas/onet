@@ -208,7 +208,7 @@ describe("kids of an edition", () => {
   });
 
   it("adds an existing kid, and refuses duplicates", async () => {
-    const existing = await db.member.findFirstOrThrow({ where: { type: "CHILD", user: { email: "enfant@onet-teboulba.tn" } } });
+    const existing = await db.member.findFirstOrThrow({ where: { type: "CHILD", parentLinks: { some: { parent: { email: "mohamed.gharbi0@example.tn" } } } }, orderBy: { membershipNumber: "asc" } });
     const r = await call<Result<{ registrationId: string }>>("POST", `/events/${edition1}/kids`, { token: leader, body: { memberId: existing.id } });
     expect(r.body.ok, JSON.stringify(r.body)).toBe(true);
     expect((await call("POST", `/events/${edition1}/kids`, { token: leader, body: { memberId: existing.id } })).body).toMatchObject({ ok: false, error: "errors.alreadyRegistered" });

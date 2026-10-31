@@ -35,8 +35,7 @@ export function formatPhone(digits: string | null) {
 }
 
 /**
- * Role granted by invitation links and the pre-approved list. Members (= animators) are the only
- * role offered now; the API still accepts "monitor" for older rows.
+ * Role granted by invitation links and the pre-approved list: always "member" (= animator).
  */
 export function SignupRoleField({ label }: { label: string }) {
   return (

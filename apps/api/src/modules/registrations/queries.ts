@@ -9,7 +9,7 @@ import { ACTIVE_STATUSES, eligibility, type IneligibleReason, type RegKind, type
 
 /** Users who may see internal (non public) events/trips and participant lists. */
 export function isStaffish(user: CurrentUser) {
-  return can(user, "registrations.manage") || can(user, "events.manage") || can(user, "trips.manage") || user.roles.some((r) => ["monitor", "accountant", "admin", "super_admin"].includes(r));
+  return can(user, "registrations.manage") || can(user, "events.manage") || can(user, "trips.manage") || user.roles.some((r) => ["monitor", "member", "accountant", "admin", "super_admin"].includes(r));
 }
 
 /** Kids (and anyone without a registration/finance permission) never see prices. */

@@ -13,7 +13,8 @@ import { ContentFieldErrors, FieldErrorText } from "@/components/content/shared/
 
 export type ResourceFormValues = { id?: string; title?: string; description?: string | null; type?: string; url?: string; category?: string | null; audience?: string; sizeBytes?: number | null };
 
-const AUDIENCES = ["ALL", "PARENTS", "MONITORS", "KIDS"] as const;
+// Parents and kids have no accounts: only everyone or the members (animators).
+const AUDIENCES = ["ALL", "MONITORS"] as const;
 const UPLOAD_KIND: Record<string, "document" | "image" | "video"> = { PDF: "document", DOCUMENT: "document", IMAGE: "image", VIDEO: "video" };
 const isUpload = (u?: string | null) => isLocalFile(u);
 

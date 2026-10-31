@@ -270,7 +270,7 @@
     "audience": {
       "ALL": "Everyone",
       "PARENTS": "Parents",
-      "MONITORS": "Monitors",
+      "MONITORS": "Members (animators)",
       "KIDS": "Kids",
       "STAFF": "Staff",
       "GROUP": "A group"

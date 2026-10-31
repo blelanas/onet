@@ -291,7 +291,8 @@ function MemberProfile({ id, data }: { id: string; data: Data }) {
               </Section>
             )}
 
-            {can(user, "users.manage") && (
+            {/* Kids and parents are records (kid card, guardian contact), not accounts. */}
+            {can(user, "users.manage") && (m.user || (m.type !== "CHILD" && m.type !== "PARENT")) && (
               <Section title={t("profile.account")}>
                 {m.user ? (
                   <div className="space-y-2 text-sm">
@@ -310,7 +311,7 @@ function MemberProfile({ id, data }: { id: string; data: Data }) {
                     </p>
                   </div>
                 ) : (
-                  <AccountForm memberId={id} defaultEmail={m.email ?? ""} defaultRole={isChild ? "kid" : m.type === "PARENT" ? "parent" : m.type === "MONITOR" ? "monitor" : "member"} canAdmin={can(user, "roles.manage")} />
+                  <AccountForm memberId={id} defaultEmail={m.email ?? ""} defaultRole="member" canAdmin={can(user, "roles.manage")} />
                 )}
               </Section>
             )}

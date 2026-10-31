@@ -83,4 +83,45 @@ describe("migrations", () => {
       client.close();
     }
   });
+
+  it("0005 turns monitors into members and closes parent / kid only accounts", async () => {
+    const file = path.join(mkdtempSync(path.join(os.tmpdir(), "onet-mig-")), "m.db");
+    const client = createClient({ url: `file:${file}` });
+    try {
+      for (const m of ["0001_init.sql", "0002_self_signup.sql", "0003_members_platform.sql"]) await client.executeMultiple(sql(m));
+      await client.executeMultiple(`
+        INSERT INTO "Role" ("id", "key", "name") VALUES ('r_mo', 'monitor', 'Moniteur'), ('r_me', 'member', 'Membre'), ('r_pa', 'parent', 'Parent'), ('r_ki', 'kid', 'Enfant'), ('r_ac', 'accountant', 'Comptable');
+        INSERT INTO "User" ("id", "email", "passwordHash", "name", "updatedAt", "requestedRole") VALUES
+          ('u_mo', 'mo@x.tn', 'h', 'Monitor', CURRENT_TIMESTAMP, NULL),
+          ('u_both', 'both@x.tn', 'h', 'Monitor and member', CURRENT_TIMESTAMP, NULL),
+          ('u_pa', 'pa@x.tn', 'h', 'Parent', CURRENT_TIMESTAMP, NULL),
+          ('u_ki', 'ki@x.tn', 'h', 'Kid', CURRENT_TIMESTAMP, NULL),
+          ('u_pa_acc', 'paacc@x.tn', 'h', 'Parent and accountant', CURRENT_TIMESTAMP, NULL),
+          ('u_pend', 'pend@x.tn', 'h', 'Pending', CURRENT_TIMESTAMP, 'monitor');
+        INSERT INTO "UserRole" ("userId", "roleId") VALUES ('u_mo', 'r_mo'), ('u_both', 'r_mo'), ('u_both', 'r_me'), ('u_pa', 'r_pa'), ('u_ki', 'r_ki'), ('u_pa_acc', 'r_pa'), ('u_pa_acc', 'r_ac');
+        INSERT INTO "Session" ("id", "tokenHash", "userId", "expiresAt") VALUES ('s1', 't1', 'u_pa', CURRENT_TIMESTAMP), ('s2', 't2', 'u_mo', CURRENT_TIMESTAMP);
+        INSERT INTO "Invitation" ("id", "tokenHash", "role", "expiresAt") VALUES ('i1', 'h1', 'monitor', CURRENT_TIMESTAMP);
+        INSERT INTO "PreapprovedPerson" ("id", "name", "role") VALUES ('p1', 'P', 'monitor');
+      `);
+      await client.execute("PRAGMA foreign_keys = ON");
+      const tx = await client.transaction("write");
+      await tx.executeMultiple(sql("0005_account_roles.sql"));
+      await tx.commit();
+      const roles = async (u: string) =>
+        (await client.execute({ sql: `SELECT r."key" FROM "UserRole" ur JOIN "Role" r ON r."id" = ur."roleId" WHERE ur."userId" = ? ORDER BY r."key"`, args: [u] })).rows.map((r) => r.key);
+      expect(await roles("u_mo")).toEqual(["member"]);
+      expect(await roles("u_both")).toEqual(["member"]);
+      const active = async (u: string) => Number((await client.execute({ sql: `SELECT "isActive" FROM "User" WHERE "id" = ?`, args: [u] })).rows[0].isActive);
+      expect([await active("u_mo"), await active("u_pa"), await active("u_ki"), await active("u_pa_acc")]).toEqual([1, 0, 0, 1]);
+      expect((await client.execute(`SELECT "userId" FROM "Session"`)).rows.map((r) => r.userId)).toEqual(["u_mo"]);
+      expect((await client.execute(`SELECT "role" FROM "Invitation"`)).rows[0].role).toBe("member");
+      expect((await client.execute(`SELECT "role" FROM "PreapprovedPerson"`)).rows[0].role).toBe("member");
+      expect((await client.execute(`SELECT "requestedRole" FROM "User" WHERE "id" = 'u_pend'`)).rows[0].requestedRole).toBe("member");
+      // Idempotent: running it again changes nothing.
+      await client.executeMultiple(sql("0005_account_roles.sql"));
+      expect(await roles("u_both")).toEqual(["member"]);
+    } finally {
+      client.close();
+    }
+  });
 });

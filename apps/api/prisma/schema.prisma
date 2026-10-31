@@ -66,7 +66,7 @@ model User {
 model Invitation {
   id          String    @id @default(cuid())
   tokenHash   String    @unique
-  role        String // monitor | member (staff roles can never be invited)
+  role        String // member (older rows: monitor, migrated by 0005) (staff roles can never be invited)
   label       String?
   expiresAt   DateTime
   maxUses     Int       @default(50)
@@ -83,7 +83,7 @@ model PreapprovedPerson {
   name        String
   email       String? // lower-case
   phone       String? // normalized digits, e.g. 21622345678
-  role        String // monitor | member
+  role        String // member (older rows: monitor, migrated by 0005)
   createdById String?
   createdBy   User?     @relation("PreapprovedCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   usedById    String?

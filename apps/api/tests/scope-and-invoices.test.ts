@@ -18,11 +18,28 @@ async function loadUser(email: string): Promise<CurrentUser> {
   };
 }
 
-afterAll(() => db.$disconnect());
+/**
+ * Parents and kids no longer get accounts, but the scoping code still guards old accounts (deactivated
+ * by migration 0005): give the demo family a temporary login to keep testing it.
+ */
+const temporary: string[] = [];
+async function legacyAccount(memberId: string, role: "parent" | "kid") {
+  const roleRow = await db.role.findUniqueOrThrow({ where: { key: role } });
+  const u = await db.user.create({ data: { email: `legacy-${role}-${memberId}@x.tn`, name: role, passwordHash: "x", roles: { create: [{ roleId: roleRow.id }] }, member: { connect: { id: memberId } } } });
+  temporary.push(u.id);
+  return loadUser(u.email);
+}
+const demoFather = () => db.member.findFirstOrThrow({ where: { type: "PARENT", email: "mohamed.gharbi0@example.tn" }, include: { childrenLinks: { orderBy: { child: { membershipNumber: "asc" } } } } });
+
+afterAll(async () => {
+  await db.member.updateMany({ where: { userId: { in: temporary } }, data: { userId: null } });
+  await db.user.deleteMany({ where: { id: { in: temporary } } });
+  await db.$disconnect();
+});
 
 describe("data isolation", () => {
   it("a parent sees only themself and their own children", async () => {
-    const parent = await loadUser("parent@onet-teboulba.tn");
+    const parent = await legacyAccount((await demoFather()).id, "parent");
     const ids = await visibleMemberIds(parent);
     expect(ids).not.toBe("all");
     const kids = await db.guardianship.findMany({ where: { parentId: parent.memberId! } });
@@ -31,7 +48,7 @@ describe("data isolation", () => {
   });
 
   it("a kid sees only themself and cannot register anyone", async () => {
-    const kid = await loadUser("enfant@onet-teboulba.tn");
+    const kid = await legacyAccount((await demoFather()).childrenLinks[0].childId, "kid");
     expect(await visibleMemberIds(kid)).toEqual([kid.memberId]);
     expect(await registrableMemberIds(kid)).toEqual([]);
   });

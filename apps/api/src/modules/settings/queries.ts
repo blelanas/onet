@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { db } from "@api/lib/db";
+import { RETIRED_ROLE_KEYS } from "@onet/shared";
 
 export async function listUsers(f: { q?: string; role?: string; status?: string; skip?: number; take?: number }) {
   const where: Prisma.UserWhereInput = {
@@ -37,6 +38,8 @@ export async function listUsers(f: { q?: string; role?: string; status?: string;
 
 export async function listRoles() {
   return db.role.findMany({
+    // Retired roles (monitor, parent, kid) stay in the database for old rows but are no longer offered.
+    where: { key: { notIn: [...RETIRED_ROLE_KEYS] } },
     orderBy: [{ isSystem: "desc" }, { createdAt: "asc" }],
     include: { permissions: { select: { permission: { select: { key: true } } } }, _count: { select: { users: true } } },
   });

@@ -15,9 +15,6 @@ const DEMO = [
   { role: "super_admin", email: "admin@onet-teboulba.tn" },
   { role: "admin", email: "gestion@onet-teboulba.tn" },
   { role: "accountant", email: "comptable@onet-teboulba.tn" },
-  { role: "monitor", email: "moniteur@onet-teboulba.tn" },
-  { role: "parent", email: "parent@onet-teboulba.tn" },
-  { role: "kid", email: "enfant@onet-teboulba.tn" },
   { role: "member", email: "membre@onet-teboulba.tn" },
 ] as const;
 const DEMO_PASSWORD = "Onet2026!";

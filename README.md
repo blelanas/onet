@@ -32,10 +32,11 @@ Comptes de démonstration — mot de passe **`Onet2026!`** (boutons de pré-remp
 | Super administrateur | admin@onet-teboulba.tn |
 | Administrateur | gestion@onet-teboulba.tn |
 | Comptable | comptable@onet-teboulba.tn |
-| Moniteur | moniteur@onet-teboulba.tn |
-| Parent (3 enfants) | parent@onet-teboulba.tn |
-| Enfant | enfant@onet-teboulba.tn |
-| Membre | membre@onet-teboulba.tn |
+| Membre (animatrice, responsable d'équipe) | membre@onet-teboulba.tn |
+| Membre | moniteur@onet-teboulba.tn |
+
+Les comptes n'ont que 4 rôles : super administrateur, administrateur, comptable et membre (= animateur).
+Les enfants et leurs parents ne se connectent pas : ce sont des fiches (carte de l'enfant avec le contact du parent).
 
 ## Scripts
 

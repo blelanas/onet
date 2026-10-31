@@ -1,5 +1,6 @@
 /** Audiences offered for free calendar entries (GROUP is not supported: entries have no group). */
-export const ENTRY_AUDIENCES = ["ALL", "PARENTS", "MONITORS", "KIDS", "STAFF"] as const;
+// Parents and kids have no accounts: their audiences are not offered (older entries keep theirs).
+export const ENTRY_AUDIENCES = ["ALL", "MONITORS", "STAFF"] as const;
 
 /** Item kinds shown in the calendar (same list and colors as the API's calendar module). */
 export const CAL_KINDS = ["activity", "group", "event", "trip", "conference", "entry"] as const;

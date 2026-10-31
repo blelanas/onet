@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { CurrentUser } from "@api/lib/auth/session";
+import { isAnimatorRole } from "@onet/shared";
 
 /** True for absolute http(s) URLs. */
 export function isHttpUrl(v: string) {
@@ -50,7 +51,7 @@ export function allowedAudiences(user: CurrentUser): "all" | string[] {
   if (user.permissions.has("content.manage")) return "all";
   const set = new Set(["ALL"]);
   if (user.roles.includes("parent")) set.add("PARENTS");
-  if (user.roles.includes("monitor")) set.add("MONITORS");
+  if (isAnimatorRole(user.roles)) set.add("MONITORS");
   if (user.roles.includes("kid")) set.add("KIDS");
   return [...set];
 }

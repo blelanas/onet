@@ -149,8 +149,8 @@ describe("dances", () => {
     expect((await call("POST", "/content/dances", { token: member, body: { title: "X", category: "GROUP", ageGroup: "ALL" } })).status).toBe(403);
     expect((await call("DELETE", `/content/dances/${any.id}`, { token: member })).status).toBe(403);
     expect((await call("GET", "/content/dances")).status).toBe(401);
-    // Kids may read the baggage too (content.read).
-    expect((await call("GET", "/content/dances", { token: await login("enfant@onet-teboulba.tn") })).status).toBe(200);
+    // Every member reads the baggage (content.read).
+    expect((await call("GET", "/content/dances", { token: await login("moniteur@onet-teboulba.tn") })).status).toBe(200);
   });
 
   it("admins create a dance with media, edit and delete it", async () => {

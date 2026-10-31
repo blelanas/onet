@@ -3,6 +3,7 @@ import type { AddressInfo } from "net";
 import type { Server } from "http";
 import superjson from "superjson";
 import { createApp } from "@api/app";
+import { db } from "@api/lib/db";
 
 let server: Server;
 let base = "";
@@ -38,9 +39,9 @@ describe("auth", () => {
   });
 
   it("issues a bearer token and resolves the current user", async () => {
-    const token = await login("parent@onet-teboulba.tn");
+    const token = await login("comptable@onet-teboulba.tn");
     const me = await call("GET", "/auth/me", { token });
-    expect(me.body).toMatchObject({ email: "parent@onet-teboulba.tn", roles: ["parent"] });
+    expect(me.body).toMatchObject({ email: "comptable@onet-teboulba.tn", roles: ["accountant"] });
   });
 
   it("logout revokes the token", async () => {
@@ -55,17 +56,34 @@ describe("permission enforcement on the API", () => {
     expect((await call("GET", "/members?type=CHILD")).status).toBe(401);
   });
 
-  it("403 when a kid lists children or a parent lists all members", async () => {
-    expect((await call("GET", "/members?type=CHILD", { token: await login("enfant@onet-teboulba.tn") })).status).toBe(403);
-    expect((await call("GET", "/members", { token: await login("parent@onet-teboulba.tn") })).status).toBe(403);
+  it("403 when an accountant lists groups", async () => {
+    expect((await call("GET", "/groups", { token: await login("comptable@onet-teboulba.tn") })).status).toBe(403);
   });
 
-  it("a parent only sees their own children", async () => {
-    const token = await login("parent@onet-teboulba.tn");
-    const r = await call("GET", "/members?type=CHILD", { token });
-    const rows = r.body!.rows as { lastName: string }[];
-    expect(rows).toHaveLength(3);
-    expect(rows.every((m) => m.lastName === "Gharbi")).toBe(true);
+  it("accounts only get the super admin, admin, accountant and member roles (and custom ones)", async () => {
+    const token = await login("admin@onet-teboulba.tn");
+    for (const role of ["parent", "kid", "monitor"]) {
+      const r = await call("POST", "/settings/users", { token, body: { name: "No", email: `no-${role}@x.tn`, password: "Abcdefg123", roles: [role] } });
+      expect(r.status, role).toBe(400);
+    }
+    const ok = await call("POST", "/settings/users", { token, body: { name: "Yes", email: "yes-member@x.tn", password: "Abcdefg123", roles: ["member"] } });
+    expect(ok.body).toMatchObject({ ok: true });
+    const id = (ok.body!.data as { id: string }).id;
+    expect((await call("POST", `/settings/users/${id}/roles`, { token, body: { roles: ["member", "kid"] } })).status).toBe(400);
+    // The roles offered by the settings pages are the four account roles.
+    const roles = ((await call("GET", "/settings/users", { token })).body!.roles as { key: string }[]).map((r) => r.key);
+    expect(roles).toEqual(expect.arrayContaining(["super_admin", "admin", "accountant", "member"]));
+    expect(roles.some((k) => ["parent", "kid", "monitor"].includes(k))).toBe(false);
+    await db.user.delete({ where: { id } });
+  });
+
+  it("kids and parents are records: no login account can be created for them", async () => {
+    const token = await login("admin@onet-teboulba.tn");
+    for (const type of ["CHILD", "PARENT"] as const) {
+      const m = await db.member.findFirstOrThrow({ where: { type, userId: null } });
+      const r = await call("POST", `/members/${m.id}/account`, { token, body: { email: `rec-${type.toLowerCase()}@x.tn`, password: "Abcdefg123", role: "member" } });
+      expect(r.status, type).toBe(400);
+    }
   });
 
   it("forbids mutations without the manage permission", async () => {
