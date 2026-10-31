@@ -28,11 +28,9 @@ afterAll(async () => {
       await db.event.deleteMany({ where: { id: { in: ids } } });
       await db.eventSeries.deleteMany({ where: { id: clubId } });
     }
-    if (kid1) {
-      const parents = (await db.guardianship.findMany({ where: { childId: kid1 }, select: { parentId: true } })).map((g) => g.parentId);
-      await db.member.deleteMany({ where: { id: kid1 } });
-      await db.member.deleteMany({ where: { id: { in: parents }, userId: null, childrenLinks: { none: {} } } });
-    }
+    if (kid1) await db.member.deleteMany({ where: { id: kid1 } });
+    // Only the parent contact this suite created (a reused, pre-existing contact is left alone).
+    if (createdParents.length) await db.member.deleteMany({ where: { id: { in: createdParents }, userId: null, childrenLinks: { none: {} } } });
   } finally {
     await new Promise((r) => server.close(r));
     await db.$disconnect();
@@ -143,6 +141,7 @@ let edition = "";
 let teamA = "";
 let teamB = "";
 let kid1 = ""; // team A (added by the leader)
+let createdParents: string[] = []; // parent contacts created by this suite (not reused ones)
 let reg1 = "";
 let kid2 = ""; // team B (added by an admin)
 let reg2 = "";
@@ -215,9 +214,11 @@ describe("a leader manages only their own team's kids", () => {
     expect((await call("POST", `/events/${edition}/kids`, { token: leader, body: kid })).body).toMatchObject({ ok: false, error: "errors.teamRequired" });
     expect((await call("POST", `/events/${edition}/kids`, { token: leader, body: { ...kid, teamId: teamB } })).status).toBe(403);
     expect(await db.member.count({ where: { firstName: "Lina", lastName: "Equipa" } })).toBe(0);
+    const parentsBefore = new Set((await db.member.findMany({ where: { type: "PARENT" }, select: { id: true } })).map((m) => m.id));
     const r = await call<Result<{ memberId: string; registrationId: string }>>("POST", `/events/${edition}/kids`, { token: leader, body: { ...kid, teamId: teamA } });
     expect(r.body.ok, JSON.stringify(r.body)).toBe(true);
     kid1 = r.body.data.memberId;
+    createdParents = (await db.member.findMany({ where: { type: "PARENT" }, select: { id: true } })).map((m) => m.id).filter((id) => !parentsBefore.has(id));
     reg1 = r.body.data.registrationId;
     // An existing kid: same rule.
     // A kid the leader has no rights on elsewhere (the card is shared by all the kid's editions: being the leader
