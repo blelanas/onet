@@ -200,7 +200,18 @@
       "WAITLIST": "{name} moved to the waitlist for \"{title}\"",
       "PENDING": "{name}'s registration is awaiting payment (\"{title}\")"
     },
-    "monitorAssigned": "You are supervising the trip \"{title}\""
+    "monitorAssigned": "You are supervising the trip \"{title}\"",
+    "directorAssigned": "You are the director of \"{title}\"",
+    "directorAssignedBody": "You manage its teams and kids: open the page to get started."
+  },
+  "director": {
+    "label": "Director",
+    "section": "Direction",
+    "none": "No director",
+    "hint": "An animator who manages all the event's teams (leaders, animators) and kids. They get a notification.",
+    "hintPrevious": "Suggested: the previous edition's director.",
+    "inactive": "Membership not active: no rights on the event",
+    "call": "Call {name}"
   },
   "series": {
     "title": "Programmes",
@@ -256,6 +267,7 @@
     },
     "roleLeader": "You lead a team in this edition: you can register kids and assign them to teams.",
     "roleMember": "You are on a team in this edition.",
+    "roleDirector": "You direct this edition: you create and manage its teams (leaders and animators), register the kids and assign them.",
     "kpi": {
       "kids": "Kids",
       "teams": "Teams",
@@ -301,7 +313,7 @@
       "name": "Team name",
       "color": "Colour",
       "leader": "Leader",
-      "leaderLocked": "Only administrators change the leader.",
+      "leaderLocked": "Only administrators and the director change the leader.",
       "members": "Team animators",
       "membersHint": "ONET members, monitors and staff.",
       "search": "Search an animator…",

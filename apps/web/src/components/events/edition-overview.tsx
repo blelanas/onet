@@ -1,5 +1,5 @@
 import { useTranslations } from "use-intl";
-import { ArrowRight, Crown, MessagesSquare, Smile, UserCheck, Users } from "lucide-react";
+import { ArrowRight, Crown, MessagesSquare, ShieldCheck, Smile, UserCheck, Users } from "lucide-react";
 import type { eventPage } from "@api/modules/events/routes";
 import { Link } from "@/lib/router";
 import type { Loaded } from "@/lib/types";
@@ -12,17 +12,17 @@ type Data = Loaded<typeof eventPage>;
 /** Overview block of an edition: the user's role, key numbers and the teams at a glance. */
 export function EditionOverview({ eventId, data, color }: { eventId: string; data: Data; color: string }) {
   const t = useTranslations("events");
-  const { teams, kidsCount, isLeader, isOnTeam } = data;
+  const { teams, kidsCount, isLeader, isOnTeam, isDirector } = data;
   const animators = teams.reduce((n, x) => n + x.memberCount, 0);
   const base = `/dashboard/events/${eventId}`;
   return (
     <>
-      {(isLeader || isOnTeam) && (
+      {(isDirector || isLeader || isOnTeam) && (
         <p className="flex items-start gap-3 rounded-2xl p-4 text-sm font-semibold text-ink" style={{ background: `${color}1A` }}>
           <span className="grid size-9 shrink-0 place-items-center rounded-xl text-white" style={{ background: color }}>
-            {isLeader ? <Crown className="size-4" /> : <UserCheck className="size-4" />}
+            {isDirector ? <ShieldCheck className="size-4" /> : isLeader ? <Crown className="size-4" /> : <UserCheck className="size-4" />}
           </span>
-          <span className="pt-1.5">{isLeader ? t("edition.roleLeader") : t("edition.roleMember")}</span>
+          <span className="pt-1.5">{isDirector ? t("edition.roleDirector") : isLeader ? t("edition.roleLeader") : t("edition.roleMember")}</span>
         </p>
       )}
       <div className="grid grid-cols-3 gap-3">

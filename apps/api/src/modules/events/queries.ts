@@ -81,13 +81,24 @@ export async function getEvent(user: CurrentUser, id: string) {
   });
   if (!e) throw new AuthError("NOT_FOUND");
   if (e.status === "DRAFT" && !can(user, "events.manage")) throw new AuthError("NOT_FOUND");
-  // Internal events: staff, and the members on one of the edition's teams.
-  if (!e.isPublic && !isStaffish(user) && !(await editionAccess(user, id)).isOnTeam) throw new AuthError("NOT_FOUND");
+  // Internal events: staff, the members on one of the edition's teams and its director.
+  if (!e.isPublic && !isStaffish(user) && !(await editionAccess(user, id)).onEdition) throw new AuthError("NOT_FOUND");
   return e;
 }
 
+/** The event's director: name and photo for everyone who sees the event, the phone only when `showPhone`. */
+export async function eventDirector(eventId: string, showPhone: boolean) {
+  const e = await db.event.findUnique({
+    where: { id: eventId },
+    select: { director: { select: { id: true, firstName: true, lastName: true, photoUrl: true, phone: true, type: true, membershipStatus: true } } },
+  });
+  const d = e?.director;
+  if (!d) return null;
+  return { id: d.id, firstName: d.firstName, lastName: d.lastName, name: `${d.firstName} ${d.lastName}`, photoUrl: d.photoUrl, type: d.type, phone: showPhone ? d.phone : null, active: d.membershipStatus === "ACTIVE" };
+}
+
 export async function getEventForEdit(id: string) {
-  const e = await db.event.findUnique({ where: { id } });
+  const e = await db.event.findUnique({ where: { id }, include: { director: { select: { id: true, firstName: true, lastName: true, photoUrl: true, type: true } } } });
   if (!e) throw new AuthError("NOT_FOUND");
   return e;
 }

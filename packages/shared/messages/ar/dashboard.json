@@ -234,6 +234,8 @@
     "noTeams": "لست في أي مجموعة حاليًا.",
     "noTeamsHint": "سيضيفك مسؤولو الدورة إلى مجموعة.",
     "leader": "مسؤول(ة)",
+    "director": "مدير",
+    "directedTeams": "{count} فريق",
     "teamMembers": "{count} منشّط",
     "teamKids": "{count} طفل",
     "openChat": "محادثة المجموعة",

@@ -14,6 +14,8 @@ type EditionDef = {
   location: string;
   description: string;
   teams: TeamDef[];
+  /** The edition's director (e-mail), always one of its team leaders here so the demo scopes stay the same. */
+  director?: string;
   /** Kids picked from the seeded CHILD members (by age), a share of them coming back from `returning`. */
   kids: { ageMin: number; ageMax: number; count: number; returningFrom?: string; returning?: number };
   key: string;
@@ -40,6 +42,7 @@ const SERIES: SeriesDef[] = [
     editions: [
       {
         key: "festival15",
+        director: YASMINE,
         editionNumber: 15,
         seasonYear: 2025,
         start: [2025, 7, 14],
@@ -55,6 +58,7 @@ const SERIES: SeriesDef[] = [
       },
       {
         key: "festival16",
+        director: AMEL,
         editionNumber: 16,
         seasonYear: 2026,
         start: [2026, 7, 13],
@@ -94,6 +98,7 @@ const SERIES: SeriesDef[] = [
       },
       {
         key: "club2026",
+        director: YASMINE,
         editionNumber: 2,
         seasonYear: 2026,
         start: [2026, 10, 3],
@@ -142,6 +147,7 @@ const SERIES: SeriesDef[] = [
     editions: [
       {
         key: "techno2026",
+        director: AMEL,
         editionNumber: 1,
         seasonYear: 2026,
         start: [2026, 10, 7],
@@ -211,6 +217,7 @@ export async function seedSeries(db: PrismaClient) {
           seriesId: series.id,
           editionNumber: e.editionNumber,
           seasonYear: e.seasonYear,
+          directorId: e.director ? memberOf(e.director).id : null,
           title,
           description: e.description,
           category: "CHILDREN",

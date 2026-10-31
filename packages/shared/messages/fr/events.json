@@ -200,7 +200,18 @@
       "WAITLIST": "{name} passe en liste d'attente pour « {title} »",
       "PENDING": "Inscription de {name} en attente de paiement (« {title} »)"
     },
-    "monitorAssigned": "Vous encadrez la sortie « {title} »"
+    "monitorAssigned": "Vous encadrez la sortie « {title} »",
+    "directorAssigned": "Vous êtes le directeur de « {title} »",
+    "directorAssignedBody": "Vous gérez ses équipes et ses enfants : ouvrez la page pour commencer."
+  },
+  "director": {
+    "label": "Directeur",
+    "section": "Direction",
+    "none": "Pas de directeur",
+    "hint": "Un animateur qui gère toutes les équipes (responsables, animateurs) et les enfants de l'événement. Il est prévenu par une notification.",
+    "hintPrevious": "Proposé : le directeur de l'édition précédente.",
+    "inactive": "Adhésion non active : sans droits sur l'événement",
+    "call": "Appeler {name}"
   },
   "series": {
     "title": "Programmes",
@@ -256,6 +267,7 @@
     },
     "roleLeader": "Vous êtes responsable d'une équipe de cette édition : vous pouvez inscrire les enfants et les répartir dans les équipes.",
     "roleMember": "Vous faites partie d'une équipe de cette édition.",
+    "roleDirector": "Vous dirigez cette édition : vous créez et gérez ses équipes (responsables et animateurs), inscrivez les enfants et les répartissez.",
     "kpi": {
       "kids": "Enfants",
       "teams": "Équipes",
@@ -301,7 +313,7 @@
       "name": "Nom de l'équipe",
       "color": "Couleur",
       "leader": "Responsable",
-      "leaderLocked": "Seuls les administrateurs changent le responsable.",
+      "leaderLocked": "Seuls les administrateurs et le directeur changent le responsable.",
       "members": "Animateurs de l'équipe",
       "membersHint": "Membres, moniteurs et équipe de l'ONET.",
       "search": "Rechercher un animateur…",
