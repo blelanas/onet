@@ -165,15 +165,17 @@ describe("Google ID token verification (jose)", () => {
     verify = createGoogleVerifier(createLocalJWKSet({ keys: [jwk] }));
   });
 
-  const sign = (claims: Record<string, unknown>, opts: { iss?: string; aud?: string; exp?: number; signer?: PrivateKey } = {}) =>
-    new SignJWT({ email: "someone@gmail.com", email_verified: true, name: "Some One", ...claims })
+  /** `exp: null` signs a token without an expiry claim. */
+  const sign = (claims: Record<string, unknown>, opts: { iss?: string; aud?: string; exp?: number | null; signer?: PrivateKey } = {}) => {
+    const jwt = new SignJWT({ email: "someone@gmail.com", email_verified: true, name: "Some One", ...claims })
       .setProtectedHeader({ alg: "RS256", kid: "k1" })
       .setSubject("1234567890")
       .setIssuer(opts.iss ?? "https://accounts.google.com")
       .setAudience(opts.aud ?? CLIENT_ID)
-      .setIssuedAt()
-      .setExpirationTime(opts.exp ?? now() + 3600)
-      .sign(opts.signer ?? key);
+      .setIssuedAt();
+    if (opts.exp !== null) jwt.setExpirationTime(opts.exp ?? now() + 3600);
+    return jwt.sign(opts.signer ?? key);
+  };
 
   it("accepts a valid token from either Google issuer", async () => {
     expect(await verify(await sign({}), CLIENT_ID)).toEqual({ sub: "1234567890", email: "someone@gmail.com", emailVerified: true, name: "Some One" });
@@ -191,5 +193,9 @@ describe("Google ID token verification (jose)", () => {
     const other = (await generateKeyPair("RS256")).privateKey;
     await expect(verify(await sign({}, { signer: other }), CLIENT_ID)).rejects.toThrow();
     await expect(verify("not.a.jwt", CLIENT_ID)).rejects.toThrow();
+  });
+
+  it("rejects a token without an expiry", async () => {
+    await expect(verify(await sign({}, { exp: null }), CLIENT_ID)).rejects.toThrow(/exp/);
   });
 });

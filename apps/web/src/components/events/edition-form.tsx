@@ -18,6 +18,7 @@ export type NextEdition = {
   previous: { id: string; title: string; editionNumber: number | null; teamsCount: number } | null;
   /** The previous edition's director (when still eligible): proposed for the new one. */
   directorId: string | null;
+  director: { id: string; firstName: string; lastName: string; photoUrl: string | null; type: string } | null;
   /** The previous edition's frequency, else the series kind's default (club: weekly, festival: daily). */
   frequency: string;
 };
@@ -108,7 +109,7 @@ function EditionForm({ series, next, onCancel }: { series: Series; next: NextEdi
             <Select name="frequency" label={tfr("label")} defaultValue={next.frequency} options={EVENT_FREQUENCIES.map((v) => ({ value: v, label: tfr(v) }))} hint={tfr("hint")} wrapperClassName="sm:col-span-2" />
             <Input name="location" label={tc("fields.location")} wrapperClassName="sm:col-span-2" />
           </div>
-          <DirectorSelect defaultValue={next.directorId} hint={next.directorId ? `${td("hint")} ${td("hintPrevious")}` : td("hint")} />
+          <DirectorSelect defaultValue={next.directorId} current={next.director} hint={next.directorId ? `${td("hint")} ${td("hintPrevious")}` : td("hint")} />
           <Textarea name="description" label={tc("fields.description")} rows={3} />
           <Upload name="coverUrl" kind="image" label={tc("fields.cover")} />
           {next.previous && next.previous.teamsCount > 0 && (

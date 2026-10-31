@@ -553,9 +553,13 @@ async function main() {
   }
 
   const allUsers = await db.user.findMany({ include: { roles: { include: { role: true } } } });
+  // The attendance reminder only makes sense for the members who supervise a group.
+  const supervisors = new Set(
+    (await db.groupMonitor.findMany({ where: { member: { userId: { not: null } } }, select: { member: { select: { userId: true } } } })).map((g) => g.member.userId),
+  );
   for (const u of allUsers) {
     const rk = u.roles.map((r) => r.role.key);
-    const list: { type: string; title: string; body: string; link: string; read: boolean; d: number }[] = [
+    const list: { type: string; title: string; body: string; link: string; read: boolean; d: number; skip?: boolean }[] = [
       { type: "ANNOUNCEMENT", title: "Nouvelle annonce publiée", body: "Horaires d'été du siège", link: "/dashboard/announcements", read: true, d: -10 },
       { type: "EVENT_NEW", title: "Nouvel événement : Fête de l'enfance", body: "Journée portes ouvertes sur la place de la municipalité.", link: "/dashboard/events", read: false, d: -2 },
     ];
@@ -567,9 +571,11 @@ async function main() {
       );
     }
     if (rk.includes("accountant") || rk.includes("super_admin")) list.push({ type: "PAYMENT_CONFIRMED", title: "Paiement reçu", body: "Paiement en ligne de 35 TND reçu.", link: "/dashboard/finance/payments", read: false, d: -1 });
-    if (rk.includes("member")) list.push({ type: "ACTIVITY", title: "Rappel : feuille de présence", body: "Pensez à faire l'appel de votre groupe ce samedi.", link: "/dashboard/attendance", read: false, d: 0 });
+    // Pushed (and dated, below) for every member so the PRNG sequence stays the same, then left out unless they supervise a group.
+    if (rk.includes("member")) list.push({ type: "ACTIVITY", title: "Rappel : feuille de présence", body: "Pensez à faire l'appel de votre groupe ce samedi.", link: "/dashboard/attendance", read: false, d: 0, skip: !supervisors.has(u.id) });
     if (rk.includes("kid")) list.push({ type: "ACTIVITY", title: "Nouveau badge débloqué ! ⭐", body: "Tu as gagné le badge « Explorateur ».", link: "/dashboard/achievements", read: false, d: -1 });
-    await db.notification.createMany({ data: list.map((n) => ({ userId: u.id, type: n.type, title: n.title, body: n.body, link: n.link, readAt: n.read ? daysFromNow(n.d) : null, createdAt: daysFromNow(n.d, 9 + int(0, 8)) })) });
+    const rows = list.map((n) => ({ skip: n.skip, data: { userId: u.id, type: n.type, title: n.title, body: n.body, link: n.link, readAt: n.read ? daysFromNow(n.d) : null, createdAt: daysFromNow(n.d, 9 + int(0, 8)) } }));
+    await db.notification.createMany({ data: rows.filter((r) => !r.skip).map((r) => r.data) });
   }
 
   // Conversation between two members (animators)

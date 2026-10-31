@@ -24,7 +24,7 @@ export function createGoogleVerifier(keys?: JWTVerifyGetKey): GoogleVerifier {
   let jwks = keys;
   return async (credential, clientId) => {
     jwks ??= createRemoteJWKSet(new URL("https://www.googleapis.com/oauth2/v3/certs"));
-    const { payload } = await jwtVerify(credential, jwks, { issuer: GOOGLE_ISSUERS, audience: clientId, algorithms: ["RS256"] });
+    const { payload } = await jwtVerify(credential, jwks, { issuer: GOOGLE_ISSUERS, audience: clientId, algorithms: ["RS256"], requiredClaims: ["exp"] });
     if (typeof payload.sub !== "string" || typeof payload.email !== "string") throw new Error("Google token without sub/email");
     return {
       sub: payload.sub,
