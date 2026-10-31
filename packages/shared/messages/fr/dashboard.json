@@ -234,6 +234,8 @@
     "noTeams": "Vous n'êtes dans aucun groupe pour le moment.",
     "noTeamsHint": "Les responsables d'édition vous ajouteront à un groupe.",
     "leader": "Responsable",
+    "director": "Directeur",
+    "directedTeams": "{count, plural, =0 {Aucune équipe} one {# équipe} other {# équipes}}",
     "teamMembers": "{count, plural, one {# animateur} other {# animateurs}}",
     "teamKids": "{count, plural, one {# enfant} other {# enfants}}",
     "openChat": "Discussion du groupe",

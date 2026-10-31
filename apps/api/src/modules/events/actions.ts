@@ -8,6 +8,7 @@ import { EVENT_CATEGORIES, EVENT_STATUSES } from "@api/lib/constants";
 import { saveRollCall } from "@api/modules/registrations/roll-call";
 import { deleteTeamChat, syncEditionChats } from "./team-chat";
 import { isEditionNumberClash } from "./series-actions";
+import { assertDirectorEligible, directorField, notifyDirectorAssigned } from "./director";
 
 /** Optional integer field: missing → undefined (keep), "" / null → null (clear), else the number. */
 const optNullableInt = (min: number, max: number) =>
@@ -33,6 +34,8 @@ const eventSchema = z
     // Editions of a series only: absent from the form of other events → left unchanged; submitted blank → cleared.
     editionNumber: optNullableInt(1, 9999),
     seasonYear: optNullableInt(1990, 2100),
+    // Absent → left unchanged; blank → no director.
+    directorId: directorField,
   })
   .refine((d) => d.endAt >= d.startAt, { path: ["endAt"], message: "errors.validation" })
   .refine((d) => !d.registrationDeadline || d.registrationDeadline <= d.startAt, { path: ["registrationDeadline"], message: "errors.validation" });
@@ -49,7 +52,9 @@ export async function saveEvent(fd: FormData | Record<string, unknown>) {
       registrationDeadline: d.registrationDeadline ?? null,
       requiresPayment: d.price > 0 && d.requiresPayment,
     };
-    const before = id ? await db.event.findUnique({ where: { id }, select: { title: true } }) : null;
+    const before = id ? await db.event.findUnique({ where: { id }, select: { title: true, directorId: true } }) : null;
+    if (id && !before) throw new ActionError("errors.notFound");
+    await assertDirectorEligible(d.directorId, before?.directorId ?? null);
     const e = await (id ? db.event.update({ where: { id }, data }) : db.event.create({ data })).catch((err: unknown) => {
       // Another edition of the series already has that number.
       if (isEditionNumberClash(err)) throw new ActionError("errors.inUse");
@@ -57,7 +62,9 @@ export async function saveEvent(fd: FormData | Record<string, unknown>) {
     });
     // Team group chats are named after the edition.
     if (before && before.title !== e.title) await syncEditionChats(db, e.id);
-    await audit(user.id, id ? "update" : "create", "Event", e.id, { title: e.title, status: e.status, price: e.price });
+    const directorChanged = e.directorId !== (before?.directorId ?? null);
+    if (e.directorId && directorChanged) await notifyDirectorAssigned(e.directorId, e, user.id);
+    await audit(user.id, id ? "update" : "create", "Event", e.id, { title: e.title, status: e.status, price: e.price, ...(directorChanged ? { directorId: e.directorId } : {}) });
     revalidatePath("/dashboard/events");
     revalidatePath(`/dashboard/events/${e.id}`);
     return { id: e.id };

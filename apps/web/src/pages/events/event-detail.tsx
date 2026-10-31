@@ -27,6 +27,7 @@ import { ParticipantsTable } from "@/components/registrations/participants-table
 import { RollCallForm } from "@/components/registrations/roll-call-form";
 import { CategoryIcon, DateTile, PlacesMeter, categoryColor } from "@/components/registrations/visuals";
 import { dateTime, hm } from "@/components/registrations/format";
+import { DirectorCard } from "@/components/events/director-card";
 import { EditionOverview } from "@/components/events/edition-overview";
 import { EditionTeams } from "@/components/events/edition-teams";
 import { SeriesKindIcon, seriesName, useDateRange, useEditionLabel } from "@/components/events/series-visuals";
@@ -192,6 +193,7 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
           </div>
 
           <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
+            {data.director && <DirectorCard director={data.director} color={color} />}
             <RegisterCard data={data} eventId={id} full={left === 0} />
             {e.status === "PUBLISHED" && e.endAt > new Date() && (
               <section className="card p-5">

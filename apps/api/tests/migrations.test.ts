@@ -124,4 +124,33 @@ describe("migrations", () => {
       client.close();
     }
   });
+
+  it("0004 adds the event director without touching events, teams or registrations; deleting the member clears it", async () => {
+    const file = path.join(mkdtempSync(path.join(os.tmpdir(), "onet-mig-")), "m.db");
+    const client = createClient({ url: `file:${file}` });
+    try {
+      for (const f of ["0001_init.sql", "0002_self_signup.sql", "0003_members_platform.sql"]) await client.executeMultiple(sql(f));
+      await client.executeMultiple(`
+        INSERT INTO "Member" ("id", "type", "firstName", "lastName", "membershipNumber", "updatedAt") VALUES ('k1', 'CHILD', 'K', 'Id', 'ONT-0001', CURRENT_TIMESTAMP), ('m1', 'MONITOR', 'Hela', 'D', 'ONT-0002', CURRENT_TIMESTAMP);
+        INSERT INTO "Event" ("id", "title", "category", "startAt", "endAt", "updatedAt") VALUES ('e1', 'Fête', 'CHILDREN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "EventTeam" ("id", "eventId", "name", "leaderId", "updatedAt") VALUES ('t1', 'e1', 'Étoiles', 'm1', CURRENT_TIMESTAMP);
+        INSERT INTO "EventRegistration" ("id", "eventId", "memberId", "teamId", "updatedAt") VALUES ('r1', 'e1', 'k1', 't1', CURRENT_TIMESTAMP);
+      `);
+      // Like scripts/migrate.mjs: foreign keys enforced, the whole file in one write transaction.
+      await client.execute("PRAGMA foreign_keys = ON");
+      const tx = await client.transaction("write");
+      await tx.executeMultiple(sql("0004_event_director.sql"));
+      await tx.commit();
+      const count = async (t: string) => Number((await client.execute(`SELECT count(*) AS n FROM "${t}"`)).rows[0].n);
+      for (const [t, n] of [["Event", 1], ["EventTeam", 1], ["EventRegistration", 1], ["Member", 2]] as const) expect(await count(t)).toBe(n);
+      expect((await client.execute(`SELECT "directorId" FROM "Event"`)).rows[0].directorId).toBeNull();
+      await client.execute(`UPDATE "Event" SET "directorId" = 'm1'`);
+      await expect(client.execute(`UPDATE "Event" SET "directorId" = 'missing'`)).rejects.toThrow(/FOREIGN KEY/);
+      await client.execute(`DELETE FROM "Member" WHERE "id" = 'm1'`);
+      expect((await client.execute(`SELECT "directorId" FROM "Event"`)).rows[0].directorId).toBeNull();
+      expect(await count("EventRegistration")).toBe(1);
+    } finally {
+      client.close();
+    }
+  });
 });

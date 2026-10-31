@@ -8,6 +8,7 @@ import { EVENT_CATEGORIES, SERIES_KINDS } from "@api/lib/constants";
 import { defaultEditionTitle, tunisYear } from "./series";
 import { syncTeamChat } from "./team-chat";
 import { TEAM_ELIGIBLE } from "./teams";
+import { assertDirectorEligible, directorField, notifyDirectorAssigned } from "./director";
 
 /** The (seriesId, editionNumber) unique index refused a row: that number is already taken in the series. */
 export function isEditionNumberClash(e: unknown) {
@@ -80,6 +81,7 @@ const editionSchema = z
     capacity: z.preprocess((v) => (v === "" || v == null ? undefined : Number(v)), z.number().int().min(1).optional()),
     isPublic: optBool,
     copyTeams: zs.bool,
+    directorId: directorField,
   })
   .refine((d) => d.endAt >= d.startAt, { path: ["endAt"], message: "errors.validation" })
   .refine((d) => !d.title || d.title.length <= 160, { path: ["title"], message: "errors.validation" });
@@ -88,6 +90,7 @@ const editionSchema = z
  * POST /series/:id/editions — creates the next edition (an Event of the series): number = max + 1 unless
  * given, season = current year unless given, title from the series kind unless given. `copyTeams` copies
  * the previous edition's teams (name, colour, leader, members — not the kids) with fresh group chats.
+ * `directorId`: the edition's director (optional, notified); the form proposes the previous edition's one.
  */
 export async function createEdition(fd: FormData | Record<string, unknown>) {
   return runAction(editionSchema, formToObject(fd), async (d) => {
@@ -97,6 +100,7 @@ export async function createEdition(fd: FormData | Record<string, unknown>) {
     const max = await db.event.aggregate({ where: { seriesId: series.id }, _max: { editionNumber: true } });
     const editionNumber = d.editionNumber ?? (max._max.editionNumber ?? 0) + 1;
     if (d.editionNumber && (await db.event.count({ where: { seriesId: series.id, editionNumber: d.editionNumber } }))) throw new ActionError("errors.inUse");
+    await assertDirectorEligible(d.directorId);
     const seasonYear = d.seasonYear ?? tunisYear();
     const title = d.title ?? defaultEditionTitle(series, editionNumber, seasonYear);
     // The edition the teams are copied from: the closest lower number, else the most recent one.
@@ -125,6 +129,7 @@ export async function createEdition(fd: FormData | Record<string, unknown>) {
           requiresPayment: false,
           status: "PUBLISHED",
           isPublic: d.isPublic ?? true,
+          directorId: d.directorId ?? null,
         },
       });
       let copied = 0;
@@ -147,7 +152,8 @@ export async function createEdition(fd: FormData | Record<string, unknown>) {
       if (isEditionNumberClash(e)) throw new ActionError("errors.inUse");
       throw e;
     });
-    await audit(user.id, "create", "Event", result.id, { title, seriesId: series.id, editionNumber, seasonYear, copiedTeams: result.copied });
+    if (d.directorId) await notifyDirectorAssigned(d.directorId, { id: result.id, title }, user.id);
+    await audit(user.id, "create", "Event", result.id, { title, seriesId: series.id, editionNumber, seasonYear, copiedTeams: result.copied, directorId: d.directorId ?? null });
     return { id: result.id, editionNumber, seasonYear, title, copiedTeams: result.copied };
   });
 }

@@ -3,7 +3,7 @@ import { db } from "@api/lib/db";
 import { AuthError, requirePermission } from "@api/lib/auth/guards";
 import { ActionError, formToObject, runAction, zs } from "@api/lib/actions";
 import { audit } from "@api/lib/audit";
-import { teamEditRights } from "./access";
+import { assertCanManageTeams, editionAccess, teamEditRights } from "./access";
 import { hexColor } from "./series-actions";
 import { TEAM_ELIGIBLE, TEAM_MEMBER_TYPES } from "./teams";
 import { deleteTeamChat, syncTeamChat } from "./team-chat";
@@ -20,8 +20,8 @@ const teamSchema = z.object({
 });
 
 /**
- * POST /events/:id/teams — create (admins) or update a team. Admins change everything; the team's own
- * leader may rename it, recolour it and add / remove its members (not change the leader). The group chat
+ * POST /events/:id/teams — create (admins, the edition's director) or update a team. Admins and the
+ * director change everything; the team's own leader may rename it, recolour it and add / remove its members (not change the leader). The group chat
  * is created / synced in the same transaction.
  */
 export async function saveTeam(fd: FormData | Record<string, unknown>) {
@@ -33,7 +33,9 @@ export async function saveTeam(fd: FormData | Record<string, unknown>) {
       ? await db.eventTeam.findUnique({ where: { id: d.id }, select: { id: true, eventId: true, leaderId: true, leader: { select: { membershipStatus: true } }, members: { select: { memberId: true } } } })
       : null;
     if (d.id && (!existing || existing.eventId !== event.id)) throw new ActionError("errors.notFound");
-    const rights = existing ? teamEditRights(user, existing) : user.permissions.has("events.manage") ? "full" : null;
+    // Admins and the edition's director: everything; a team's own leader: its name, colour and members.
+    const access = await editionAccess(user, event.id);
+    const rights = existing ? teamEditRights(user, access, existing) : access.manageTeams ? "full" : null;
     if (!rights) throw new AuthError("FORBIDDEN");
 
     const leaderId = rights === "full" ? (d.leaderId ?? null) : (existing?.leaderId ?? null);
@@ -62,12 +64,16 @@ export async function saveTeam(fd: FormData | Record<string, unknown>) {
   });
 }
 
-/** DELETE /events/teams/:teamId — admins; the kids stay in the edition (unassigned) and the group chat is deleted. */
+/**
+ * DELETE /events/teams/:teamId — admins and the edition's director; the kids stay in the edition (unassigned)
+ * and the group chat is deleted.
+ */
 export async function deleteTeam(teamId: string) {
   return runAction(zs.id, teamId, async (id) => {
-    const user = await requirePermission("events.manage");
+    const user = await requirePermission("events.read");
     const team = await db.eventTeam.findUnique({ where: { id }, select: { id: true, name: true, eventId: true, conversationId: true } });
     if (!team) throw new ActionError("errors.notFound");
+    await assertCanManageTeams(user, team.eventId);
     await db.$transaction(async (tx) => {
       await tx.eventRegistration.updateMany({ where: { teamId: team.id }, data: { teamId: null } });
       await tx.eventTeam.delete({ where: { id: team.id } });

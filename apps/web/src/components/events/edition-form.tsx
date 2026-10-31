@@ -7,9 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Checkbox, Input, Textarea } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Upload } from "@/components/ui/upload";
+import { DirectorSelect } from "./director-select";
 
 type Series = { id: string; name: string; nameAr: string | null; kind: string };
-export type NextEdition = { editionNumber: number; seasonYear: number; title: string; previous: { id: string; title: string; editionNumber: number | null; teamsCount: number } | null };
+export type NextEdition = {
+  editionNumber: number;
+  seasonYear: number;
+  title: string;
+  previous: { id: string; title: string; editionNumber: number | null; teamsCount: number } | null;
+  /** The previous edition's director (when still eligible): proposed for the new one. */
+  directorId: string | null;
+};
 
 /** Same rule as the API: "تظاهرة الطفولة 16" for a festival, "<name> 2026-2027" otherwise. */
 function defaultTitle(s: Series, n: number, y: number) {
@@ -36,6 +44,7 @@ function EditionForm({ series, next, onCancel }: { series: Series; next: NextEdi
   const t = useTranslations("events.edition");
   const tf = useTranslations("events.form");
   const tc = useTranslations("common");
+  const td = useTranslations("events.director");
   const [number, setNumber] = useState(String(next.editionNumber));
   const [year, setYear] = useState(String(next.seasonYear));
   const [title, setTitle] = useState(next.title);
@@ -94,6 +103,7 @@ function EditionForm({ series, next, onCancel }: { series: Series; next: NextEdi
             <Input name="endAt" type="datetime-local" label={tf("endAt")} required />
             <Input name="location" label={tc("fields.location")} wrapperClassName="sm:col-span-2" />
           </div>
+          <DirectorSelect defaultValue={next.directorId} hint={next.directorId ? `${td("hint")} ${td("hintPrevious")}` : td("hint")} />
           <Textarea name="description" label={tc("fields.description")} rows={3} />
           <Upload name="coverUrl" kind="image" label={tc("fields.cover")} />
           {next.previous && next.previous.teamsCount > 0 && (

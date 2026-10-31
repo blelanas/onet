@@ -36,6 +36,7 @@ export default {
     weakPassword: T("8 caractères minimum, avec au moins une lettre et un chiffre", "8 أحرف على الأقل مع حرف ورقم", "At least 8 characters with a letter and a digit"),
     emailTaken: T("Cette adresse e-mail est déjà utilisée", "هذا البريد مستعمل بالفعل", "This email is already in use"), capacityFull: T("Plus de places disponibles", "لا توجد أماكن شاغرة", "No places left"),
     deadlinePassed: T("La date limite d'inscription est dépassée", "انتهى أجل التسجيل", "The registration deadline has passed"), alreadyRegistered: T("Déjà inscrit", "مسجّل مسبقًا", "Already registered"),
+    directorIneligible: T("Ce membre ne peut pas diriger l'événement (adhésion non active ou compte désactivé)", "لا يمكن لهذا العضو إدارة الحدث (انخراط غير نشط أو حساب معطّل)", "This member can't direct the event (membership not active or account disabled)"),
     inUse: T("Impossible : cet élément est utilisé ailleurs", "غير ممكن: هذا العنصر مستخدم في مكان آخر", "Not possible: this item is used elsewhere"), amountTooHigh: T("Le montant dépasse le reste à payer", "المبلغ يتجاوز المتبقي", "Amount exceeds the remaining balance"),
     accountRejected: T("Votre demande d'inscription a été refusée par l'association. Contactez-la pour en savoir plus.", "رفضت المنظمة طلب تسجيلك. اتّصل بها لمزيد من المعلومات.", "Your sign-up request was declined by the association. Contact it to find out more."),
     accountInactive: T("Ce compte est désactivé. Contactez l'association.", "هذا الحساب معطّل. اتّصل بالمنظمة.", "This account is disabled. Contact the association."),
