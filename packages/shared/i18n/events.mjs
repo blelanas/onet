@@ -226,7 +226,7 @@ export default {
     noSessions: T("Aucune séance pour cet événement", "لا توجد حصص لهذا الحدث", "No sessions for this event"),
     noTeams: T("Aucune équipe à appeler", "لا يوجد فريق لتسجيل حضوره", "No team to call"),
     noTeamsHint: T("Créez les équipes et répartissez les enfants pour faire l'appel.", "أنشئ الفرق ووزّع الأطفال لتسجيل الحضور.", "Create the teams and assign the kids to take the roll call."),
-    teamCount: T("{present} / {total} présents", "{present}/{total} حاضرون", "{present} / {total} present"),
+    teamCount: T("{present} / {total} {present, plural, one {présent} other {présents}}", "الحضور: {present}/{total}", "{present} / {total} present"),
     leader: T("Responsable : {name}", "القائد: {name}", "Leader: {name}"),
     emptyTeam: T("Aucun enfant dans cette équipe", "لا يوجد أطفال في هذا الفريق", "No kids in this team"),
     readOnly: T("Lecture seule : l'appel est fait par le responsable de l'équipe ou le directeur.", "للاطلاع فقط: يسجّل الحضورَ قائدُ الفريق أو المدير.", "Read only: the roll call is taken by the team's leader or the director."),
@@ -234,7 +234,7 @@ export default {
     jump: T("Aller à l'équipe", "الانتقال إلى الفريق", "Go to the team"),
     history: {
       title: T("Séances passées", "الحصص السابقة", "Past sessions"),
-      line: T("{present} / {marked} présents", "{present}/{marked} حاضرون", "{present} / {marked} present"),
+      line: T("{present} / {marked} {present, plural, one {présent} other {présents}}", "الحضور: {present}/{marked}", "{present} / {marked} present"),
       notTaken: T("Appel non fait", "لم يُسجَّل الحضور", "No roll call"),
       empty: T("Aucune séance passée pour l'instant", "لا توجد حصص سابقة بعد", "No past sessions yet"),
       open: T("Ouvrir la séance du {date}", "فتح حصة {date}", "Open the session of {date}"),
@@ -245,7 +245,7 @@ export default {
       line: T(
         "{present, plural, one {# présence} other {# présences}} sur {marked}",
         "{present, plural, =0 {لا حضور} one {حضور واحد} two {حضوران} few {# حضورات} many {# حضورًا} other {# حضور}} من {marked}",
-        "present {present} times out of {marked}",
+        "{present, plural, one {present once} other {present # times}} out of {marked}",
       ),
       none: T("Pas encore appelé", "لم يُسجَّل حضوره بعد", "Not called yet"),
       empty: T("Aucun enfant dans vos équipes", "لا يوجد أطفال في فرقك", "No kids in your teams"),

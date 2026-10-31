@@ -1,4 +1,5 @@
 import type { Request } from "express";
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { ageFrom, ATTENDANCE_STATUSES, defaultSession, eventSessions, zonedDayKey, type AttendanceStatus } from "@onet/shared";
 import { db } from "@api/lib/db";
@@ -9,8 +10,8 @@ import { audit } from "@api/lib/audit";
 import { param, qs } from "@api/lib/http";
 import { dayKey, normalizeDay } from "@api/modules/attendance/day";
 import { editionAccess, seesAllKids } from "./access";
+import { ACTIVE_STATUSES } from "@api/modules/registrations/service";
 import { getEvent } from "./queries";
-import { KIDS_OF_EDITION } from "./series";
 
 /**
  * Group attendance of an event (edition or one-off event with teams): one roll call per team and per session
@@ -23,7 +24,9 @@ import { KIDS_OF_EDITION } from "./series";
  *    team only (while their membership is ACTIVE);
  *  - views: the above, the users who see every kid (members.read_all) and the team members (their teams only);
  *  - anyone else: 403.
- * Only kids actively registered in that team can be marked.
+ * Only kids actively registered in that team (PENDING / CONFIRMED: not on the waiting list, not cancelled) are
+ * listed and can be marked. Counts and rates only use the rows of the event's current past sessions (its dates
+ * or frequency may have changed since a row was saved).
  */
 
 export const eventContextKey = (eventId: string) => `event:${eventId}`;
@@ -33,6 +36,9 @@ export const sessionDate = (key: string) => normalizeDay(key);
 
 /** Today in the association's time zone. */
 export const todayKey = () => zonedDayKey(new Date());
+
+/** Registrations taking part in the roll call: kids with an active registration (not waitlisted nor cancelled). */
+const ROLL_CALL_REG: Prisma.EventRegistrationWhereInput = { status: { in: ACTIVE_STATUSES }, member: { type: "CHILD" } };
 
 /** "Present" in the counts: there (on time or late). */
 const ATTENDED = new Set(["PRESENT", "LATE"]);
@@ -92,13 +98,15 @@ export async function eventAttendancePage(req: Request) {
   const teams = allTeams.filter((t) => rights.view.includes(t.id));
 
   const regs = await db.eventRegistration.findMany({
-    where: { eventId: id, ...KIDS_OF_EDITION, teamId: { in: teams.map((t) => t.id) } },
+    where: { eventId: id, ...ROLL_CALL_REG, teamId: { in: teams.map((t) => t.id) } },
     orderBy: [{ member: { firstName: "asc" } }, { member: { lastName: "asc" } }],
     select: { teamId: true, member: { select: { id: true, firstName: true, lastName: true, photoUrl: true, dateOfBirth: true, medicalNotes: true } } },
   });
   const kidIds = regs.map((r) => r.member.id);
   const contextKey = eventContextKey(id);
-  const past = { contextKey, memberId: { in: kidIds }, date: { lte: sessionDate(today) } };
+  // Only the rows of the event's current past sessions count (not those of days that are no longer sessions).
+  const pastSessions = sessions.filter((s) => s <= today);
+  const past = { contextKey, memberId: { in: kidIds }, date: { in: pastSessions.map(sessionDate) } };
   const [rows, bySession, byKid] = await Promise.all([
     date ? db.attendance.findMany({ where: { contextKey, date: sessionDate(date), memberId: { in: kidIds } }, select: { memberId: true, status: true, note: true, updatedAt: true } }) : Promise.resolve([]),
     db.attendance.groupBy({ by: ["date", "status"], where: past, _count: { _all: true } }),
@@ -139,8 +147,7 @@ export async function eventAttendancePage(req: Request) {
       };
     }),
     // Past sessions (newest first) with the number of kids marked present / marked, for the visible teams.
-    history: sessions
-      .filter((s) => s <= today)
+    history: [...pastSessions]
       .reverse()
       .map((s) => ({ date: s, present: perSession.get(s)?.attended ?? 0, marked: perSession.get(s)?.total ?? 0 })),
     // Each visible kid's rate over the past sessions where they were marked.
@@ -198,7 +205,7 @@ export async function saveEventAttendance(input: FormData | Record<string, unkno
     if (new Set(entries.map((x) => x.memberId)).size !== entries.length) throw new ActionError("errors.validation");
 
     // Only the kids actively registered in this team.
-    const regs = await db.eventRegistration.findMany({ where: { eventId: event.id, teamId: team.id, ...KIDS_OF_EDITION }, select: { memberId: true } });
+    const regs = await db.eventRegistration.findMany({ where: { eventId: event.id, teamId: team.id, ...ROLL_CALL_REG }, select: { memberId: true } });
     const allowed = new Set(regs.map((r) => r.memberId));
     if (entries.some((x) => !allowed.has(x.memberId))) throw new ActionError("errors.validation");
 

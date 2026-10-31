@@ -73,7 +73,7 @@
   },
   "team": {
     "label": "Équipe de {name}",
-    "leaderHint": "Vous gérez les enfants de votre équipe ; ceux des autres équipes sont en lecture seule. Un enfant sans équipe peut rejoindre la vôtre.",
+    "leaderHint": "Vous gérez les enfants de vos équipes ; ceux des autres équipes sont en lecture seule. Un enfant sans équipe peut rejoindre l'une des vôtres.",
     "saved": "Équipe mise à jour"
   },
   "errors": {

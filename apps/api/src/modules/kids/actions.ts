@@ -76,6 +76,16 @@ function assertTargetTeam(access: EditionAccess, teamId: string | null) {
   if (!access.ledTeamIds.includes(teamId)) throw new AuthError("FORBIDDEN");
 }
 
+/**
+ * Inside the write transaction: a leader (not an admin / the director) must still lead the target team (with an
+ * ACTIVE membership) — the access snapshot was read before the transaction.
+ */
+async function assertStillLeads(tx: Prisma.TransactionClient, user: CurrentUser, access: EditionAccess, teamId: string | null) {
+  if (access.manageAllKids || !teamId) return;
+  const n = await tx.eventTeam.count({ where: { id: teamId, leaderId: user.memberId ?? "__none__", leader: { membershipStatus: "ACTIVE" } } });
+  if (!n) throw new AuthError("FORBIDDEN");
+}
+
 const addKidSchema = z
   .object({
     eventId: zs.id,
@@ -119,6 +129,7 @@ export async function addKid(fd: FormData | Record<string, unknown>) {
     assertTargetTeam(access, teamId);
 
     const result = await db.$transaction(async (tx) => {
+      await assertStillLeads(tx, user, access, teamId);
       let memberId = d.memberId;
       const registration = (kidId: string) =>
         tx.eventRegistration.findUnique({ where: { eventId_memberId: { eventId: event.id, memberId: kidId } }, select: { id: true, status: true, invoice: { select: { status: true } } } });
@@ -192,7 +203,13 @@ export async function setKidTeam(fd: FormData | Record<string, unknown>) {
     const { reg, access } = await editionRegistration(user, d.eventId, d.registrationId, true);
     const teamId = await editionTeamOrNull(d.eventId, d.teamId);
     assertTargetTeam(access, teamId);
-    await db.eventRegistration.update({ where: { id: reg.id }, data: { teamId } });
+    // Race-safe: a leader only moves the kid if they are still in the team that was authorized above, and still
+    // leads the target team.
+    await db.$transaction(async (tx) => {
+      await assertStillLeads(tx, user, access, teamId);
+      const moved = await tx.eventRegistration.updateMany({ where: { id: reg.id, eventId: d.eventId, ...(access.manageAllKids ? {} : { teamId: reg.teamId }) }, data: { teamId } });
+      if (!moved.count) throw new ActionError("errors.notFound");
+    });
     await audit(user.id, "assign_team", "EventRegistration", reg.id, { eventId: d.eventId, teamId });
     return { teamId };
   });
@@ -205,9 +222,14 @@ export async function setKidTeam(fd: FormData | Record<string, unknown>) {
 export async function removeKid(eventId: string, registrationId: string) {
   return runAction(z.object({ eventId: zs.id, registrationId: zs.id }), { eventId, registrationId }, async (d) => {
     const user = await requirePermission("events.read");
-    const { reg } = await editionRegistration(user, d.eventId, d.registrationId);
+    const { reg, access } = await editionRegistration(user, d.eventId, d.registrationId);
     if (reg.invoiceId && reg.invoice && reg.invoice.status !== "CANCELLED") throw new ActionError("errors.inUse");
-    await db.eventRegistration.delete({ where: { id: reg.id } });
+    // Race-safe: only deletes the registration if it still has no live invoice and, for a leader, is still in the
+    // team that was authorized above.
+    const removed = await db.eventRegistration.deleteMany({
+      where: { id: reg.id, eventId: d.eventId, ...(access.manageAllKids ? {} : { teamId: reg.teamId }), OR: [{ invoiceId: null }, { invoice: { status: "CANCELLED" } }] },
+    });
+    if (!removed.count) throw new ActionError("errors.notFound");
     await audit(user.id, "remove_kid", "EventRegistration", reg.id, { eventId: d.eventId, memberId: reg.memberId });
   });
 }

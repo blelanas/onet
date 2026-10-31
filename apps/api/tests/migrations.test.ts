@@ -183,6 +183,12 @@ describe("migrations", () => {
       expect(freq).toEqual({ e_club: "WEEKLY", e_fest: "DAILY", e_one: "ONCE", e_other: "ONCE" });
       expect((await client.execute(`SELECT "directorId", "seriesId" FROM "Event" WHERE "id" = 'e_club'`)).rows[0]).toMatchObject({ directorId: "m1", seriesId: "club" });
       expect((await client.execute(`SELECT "teamId" FROM "EventRegistration"`)).rows[0].teamId).toBe("t1");
+      expect((await client.execute(`SELECT "status", "memberId", "eventId", "contextKey" FROM "Attendance" WHERE "id" = 'a1'`)).rows[0]).toMatchObject({
+        status: "PRESENT",
+        memberId: "k1",
+        eventId: "e_club",
+        contextKey: "event:e_club",
+      });
       // New events get the default.
       await client.execute(event("e_new", null));
       expect((await client.execute(`SELECT "frequency" FROM "Event" WHERE "id" = 'e_new'`)).rows[0].frequency).toBe("ONCE");

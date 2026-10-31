@@ -5,6 +5,7 @@ import superjson from "superjson";
 import { defaultFrequencyForKind, defaultSession, eventSessions, MAX_SESSIONS, zonedDayKey, zonedTimeToDate } from "@onet/shared";
 import { createApp } from "@api/app";
 import { db } from "@api/lib/db";
+import { normalizeDay } from "@api/modules/attendance/day";
 
 let server: Server;
 let base = "";
@@ -15,8 +16,27 @@ beforeAll(async () => {
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api`;
 });
 afterAll(async () => {
-  await new Promise((r) => server.close(r));
-  await db.$disconnect();
+  try {
+    // Everything the suite created under "Club présences": editions (with their teams, team chats,
+    // registrations and attendance), then the kid it created and that kid's new parent contact.
+    if (clubId) {
+      const editions = await db.event.findMany({ where: { seriesId: clubId }, select: { id: true, teams: { select: { conversationId: true } } } });
+      const ids = editions.map((e) => e.id);
+      await db.attendance.deleteMany({ where: { OR: [{ eventId: { in: ids } }, { contextKey: { in: ids.map((id) => `event:${id}`) } }] } });
+      const chats = editions.flatMap((e) => e.teams.map((t) => t.conversationId)).filter((c): c is string => !!c);
+      await db.conversation.deleteMany({ where: { id: { in: chats }, kind: "GROUP" } });
+      await db.event.deleteMany({ where: { id: { in: ids } } });
+      await db.eventSeries.deleteMany({ where: { id: clubId } });
+    }
+    if (kid1) {
+      const parents = (await db.guardianship.findMany({ where: { childId: kid1 }, select: { parentId: true } })).map((g) => g.parentId);
+      await db.member.deleteMany({ where: { id: kid1 } });
+      await db.member.deleteMany({ where: { id: { in: parents }, userId: null, childrenLinks: { none: {} } } });
+    }
+  } finally {
+    await new Promise((r) => server.close(r));
+    await db.$disconnect();
+  }
 });
 
 // Each request comes from its own client IP (trusted proxy hop) so the per-IP limiters don't interfere.
@@ -99,6 +119,16 @@ describe("event sessions", () => {
     expect(defaultSession(s, "2026-09-01")).toBe("2026-10-03");
     expect(defaultSession([], "2026-09-01")).toBeNull();
     expect([defaultFrequencyForKind("CLUB"), defaultFrequencyForKind("FESTIVAL"), defaultFrequencyForKind("OTHER")]).toEqual(["WEEKLY", "DAILY", "ONCE"]);
+  });
+
+  it("no sessions when max <= 0 or a date is invalid (zonedDayKey gives the NaN sentinel instead of throwing)", () => {
+    expect(eventSessions({ startAt: tunis(2026, 5, 4, 9), endAt: tunis(2026, 5, 4, 17), frequency: "ONCE" }, undefined, 0)).toEqual([]);
+    expect(eventSessions({ startAt: tunis(2026, 5, 4), endAt: tunis(2026, 5, 9), frequency: "DAILY" }, undefined, -1)).toEqual([]);
+    expect(eventSessions({ startAt: tunis(2026, 5, 4), endAt: tunis(2026, 5, 9), frequency: "DAILY" }, undefined, 2)).toEqual(["2026-05-04", "2026-05-05"]);
+    expect(zonedDayKey("not a date")).toBe("NaN-NaN-NaN");
+    expect(zonedDayKey(new Date(Number.NaN))).toBe("NaN-NaN-NaN");
+    expect(eventSessions({ startAt: "not a date", endAt: tunis(2026, 5, 9), frequency: "DAILY" })).toEqual([]);
+    expect(eventSessions({ startAt: tunis(2026, 5, 4), endAt: new Date(Number.NaN), frequency: "WEEKLY" })).toEqual([]);
   });
 });
 
@@ -253,6 +283,33 @@ describe("a leader manages only their own team's kids", () => {
   });
 });
 
+describe("kids directory scope", () => {
+  type Dir = { total: number; rows: { member: { id: string }; latestEdition: { id: string } | null; editionsCount: number }[] };
+
+  it("a director sees only the editions they work on for each kid (latest edition, count, filters)", async () => {
+    // kid 2 is also in a later edition of the club that the director neither directs nor has a team in.
+    const later = await db.event.create({ data: { title: "Club présences (autre)", category: "CHILDREN", seriesId: clubId, startAt: new Date(Date.now() + 100 * DAY), endAt: new Date(Date.now() + 101 * DAY), status: "PUBLISHED" } });
+    await db.eventRegistration.create({ data: { eventId: later.id, memberId: kid2, status: "CONFIRMED" } });
+    const k2 = await db.member.findUniqueOrThrow({ where: { id: kid2 }, select: { firstName: true, lastName: true } });
+    const find = async (token: string, extra = "") => {
+      const page = await call<Dir>("GET", `/kids?q=${encodeURIComponent(`${k2.firstName} ${k2.lastName}`)}${extra}`, { token });
+      expect(page.status).toBe(200);
+      return page.body.rows.find((r) => r.member.id === kid2);
+    };
+    const asAdmin = await find(admin);
+    expect(asAdmin?.latestEdition?.id).toBe(later.id);
+    const asDirector = await find(director);
+    expect(asDirector?.latestEdition?.id).toBe(edition);
+    // The count only includes the editions the director works on (here, not the later one).
+    expect(asDirector!.editionsCount).toBeLessThan(asAdmin!.editionsCount);
+    // Filtering by an edition the director isn't on doesn't reveal the kid's registration there.
+    expect(await find(director, `&eventId=${later.id}`)).toBeUndefined();
+    expect(await find(admin, `&eventId=${later.id}`)).toBeDefined();
+    // ... nor through its season / series filters for another edition: still the director's edition shown.
+    expect((await find(director, `&seriesId=${clubId}`))?.latestEdition?.id).toBe(edition);
+  });
+});
+
 describe("group attendance of an event", () => {
   type Team = { id: string; canRecord: boolean; kids: { id: string }[]; statuses: Record<string, { status: string }>; present: number; total: number };
   type Page = { date: string; today: string; sessions: string[]; prevDate: string | null; teams: Team[]; history: { date: string; present: number; marked: number }[]; rates: { memberId: string; rate: number | null; marked: number }[]; canRecordAny: boolean };
@@ -313,6 +370,21 @@ describe("group attendance of an event", () => {
     expect(await db.attendance.count({ where: { contextKey: `event:${edition}` } })).toBe(before);
   });
 
+  it("waitlisted kids are neither listed nor accepted in the roll call", async () => {
+    const waiting = await db.member.findFirstOrThrow({ where: { type: "CHILD", eventRegistrations: { none: { eventId: edition } } }, select: { id: true } });
+    const reg = await db.eventRegistration.create({ data: { eventId: edition, memberId: waiting.id, teamId: teamA, status: "WAITLIST" } });
+    try {
+      const page = await call<Page>("GET", `/events/${edition}/attendance`, { token: leader });
+      expect(page.body.teams[0].kids.map((k) => k.id)).toEqual([kid1]);
+      expect(page.body.rates.map((r) => r.memberId)).toEqual([kid1]);
+      const r = await call<Result<unknown>>("POST", `/events/${edition}/attendance`, { token: leader, body: { date: today(), teamId: teamA, entries: [{ memberId: waiting.id, status: "PRESENT" }] } });
+      expect(r.body).toMatchObject({ ok: false, error: "errors.validation" });
+      expect(await db.attendance.count({ where: { memberId: waiting.id, contextKey: `event:${edition}` } })).toBe(0);
+    } finally {
+      await db.eventRegistration.delete({ where: { id: reg.id } });
+    }
+  });
+
   it("keeps one row per kid and per day (upsert), also with s_<kidId> fields; past sessions count in the rates", async () => {
     expect((await call("POST", `/events/${edition}/attendance`, { token: leader, body: { date: today(), teamId: teamA, entries: [{ memberId: kid1, status: "ABSENT", note: "malade" }] } })).body).toMatchObject({ ok: true });
     expect((await call("POST", `/events/${edition}/attendance`, { token: leader, body: { date: today(), teamId: teamA, [`s_${kid1}`]: "LATE" } })).body).toMatchObject({ ok: true });
@@ -333,6 +405,19 @@ describe("group attendance of an event", () => {
     expect(all.body.rates.find((r) => r.memberId === kid2)).toMatchObject({ marked: 1, rate: 0 });
   });
 
+  it("only the rows of the event's current sessions count in the history and the rates", async () => {
+    // A row on a day that is not (or no longer) a session, e.g. saved before the dates or frequency changed.
+    const stray = await db.attendance.create({ data: { memberId: kid1, date: normalizeDay(dayFromToday(-20)), contextKey: `event:${edition}`, eventId: edition, status: "PRESENT" } });
+    try {
+      const page = await call<Page>("GET", `/events/${edition}/attendance`, { token: leader });
+      expect(page.body.rates).toEqual([expect.objectContaining({ memberId: kid1, marked: 2, rate: 50 })]);
+      expect(page.body.history.reduce((n, h) => n + h.marked, 0)).toBe(2);
+      expect(page.body.history.some((h) => h.date === dayFromToday(-20))).toBe(false);
+    } finally {
+      await db.attendance.delete({ where: { id: stray.id } });
+    }
+  });
+
   it("a suspended leader can't take the attendance any more", async () => {
     const amel = await memberIdOf(LEADER);
     await db.member.update({ where: { id: amel }, data: { membershipStatus: "SUSPENDED" } });
@@ -341,6 +426,31 @@ describe("group attendance of an event", () => {
       expect((await call("GET", `/events/${edition}/attendance`, { token: leader })).status).toBe(403);
     } finally {
       await db.member.update({ where: { id: amel }, data: { membershipStatus: "ACTIVE" } });
+    }
+  });
+
+  it("the staff check-in still shows rows saved under the server-local start day, and saves on the Tunisian day", async () => {
+    // 00:30 in Tunis is still the previous day in Los Angeles (the test server's zone).
+    const body = { title: "Journée ancienne clé", category: "CHILDREN", startAt: at(-3, "00:30"), endAt: at(-3, "17:00"), capacity: 40, price: 0, status: "PUBLISHED", isPublic: true };
+    const e = await call<Result<{ id: string }>>("POST", "/events", { token: admin, body });
+    expect(e.body.ok, JSON.stringify(e.body)).toBe(true);
+    const id = e.body.data.id;
+    try {
+      const event = await db.event.findUniqueOrThrow({ where: { id } });
+      const legacyDay = normalizeDay(event.startAt);
+      const newDay = normalizeDay(zonedDayKey(event.startAt));
+      expect(legacyDay.getTime()).not.toBe(newDay.getTime());
+      await db.eventRegistration.create({ data: { eventId: id, memberId: kid1, status: "CONFIRMED" } });
+      await db.attendance.create({ data: { memberId: kid1, date: legacyDay, contextKey: `event:${id}`, eventId: id, status: "LATE" } });
+      type CheckIn = { entries: { memberId: string; status: string }[] };
+      expect((await call<CheckIn>("GET", `/events/${id}/checkin`, { token: admin })).body.entries.find((x) => x.memberId === kid1)?.status).toBe("LATE");
+      expect((await call<Result<unknown>>("POST", `/events/${id}/checkin`, { token: admin, body: { [`s_${kid1}`]: "ABSENT" } })).body.ok).toBe(true);
+      expect(await db.attendance.findFirst({ where: { contextKey: `event:${id}`, memberId: kid1, date: newDay }, select: { status: true } })).toEqual({ status: "ABSENT" });
+      // The row on the new day wins.
+      expect((await call<CheckIn>("GET", `/events/${id}/checkin`, { token: admin })).body.entries.find((x) => x.memberId === kid1)?.status).toBe("ABSENT");
+    } finally {
+      await db.attendance.deleteMany({ where: { contextKey: `event:${id}` } });
+      await db.event.delete({ where: { id } });
     }
   });
 

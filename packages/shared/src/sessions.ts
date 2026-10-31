@@ -31,7 +31,7 @@ const parse = (key: string) => key.split("-").map(Number) as [number, number, nu
 export function eventSessions(e: { startAt: Date | string; endAt: Date | string; frequency?: string | null }, timeZone = APP_TIME_ZONE, max = MAX_SESSIONS): string[] {
   const first = zonedDayKey(e.startAt, timeZone);
   const last = zonedDayKey(e.endAt, timeZone);
-  if (first.startsWith("NaN") || last.startsWith("NaN")) return [];
+  if (first.startsWith("NaN") || last.startsWith("NaN") || max <= 0) return [];
   let freq: EventFrequency = isEventFrequency(e.frequency) ? e.frequency : "ONCE";
   if (last <= first) return [first];
   if (freq === "ONCE") freq = "DAILY";

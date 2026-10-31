@@ -247,7 +247,7 @@
     "rates": {
       "title": "Attendance per kid",
       "hint": "Over the past sessions where the kid was called.",
-      "line": "present {present} times out of {marked}",
+      "line": "{present, plural, one {present once} other {present # times}} out of {marked}",
       "none": "Not called yet",
       "empty": "No kids in your teams"
     }

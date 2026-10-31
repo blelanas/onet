@@ -64,7 +64,9 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
   const taken = e._count.registrations;
   const left = Math.max(0, e.capacity - taken);
   const base = `/dashboard/events/${id}`;
-  const withTeams = !!series || !!data.director || data.teams.length > 0;
+  // Those who manage the teams (admins, the director) also get the tab on a one-off event without teams yet,
+  // to create the first one.
+  const withTeams = !!series || !!data.director || data.teams.length > 0 || data.canManageTeams;
   const tabs = series
     ? [
         { key: "overview", label: t("detail.tabs.overview"), href: base },

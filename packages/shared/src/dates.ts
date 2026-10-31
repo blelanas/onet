@@ -76,9 +76,14 @@ export function zonedTimeToDate(year: number, month: number, day: number, hour =
   return new Date(t);
 }
 
-/** "YYYY-MM-DD" of the calendar day an instant falls on in `timeZone` (Tunisian time by default). */
+/**
+ * "YYYY-MM-DD" of the calendar day an instant falls on in `timeZone` (Tunisian time by default).
+ * An invalid date gives the sentinel "NaN-NaN-NaN" (callers check `startsWith("NaN")`) instead of throwing.
+ */
 export function zonedDayKey(d: Date | string, timeZone = APP_TIME_ZONE) {
-  const p = zonedParts(new Date(d), timeZone);
+  const date = new Date(d);
+  if (Number.isNaN(date.getTime())) return "NaN-NaN-NaN";
+  const p = zonedParts(date, timeZone);
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${String(p.year).padStart(4, "0")}-${pad(p.month)}-${pad(p.day)}`;
 }

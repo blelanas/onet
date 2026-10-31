@@ -148,7 +148,18 @@ export async function assertCanManageTeams(user: CurrentUser, eventId: string) {
 export function kidScopeWhere(user: CurrentUser): Prisma.MemberWhereInput {
   if (seesAllKids(user)) return {};
   if (!user.memberId) return { id: { in: [] } };
-  return { eventRegistrations: { some: { ...ACTIVE_KID_REG, event: onEditionWhere(user.memberId) } } };
+  return { eventRegistrations: { some: { ...ACTIVE_KID_REG, ...kidRegScopeWhere(user) } } };
+}
+
+/**
+ * Prisma filter restricting a kid's registrations (editions shown, counts, filters) to the ones this user may
+ * see: every one for users who see every kid, otherwise only those of the editions where the user is on a team
+ * or that the user directs (a kid seen through one edition doesn't reveal its other editions).
+ */
+export function kidRegScopeWhere(user: CurrentUser): Prisma.EventRegistrationWhereInput {
+  if (seesAllKids(user)) return {};
+  if (!user.memberId) return { id: { in: [] } };
+  return { event: onEditionWhere(user.memberId) };
 }
 
 /** True when the user sees this kid because they are on a team (or the director) of one of its editions. */

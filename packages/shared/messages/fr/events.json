@@ -231,7 +231,7 @@
     "noSessions": "Aucune séance pour cet événement",
     "noTeams": "Aucune équipe à appeler",
     "noTeamsHint": "Créez les équipes et répartissez les enfants pour faire l'appel.",
-    "teamCount": "{present} / {total} présents",
+    "teamCount": "{present} / {total} {present, plural, one {présent} other {présents}}",
     "leader": "Responsable : {name}",
     "emptyTeam": "Aucun enfant dans cette équipe",
     "readOnly": "Lecture seule : l'appel est fait par le responsable de l'équipe ou le directeur.",
@@ -239,7 +239,7 @@
     "jump": "Aller à l'équipe",
     "history": {
       "title": "Séances passées",
-      "line": "{present} / {marked} présents",
+      "line": "{present} / {marked} {present, plural, one {présent} other {présents}}",
       "notTaken": "Appel non fait",
       "empty": "Aucune séance passée pour l'instant",
       "open": "Ouvrir la séance du {date}"

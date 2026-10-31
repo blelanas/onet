@@ -109,7 +109,15 @@ export async function eventCheckInPage(req: Request) {
   const e = await getEvent(user, id);
   // The event's first day in Tunisian time (the same day key as the attendance tab's sessions).
   const day = normalizeDay(zonedDayKey(e.startAt));
-  const [rows, saved] = await Promise.all([eventParticipants(id), rollCall(`event:${id}`, day)]);
+  // Rows saved before used the server-local start day: still shown for the kids with no row on the new day
+  // (saving writes the new day).
+  const legacyDay = normalizeDay(e.startAt);
+  const [rows, current, legacy] = await Promise.all([
+    eventParticipants(id),
+    rollCall(`event:${id}`, day),
+    legacyDay.getTime() !== day.getTime() ? rollCall(`event:${id}`, legacyDay) : Promise.resolve({} as Record<string, string>),
+  ]);
+  const saved = { ...legacy, ...current };
   const active = rows.filter((r) => r.status === "CONFIRMED" || r.status === "PENDING");
   return {
     day: e.startAt,

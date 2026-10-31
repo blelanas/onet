@@ -73,9 +73,9 @@ export default {
   team: {
     label: T("Équipe de {name}", "فريق {name}", "{name}'s team"),
     leaderHint: T(
-      "Vous gérez les enfants de votre équipe ; ceux des autres équipes sont en lecture seule. Un enfant sans équipe peut rejoindre la vôtre.",
-      "تدير أطفال فريقك؛ أطفال الفرق الأخرى للاطلاع فقط. يمكن لطفل دون فريق الانضمام إلى فريقك.",
-      "You manage your team's kids; the other teams' kids are read only. A kid without a team can join yours.",
+      "Vous gérez les enfants de vos équipes ; ceux des autres équipes sont en lecture seule. Un enfant sans équipe peut rejoindre l'une des vôtres.",
+      "تدير أطفال فرقك؛ أطفال الفرق الأخرى للاطلاع فقط. يمكن لطفل دون فريق الانضمام إلى أحد فرقك.",
+      "You manage your teams' kids; the other teams' kids are read only. A kid without a team can join one of yours.",
     ),
     saved: T("Équipe mise à jour", "تم تحديث الفريق", "Team updated"),
   },
