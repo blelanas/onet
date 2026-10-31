@@ -25,9 +25,11 @@ export function ConfirmButton({
   redirectTo,
   className,
   ariaLabel,
+  disabled,
 }: {
   action: () => Promise<ActionResult<unknown>>;
   children: React.ReactNode;
+  disabled?: boolean;
   title?: string;
   description?: string;
   confirmLabel?: string;
@@ -47,7 +49,7 @@ export function ConfirmButton({
 
   return (
     <>
-      <Button variant={variant} size={size} className={className} onClick={() => setOpen(true)} aria-label={ariaLabel}>
+      <Button variant={variant} size={size} className={className} onClick={() => setOpen(true)} aria-label={ariaLabel} disabled={disabled}>
         {children}
       </Button>
       <Modal

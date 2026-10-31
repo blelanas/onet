@@ -13,7 +13,7 @@
       "monitor": "Vos groupes, vos séances et vos tâches de la semaine.",
       "parent": "Suivez les activités et la progression de vos enfants.",
       "kid": "Prêt pour une nouvelle aventure ?",
-      "member": "Les prochains rendez-vous de l'association."
+      "member": "Vos événements, sorties, groupes et votre bagage d'animateur."
     }
   },
   "kpi": {
@@ -195,10 +195,59 @@
     }
   },
   "member": {
-    "upcoming": "Prochains rendez-vous",
-    "sessions": "Activités cette semaine",
-    "songs": "Chansons",
-    "registered": "Inscrit"
+    "welcome": "Bienvenue, <n>{name}</n> !",
+    "tagline": "Ensemble, faisons grandir les enfants de Teboulba : vos événements, sorties, groupes et votre bagage d'animateur sont ici.",
+    "shortcuts": "Accès rapides",
+    "tiles": {
+      "events": {
+        "title": "Événements",
+        "hint": "Éditions et programmes"
+      },
+      "trips": {
+        "title": "Sorties",
+        "hint": "Excursions et camps"
+      },
+      "announcements": {
+        "title": "Annonces",
+        "hint": "Les nouvelles de l'équipe"
+      },
+      "teams": {
+        "title": "Groupes",
+        "hint": "Mes équipes d'animation"
+      },
+      "messages": {
+        "title": "Discussions",
+        "hint": "Écrire à l'équipe"
+      },
+      "baggage": {
+        "title": "Bagage",
+        "hint": "Chansons, danses, jeux"
+      },
+      "kids": {
+        "title": "Enfants",
+        "hint": "Les enfants inscrits"
+      }
+    },
+    "unread": "{count, plural, one {# non lu} other {# non lus}}",
+    "baggageCount": "{songs} chansons · {dances} danses · {games} jeux",
+    "myTeams": "Mes groupes",
+    "noTeams": "Vous n'êtes dans aucun groupe pour le moment.",
+    "noTeamsHint": "Les responsables d'édition vous ajouteront à un groupe.",
+    "leader": "Responsable",
+    "teamMembers": "{count, plural, one {# animateur} other {# animateurs}}",
+    "teamKids": "{count, plural, one {# enfant} other {# enfants}}",
+    "openChat": "Discussion du groupe",
+    "editions": "Éditions en cours et à venir",
+    "noEditions": "Aucune édition programmée pour l'instant.",
+    "ongoing": "En cours",
+    "editionNumber": "Édition {number}",
+    "season": "Saison {year}",
+    "tripsManaged": "Sorties que je gère",
+    "noTrips": "Vous ne gérez aucune sortie à venir.",
+    "participants": "{count}/{capacity} participants",
+    "report": "Liste & rapport",
+    "latestAnnouncements": "Dernières annonces",
+    "noAnnouncements": "Aucune annonce pour le moment."
   },
   "myChildren": {
     "title": "Mes enfants",

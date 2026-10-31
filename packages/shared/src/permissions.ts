@@ -8,6 +8,7 @@ export const PERMISSIONS = {
 
   "users.read": "users",
   "users.manage": "users",
+  "users.approve": "users", // approve self sign-ups, invitation links, pre-approved list
   "roles.manage": "users",
 
   "members.read": "people", // scoped: own children / own groups unless members.read_all
@@ -105,12 +106,27 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<RoleKey, Permission[]> = {
     "messages.use",
     "documents.read",
   ],
-  member: [...COMMON, "activities.read", "events.read", "events.register", "trips.read", "messages.use", "documents.read"],
+  // Members (= monitors / animators): the core users of the platform. Edition leaders and trip managers
+  // get extra rights on *their* edition / trip in code (EventTeam.leaderId, TripMonitor), not via a role.
+  member: [
+    ...COMMON,
+    "members.read",
+    "groups.read",
+    "activities.read",
+    "activities.manage",
+    "attendance.read",
+    "attendance.manage",
+    "events.read",
+    "trips.read",
+    "messages.use",
+    "documents.read",
+    "tasks.manage",
+  ],
   kid: [...COMMON, "activities.read", "events.read", "trips.read"],
 };
 
 export const ROLE_COLORS: Record<RoleKey, string> = {
-  super_admin: "#E30613",
+  super_admin: "#0F7A3E",
   admin: "#FF6B4A",
   accountant: "#2BB673",
   monitor: "#1E9BD7",
@@ -119,5 +135,16 @@ export const ROLE_COLORS: Record<RoleKey, string> = {
   kid: "#FFB400",
 };
 
-/** Which dashboard flavour a user sees (first match wins). */
-export const DASHBOARD_PRIORITY: RoleKey[] = ["super_admin", "admin", "accountant", "monitor", "parent", "kid", "member"];
+/** Roles staff only (super admins) may grant: never obtainable through sign-up, invitations or the pre-approved list. */
+export const STAFF_ROLE_KEYS = ["super_admin", "admin", "accountant"] as const satisfies readonly RoleKey[];
+/**
+ * Roles that self sign-up, invitation links and the pre-approved list may grant (confirmed by the
+ * organisation). "member" first: it is the default; "monitor" is still accepted for existing rows.
+ */
+export const SIGNUP_ROLE_KEYS = ["member", "monitor"] as const satisfies readonly RoleKey[];
+export type SignupRole = (typeof SIGNUP_ROLE_KEYS)[number];
+export const USER_STATUSES = ["ACTIVE", "PENDING", "REJECTED"] as const;
+export type UserStatus = (typeof USER_STATUSES)[number];
+
+/** Which dashboard flavour a user sees (first match wins). Monitors and members share the member home. */
+export const DASHBOARD_PRIORITY: RoleKey[] = ["super_admin", "admin", "accountant", "member", "monitor", "parent", "kid"];

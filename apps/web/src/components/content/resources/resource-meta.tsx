@@ -10,7 +10,7 @@ export function resourceMode(type: string, url: string): "preview" | "open" | "d
 }
 
 export const RESOURCE_STYLE: Record<string, { icon: LucideIcon; color: string }> = {
-  PDF: { icon: FileText, color: "#E30613" },
+  PDF: { icon: FileText, color: "#0F7A3E" },
   IMAGE: { icon: ImageIcon, color: "#7C4DFF" },
   VIDEO: { icon: Film, color: "#1E9BD7" },
   DOCUMENT: { icon: FileType2, color: "#00A3A3" },

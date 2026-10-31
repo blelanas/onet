@@ -25,6 +25,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { LinkTabs } from "@/components/ui/tabs";
 import { EntityDocuments } from "@/components/documents/entity-documents";
 import { AccountForm, LinkParentForm } from "@/components/members/profile-forms";
+import { KidHistory } from "@/components/kids/kid-history";
 
 type Data = Loaded<typeof memberProfilePage>;
 
@@ -37,27 +38,30 @@ export function Component() {
 function MemberProfile({ id, data }: { id: string; data: Data }) {
   const user = useMe();
   const tab = useSearchParams().get("tab") ?? "overview";
-  const { member: m, attendance, invoices, parentOptions: parents } = data;
+  const { member: m, attendance, invoices, parentOptions: parents, teamView } = data;
   usePageTitle(`${m.firstName} ${m.lastName}`);
   const t = useTranslations("people");
   const tc = useTranslations("common");
   const tn = useTranslations("nav");
+  const tk = useTranslations("kids.history");
   const locale = useLocale();
   const canManage = can(user, "members.manage");
   const isChild = m.type === "CHILD";
   const age = ageFrom(m.dateOfBirth);
-  const accent = m.group?.color ?? "#E30613";
+  const accent = m.group?.color ?? "#0F7A3E";
 
   const presentCount = attendance.filter((a) => a.status === "PRESENT" || a.status === "LATE").length;
   const rate = attendance.length ? Math.round((presentCount / attendance.length) * 100) : null;
 
   const base = `/dashboard/members/${id}`;
+  // A kid seen only through an edition team: its card and the history of those editions, nothing else.
   const tabs = [
     { key: "overview", label: t("profile.tabs.overview"), href: base },
-    ...(isChild || m.type === "MEMBER" ? [{ key: "attendance", label: t("profile.tabs.attendance"), href: `${base}?tab=attendance`, count: attendance.length }] : []),
-    { key: "participation", label: t("profile.tabs.participation"), href: `${base}?tab=participation`, count: m.eventRegistrations.length + m.tripRegistrations.length },
+    ...(!teamView && (isChild || m.type === "MEMBER") ? [{ key: "attendance", label: t("profile.tabs.attendance"), href: `${base}?tab=attendance`, count: attendance.length }] : []),
+    ...(!teamView ? [{ key: "participation", label: t("profile.tabs.participation"), href: `${base}?tab=participation`, count: m.eventRegistrations.length + m.tripRegistrations.length }] : []),
+    ...(isChild ? [{ key: "history", label: tk("tab"), href: `${base}?tab=history` }] : []),
     ...(invoices ? [{ key: "payments", label: t("profile.tabs.payments"), href: `${base}?tab=payments`, count: invoices.length }] : []),
-    { key: "documents", label: t("profile.tabs.documents"), href: `${base}?tab=documents` },
+    ...(!teamView ? [{ key: "documents", label: t("profile.tabs.documents"), href: `${base}?tab=documents` }] : []),
   ];
 
   const listHref = isChild ? "/dashboard/children" : m.type === "PARENT" ? "/dashboard/parents" : m.type === "MONITOR" ? "/dashboard/monitors" : "/dashboard/members";
@@ -314,7 +318,7 @@ function MemberProfile({ id, data }: { id: string; data: Data }) {
         </div>
       )}
 
-      {tab === "attendance" && (
+      {tab === "attendance" && !teamView && (
         <Section title={t("profile.tabs.attendance")}>
           {attendance.length ? (
             <ul className="divide-y divide-line">
@@ -335,7 +339,7 @@ function MemberProfile({ id, data }: { id: string; data: Data }) {
         </Section>
       )}
 
-      {tab === "participation" && (
+      {tab === "participation" && !teamView && (
         <div className="grid gap-5 lg:grid-cols-2">
           <Section title={t("profile.events")}>
             {m.eventRegistrations.length ? (
@@ -374,6 +378,8 @@ function MemberProfile({ id, data }: { id: string; data: Data }) {
         </div>
       )}
 
+      {tab === "history" && isChild && <KidHistory kidId={id} />}
+
       {tab === "payments" && invoices && (
         <Section title={t("profile.tabs.payments")}>
           {invoices.length ? (
@@ -405,7 +411,7 @@ function MemberProfile({ id, data }: { id: string; data: Data }) {
         </Section>
       )}
 
-      {tab === "documents" && (
+      {tab === "documents" && !teamView && (
         <Section title={t("profile.tabs.documents")}>
           <EntityDocuments entityType="MEMBER" entityId={id} />
         </Section>

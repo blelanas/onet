@@ -1,13 +1,14 @@
 import { Router, type Request } from "express";
 import { db } from "@api/lib/db";
-import { can, requirePermission, requireUser } from "@api/lib/auth/guards";
+import { AuthError, can, requirePermission, requireUser } from "@api/lib/auth/guards";
 import { mutation, param, qs, query } from "@api/lib/http";
 import { isKidOnly } from "./audience";
 import { announcementGroupOptions, listAnnouncements } from "./announcements";
 import { deleteAnnouncement, saveAnnouncement, togglePin } from "./announcement-actions";
 import { allowedContacts } from "./contacts";
-import { findDirectConversation, listConversations, openConversation } from "./messages";
+import { findDirectConversation, isPlatformAdmin, listAllGroups, listConversations, openConversation } from "./messages";
 import { sendMessage, startConversation } from "./message-actions";
+import { createGroup, leaveGroup, updateGroup } from "./group-actions";
 import { listNotifications, roleOptions } from "./notifications";
 import { broadcastNotification, deleteNotification, markAllNotificationsRead, markNotificationRead, markNotificationUnread } from "./notification-actions";
 
@@ -53,6 +54,8 @@ router.delete("/announcements/:id", mutation((req) => deleteAnnouncement(param(r
 /**
  * Messaging page: allowed contacts, conversations (+ unread), the open thread (?c=, marks it read)
  * and, for ?to=<userId>, the existing one-to-one thread to continue (`redirectTo`).
+ * Groups: conversations carry kind / title / participantsCount / isAdmin / team; an open group thread
+ * lists its participants and whether the user may manage or leave it.
  */
 export async function messagesPage(req: Request) {
   const user = await requirePermission("messages.use");
@@ -62,7 +65,7 @@ export async function messagesPage(req: Request) {
   const contactIds = new Set(contacts.map((x) => x.id));
   if (!c && to && contactIds.has(to)) {
     const existing = await findDirectConversation(user.id, to);
-    if (existing) return { redirectTo: existing, meId: user.id, contacts, conversations: [], thread: null, canReply: false, totalUnread: 0, toAllowed: true };
+    if (existing) return { redirectTo: existing, meId: user.id, contacts, conversations: [], thread: null, canReply: false, totalUnread: 0, toAllowed: true, platformAdmin: isPlatformAdmin(user) };
   }
   const [conversations, thread] = await Promise.all([listConversations(user, qs(req, "q")), c ? openConversation(user, c) : Promise.resolve(null)]);
   return {
@@ -71,14 +74,27 @@ export async function messagesPage(req: Request) {
     contacts,
     conversations,
     thread,
-    canReply: !!thread && thread.others.every((o) => contactIds.has(o.id)),
+    // Groups: being a participant is enough; direct threads: every other person must still be a contact.
+    canReply: !!thread && thread.isParticipant && (thread.kind === "GROUP" || thread.others.every((o) => contactIds.has(o.id))),
     totalUnread: conversations.reduce((s, x) => s + x.unread, 0),
     toAllowed: !to || contactIds.has(to),
+    platformAdmin: isPlatformAdmin(user),
   };
 }
 router.get("/messages", query(messagesPage));
 router.post("/messages/conversations", mutation((req) => startConversation(req.body)));
 router.post("/messages", mutation((req) => sendMessage(req.body)));
+
+/** Every chat group (platform admins: super_admin / admin), to open and manage them. */
+export async function allGroupsPage(req: Request) {
+  const user = await requirePermission("messages.use");
+  if (!isPlatformAdmin(user)) throw new AuthError("FORBIDDEN");
+  return { rows: await listAllGroups(qs(req, "q")) };
+}
+router.get("/messages/groups/all", query(allGroupsPage));
+router.post("/messages/groups", mutation((req) => createGroup(req.body)));
+router.post("/messages/groups/:id/leave", mutation((req) => leaveGroup(param(req, "id"))));
+router.post("/messages/groups/:id", mutation((req) => updateGroup({ ...req.body, id: param(req, "id") })));
 
 // ─── Notifications ──────────────────────────────────────────────────────────
 

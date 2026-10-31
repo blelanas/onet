@@ -3,8 +3,12 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaLibSQL } from "@prisma/adapter-libsql";
 import bcrypt from "bcryptjs";
+import { createHash, randomBytes } from "crypto";
 import { ALL_PERMISSIONS, DEFAULT_ROLE_PERMISSIONS, PERMISSIONS, ROLE_COLORS, ROLE_KEYS } from "@onet/shared";
 import { CONFERENCE_TRACKS, SONG_TRACKS, galleryUrl, trackInfo } from "./demo-media";
+import { seedMembersContent } from "./seed-members-content";
+import { seedSeries } from "./seed-series";
+import { seedTripsAndChats } from "./seed-trips-chats";
 
 const db = new PrismaClient({ adapter: new PrismaLibSQL({ url: process.env.DATABASE_URL ?? "file:./prisma/dev.db", authToken: process.env.DATABASE_AUTH_TOKEN }) });
 const PASSWORD = "Onet2026!";
@@ -51,7 +55,7 @@ async function reset() {
     "AuditLog", "Session", "Notification", "Message", "ConversationParticipant", "Conversation", "Announcement", "Document", "CalendarEntry", "Task",
     "Payment", "EventRegistration", "TripRegistration", "Invoice", "Expense", "Attendance", "ActivityParticipant", "ActivityReport", "Activity",
     "GalleryItem", "Event", "TripMonitor", "Trip", "MemberBadge", "Badge", "Guardianship", "GroupMonitor", "Member", "Group", "Song", "Game",
-    "Conference", "Resource", "NewsPost", "JoinRequest", "ContactMessage", "UserRole", "RolePermission", "Permission", "Role", "User", "Setting",
+    "Conference", "Resource", "NewsPost", "JoinRequest", "ContactMessage", "PreapprovedPerson", "Invitation", "UserRole", "RolePermission", "Permission", "Role", "User", "Setting",
   ];
   for (const t of tables) await db.$executeRawUnsafe(`DELETE FROM "${t}"`);
 }
@@ -235,7 +239,7 @@ async function main() {
     { key: "assiduous", name: "Toujours présent", description: "10 présences consécutives", icon: "calendar-check", color: "#7C4DFF", points: 40 },
     { key: "artist", name: "Artiste", description: "Œuvre exposée à la fête de fin d'année", icon: "palette", color: "#FF6B4A", points: 25 },
     { key: "green_hero", name: "Héros de la planète", description: "Opération plage propre", icon: "leaf", color: "#5CAE2E", points: 30 },
-    { key: "star", name: "Étoile ONET", description: "Comportement exemplaire", icon: "star", color: "#E30613", points: 50 },
+    { key: "star", name: "Étoile ONET", description: "Comportement exemplaire", icon: "star", color: "#12924A", points: 50 },
   ];
   const badges = await Promise.all(badgeDefs.map((b) => db.badge.create({ data: b })));
   for (const c of allChildren) {
@@ -524,7 +528,7 @@ async function main() {
     });
   }
   const galleryDefs = [
-    ["#E30613", "#FF6B4A", "🎭", "Carnaval d'automne", "EVENTS", events[6].id, null],
+    ["#12924A", "#FF6B4A", "🎭", "Carnaval d'automne", "EVENTS", events[6].id, null],
     ["#1E9BD7", "#00A3A3", "🏖️", "Plage de Monastir", "TRIPS", null, trips[3].id],
     ["#FFB400", "#FF6B4A", "🎨", "Atelier peinture", "ACTIVITIES", null, null],
     ["#2BB673", "#5CAE2E", "⚽", "Tournoi des Aventuriers", "ACTIVITIES", null, null],
@@ -532,7 +536,7 @@ async function main() {
     ["#E8457C", "#FFB400", "🎂", "Journée mondiale de l'enfance", "EVENTS", events[7].id, null],
     ["#00A3A3", "#1E9BD7", "🏛️", "Amphithéâtre d'El Jem", "TRIPS", null, trips[4].id],
     ["#5CAE2E", "#2BB673", "🌳", "Grands jeux en forêt", "ACTIVITIES", null, null],
-    ["#FF6B4A", "#E30613", "🤖", "Robotique junior", "ACTIVITIES", null, null],
+    ["#FF6B4A", "#12924A", "🤖", "Robotique junior", "ACTIVITIES", null, null],
   ] as const;
   for (const [i, [, , , caption, album, eventId, tripId]] of galleryDefs.entries()) {
     await db.galleryItem.create({ data: { imageUrl: galleryUrl(i), caption, album, eventId, tripId, createdAt: daysFromNow(-i * 5) } });
@@ -615,6 +619,29 @@ async function main() {
       { parentName: "Olfa Nasri", email: "olfa.nasri@example.tn", phone: "+216 98 765 432", childName: "Tasnim Nasri", childDob: dob(9), createdAt: daysFromNow(-1) },
     ],
   });
+  // Self sign-ups: an invitation link for monitors, people waiting for approval, a pre-approved list.
+  const inviteToken = randomBytes(24).toString("base64url");
+  const invitation = await db.invitation.create({
+    data: { tokenHash: createHash("sha256").update(inviteToken).digest("hex"), role: "monitor", label: "Moniteurs 2026", expiresAt: daysFromNow(5, 23, 59), maxUses: 30, uses: 2, createdById: uAdmin.id, createdAt: daysFromNow(-2) },
+  });
+  await db.invitation.create({
+    data: { tokenHash: createHash("sha256").update(randomBytes(24).toString("base64url")).digest("hex"), role: "member", label: "Bénévoles rentrée", expiresAt: daysFromNow(-20), maxUses: 20, uses: 7, createdById: uSuper.id, createdAt: daysFromNow(-60) },
+  });
+  for (const p of [
+    { name: "Rania Ferchichi", email: "rania.ferchichi@example.tn", phone: "+216 55 410 220", hoursAgo: 26 },
+    { name: "Bilel Lassoued", email: "bilel.lassoued@example.tn", phone: "+216 29 870 113", hoursAgo: 3 },
+  ]) {
+    await db.user.create({
+      data: { name: p.name, email: p.email, phone: p.phone, passwordHash, status: "PENDING", requestedRole: "monitor", invitationId: invitation.id, createdAt: new Date(Date.now() - p.hoursAgo * 3_600_000) },
+    });
+  }
+  await db.preapprovedPerson.createMany({
+    data: [
+      { name: "Hiba Mabrouk", email: "hiba.mabrouk@example.tn", phone: "21697300411", role: "monitor", createdById: uAdmin.id },
+      { name: "Anis Ben Amor", email: null, phone: "21624118790", role: "member", createdById: uAdmin.id },
+    ],
+  });
+
   await db.contactMessage.create({ data: { name: "Mourad Khelifi", email: "mourad.k@example.tn", subject: "Bénévolat", body: "Bonjour, je souhaite proposer mon aide comme bénévole pour les sorties." } });
 
   // Settings
@@ -637,10 +664,16 @@ async function main() {
   };
   for (const [key, value] of Object.entries(settings)) await db.setting.create({ data: { key, value: JSON.stringify(value) } });
 
+  await seedSeries(db);
+  await seedTripsAndChats(db);
+
   const counts = await Promise.all([db.member.count(), db.invoice.count(), db.payment.count(), db.attendance.count()]);
   console.log(`✓ seeded: ${counts[0]} members, ${counts[1]} invoices, ${counts[2]} payments, ${counts[3]} attendance rows`);
   console.log(`\nDemo accounts (password: ${PASSWORD})`);
   for (const e of ["admin", "gestion", "comptable", "moniteur", "parent", "enfant", "membre"]) console.log(`  ${e}@onet-teboulba.tn`);
+  console.log(`\nDemo monitor invitation: /signup?invite=${inviteToken}`);
+
+  await seedMembersContent(db);
 }
 
 main()

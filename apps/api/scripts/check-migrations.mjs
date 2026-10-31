@@ -6,8 +6,12 @@ import { createRequire } from "module";
 import { mkdtempSync, readdirSync, readFileSync } from "fs";
 import os from "os";
 import path from "path";
+import { fileURLToPath } from "url";
 
-const dir = path.join(process.cwd(), "prisma", "migrations");
+// Paths from this file (apps/api/scripts), so it runs the same from the repo root or from apps/api.
+const apiDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
+const schema = path.join(apiDir, "prisma", "schema.prisma");
+const dir = path.join(apiDir, "prisma", "migrations");
 const file = path.join(mkdtempSync(path.join(os.tmpdir(), "onet-drift-")), "drift.db");
 const client = createClient({ url: `file:${file}` });
 for (const f of readdirSync(dir).filter((x) => x.endsWith(".sql")).sort()) await client.executeMultiple(readFileSync(path.join(dir, f), "utf8"));
@@ -18,11 +22,11 @@ const prismaEnv = { ...process.env, DATABASE_URL: `file:${file}` };
 // Prisma CLI run through Node itself (not `npx`) so this works the same on Windows.
 const prismaCli = createRequire(import.meta.url).resolve("prisma/build/index.js");
 try {
-  execFileSync(process.execPath, [prismaCli, "migrate", "diff", "--from-url", `file:${file}`, "--to-schema-datamodel", "prisma/schema.prisma", "--exit-code"], { stdio: "pipe", env: prismaEnv });
+  execFileSync(process.execPath, [prismaCli, "migrate", "diff", "--from-url", `file:${file}`, "--to-schema-datamodel", schema, "--exit-code"], { stdio: "pipe", env: prismaEnv });
   console.log("✓ migrations match the Prisma schema");
 } catch (e) {
   if (e.status === 2) {
-    const sql = execFileSync(process.execPath, [prismaCli, "migrate", "diff", "--from-url", `file:${file}`, "--to-schema-datamodel", "prisma/schema.prisma", "--script"], { env: prismaEnv }).toString();
+    const sql = execFileSync(process.execPath, [prismaCli, "migrate", "diff", "--from-url", `file:${file}`, "--to-schema-datamodel", schema, "--script"], { env: prismaEnv }).toString();
     console.error("✗ prisma/schema.prisma has changes without a migration. Add prisma/migrations/000N_<name>.sql with:\n\n" + sql);
     process.exit(1);
   }

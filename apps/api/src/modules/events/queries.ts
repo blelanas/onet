@@ -5,12 +5,18 @@ import { AuthError, can } from "@api/lib/auth/guards";
 import { myChildren } from "@api/lib/auth/scope";
 import { ACTIVE_STATUSES } from "@api/modules/registrations/service";
 import { isStaffish } from "@api/modules/registrations/queries";
+import { editionAccess } from "./access";
 
 export type EventTab = "upcoming" | "past" | "drafts";
-export type EventFilters = { tab: EventTab; category?: string; q?: string; skip?: number; take?: number };
+/** `series`: "none" → events outside any series ("other events"), or a series id → its editions. */
+export type EventFilters = { tab: EventTab; category?: string; q?: string; series?: string; skip?: number; take?: number };
 
 function visibilityWhere(user: CurrentUser): Prisma.EventWhereInput {
   return isStaffish(user) ? {} : { isPublic: true };
+}
+
+export function seriesWhere(series?: string): Prisma.EventWhereInput {
+  return series === "none" ? { seriesId: null } : series ? { seriesId: series } : {};
 }
 
 export async function listEvents(user: CurrentUser, f: EventFilters) {
@@ -21,6 +27,7 @@ export async function listEvents(user: CurrentUser, f: EventFilters) {
   const where: Prisma.EventWhereInput = {
     AND: [
       visibilityWhere(user),
+      seriesWhere(f.series),
       tabWhere,
       f.category ? { category: f.category } : {},
       f.q ? { OR: [{ title: { contains: f.q } }, { location: { contains: f.q } }, { description: { contains: f.q } }] } : {},
@@ -39,13 +46,13 @@ export async function listEvents(user: CurrentUser, f: EventFilters) {
   return { rows, total };
 }
 
-export async function eventTabCounts(user: CurrentUser) {
+export async function eventTabCounts(user: CurrentUser, series?: string) {
   const now = new Date();
-  const v = visibilityWhere(user);
+  const v = { ...visibilityWhere(user), ...seriesWhere(series) };
   const [upcoming, past, drafts] = await Promise.all([
     db.event.count({ where: { ...v, status: { not: "DRAFT" }, endAt: { gte: now } } }),
     db.event.count({ where: { ...v, status: { not: "DRAFT" }, endAt: { lt: now } } }),
-    can(user, "events.manage") ? db.event.count({ where: { status: "DRAFT" } }) : 0,
+    can(user, "events.manage") ? db.event.count({ where: { ...seriesWhere(series), status: "DRAFT" } }) : 0,
   ]);
   return { upcoming, past, drafts };
 }
@@ -68,12 +75,14 @@ export async function getEvent(user: CurrentUser, id: string) {
     where: { id },
     include: {
       activities: { select: { id: true, title: true, category: true, coverUrl: true, startTime: true, location: true } },
+      series: { select: { id: true, name: true, nameAr: true, kind: true, color: true } },
       _count: { select: { registrations: { where: { status: { in: ACTIVE_STATUSES } } } } },
     },
   });
   if (!e) throw new AuthError("NOT_FOUND");
   if (e.status === "DRAFT" && !can(user, "events.manage")) throw new AuthError("NOT_FOUND");
-  if (!e.isPublic && !isStaffish(user)) throw new AuthError("NOT_FOUND");
+  // Internal events: staff, and the members on one of the edition's teams.
+  if (!e.isPublic && !isStaffish(user) && !(await editionAccess(user, id)).isOnTeam) throw new AuthError("NOT_FOUND");
   return e;
 }
 

@@ -40,7 +40,7 @@ function GamesPage({ data, params }: { data: Data; params: Record<string, string
       <ContentHero
         theme="games"
         icon={<Gamepad2 />}
-        eyebrow={tn("sections.content")}
+        eyebrow={tn("sections.baggage")}
         title={t("games.title")}
         description={t("games.description")}
         breadcrumbs={[{ label: tn("items.dashboard"), href: "/dashboard" }, { label: t("games.title") }]}

@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { useFieldError } from "@/components/ui/form-context";
-import { ROLE_KEYS } from "@onet/shared";
+import { ROLE_KEYS, STAFF_ROLE_KEYS } from "@onet/shared";
 import { cn } from "@/lib/utils";
 
 export type RoleOption = { key: string; name: string; color: string };
-const PRIVILEGED = ["super_admin", "admin", "accountant"];
+const PRIVILEGED: readonly string[] = STAFF_ROLE_KEYS;
 
 export function useRoleLabel() {
   const tc = useTranslations("common");

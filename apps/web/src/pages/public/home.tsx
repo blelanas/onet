@@ -16,6 +16,8 @@ import { GalleryGrid } from "@/components/public/gallery-grid";
 import { StatsBand } from "@/components/public/stats-band";
 import { CtaBand } from "@/components/public/cta-band";
 import { Squiggle } from "@/components/public/shapes";
+import { BureauSection } from "@/components/public/bureau-section";
+import { cn } from "@/lib/utils";
 
 const PILLARS = [
   { key: "learn", icon: BookOpen, color: "#2BB673", soft: "var(--leaf-soft)" },
@@ -46,6 +48,9 @@ export function Component() {
 
 function HomePage({ data }: { data: Data }) {
   const org = data.org;
+  // `?? []`: a server from before the bureau feature omits the field (PR previews use the live API, and the
+  // website deploys a few minutes before the API on a merge) — the page must still render, without the section.
+  const bureau = data.bureau ?? [];
   const t = useTranslations("public.home");
   const tp = useTranslations("public.pillars");
   const tc = useTranslations("public.common");
@@ -54,8 +59,11 @@ function HomePage({ data }: { data: Data }) {
     <>
       <HomeHero kids={data.stats.children} foundedYear={org.foundedYear} />
 
+      {/* Local bureau (أعضاء المكتب المحلي), floating over the bottom of the hero. */}
+      <BureauSection members={bureau} className="-mt-14 sm:-mt-16" />
+
       {/* Pillars */}
-      <section aria-labelledby="pillars-title" className="relative mx-auto -mt-6 max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section aria-labelledby="pillars-title" className={cn("relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8", bureau.length ? "mt-10 sm:mt-12" : "-mt-6")}>
         <h2 id="pillars-title" className="sr-only">
           {tp("title")}
         </h2>
@@ -167,7 +175,7 @@ function HomePage({ data }: { data: Data }) {
         text={t("cta.text")}
         actions={
           <>
-            <Link href="/join" className={buttonClasses("sun", "lg", "h-14 rounded-full px-7 text-lg")}>
+            <Link href="/signup" className={buttonClasses("sun", "lg", "h-14 rounded-full px-7 text-lg")}>
               <Sparkles className="size-5" /> {t("cta.join")}
             </Link>
             <Link href="/contact" className={buttonClasses("outline", "lg", "h-14 rounded-full border-white/40 bg-white/10 px-7 text-lg text-white hover:bg-white/20")}>

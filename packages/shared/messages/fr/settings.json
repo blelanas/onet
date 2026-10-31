@@ -10,7 +10,8 @@
     "payments": "Paiements",
     "categories": "Catégories & types",
     "audit": "Journal d'audit",
-    "contact": "Messages de contact"
+    "contact": "Messages de contact",
+    "bureau": "Bureau local"
   },
   "navHints": {
     "organization": "Identité, coordonnées, réseaux",
@@ -20,7 +21,8 @@
     "payments": "Moyens, banque, cotisation",
     "categories": "Couleurs et libellés",
     "audit": "Traçabilité des actions",
-    "contact": "Formulaire du site public"
+    "contact": "Formulaire du site public",
+    "bureau": "Membres présentés sur le site"
   },
   "organization": {
     "identity": "Identité",
@@ -123,7 +125,8 @@
     },
     "users": {
       "read": "Voir les utilisateurs",
-      "manage": "Gérer les comptes utilisateurs"
+      "manage": "Gérer les comptes utilisateurs",
+      "approve": "Valider les inscriptions (liens d'invitation, liste pré-approuvée)"
     },
     "roles": {
       "manage": "Gérer les rôles et permissions"
@@ -266,5 +269,32 @@
     "noSubject": "(sans objet)",
     "empty": "Aucun message pour le moment.",
     "deleteConfirm": "Supprimer définitivement ce message ?"
+  },
+  "bureau": {
+    "title": "Membres du bureau local",
+    "intro": "Les membres du bureau local sont présentés sur la page d'accueil du site public, dans cet ordre. Seuls les membres actifs sont affichés.",
+    "add": "Ajouter un membre",
+    "newTitle": "Nouveau membre du bureau",
+    "editTitle": "Modifier le membre du bureau",
+    "name": "Nom (français)",
+    "nameAr": "Nom (arabe)",
+    "position": "Fonction (français)",
+    "positionAr": "Fonction (arabe)",
+    "positionPh": "Ex. : Trésorier",
+    "photo": "Photo",
+    "photoHint": "Une photo carrée, visage centré, rend mieux dans le cercle.",
+    "active": "Affiché sur le site",
+    "activeHint": "Décochez pour le masquer sans le supprimer.",
+    "hidden": "Masqué",
+    "shown": "Affiché",
+    "show": "Afficher sur le site",
+    "hide": "Masquer du site",
+    "moveUp": "Monter",
+    "moveDown": "Descendre",
+    "deleteTitle": "Retirer ce membre du bureau ?",
+    "deleteText": "Il disparaîtra de la page d'accueil. Pour le masquer seulement, décochez « Affiché sur le site ».",
+    "empty": "Aucun membre du bureau pour le moment.",
+    "emptyHint": "Ajoutez les membres du bureau local pour les présenter sur le site.",
+    "preview": "Voir sur le site"
   }
 }

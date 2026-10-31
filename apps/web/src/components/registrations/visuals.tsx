@@ -27,7 +27,7 @@ export function CategoryIcon({ kind, category, className }: { kind: "event" | "t
 }
 
 export function categoryColor(category: string) {
-  return CATEGORY_COLORS[category] ?? "#E30613";
+  return CATEGORY_COLORS[category] ?? "#0F7A3E";
 }
 
 /** Calendar-like date tile (day + short month), used on cards and heroes. */

@@ -1,8 +1,9 @@
 import type { Prisma } from "@prisma/client";
 import { db } from "@api/lib/db";
 import type { CurrentUser } from "@api/lib/auth/session";
-import { assertCanSeeMember, memberScopeWhere } from "@api/lib/auth/scope";
+import { memberScopeWhere } from "@api/lib/auth/scope";
 import { AuthError } from "@api/lib/auth/guards";
+import { memberViewScope, myEditionIds } from "@api/modules/events/access";
 
 export type MemberFilters = { q?: string; type?: string; status?: string; groupId?: string; sort?: string; skip?: number; take?: number };
 
@@ -60,8 +61,14 @@ export async function listMembers(user: CurrentUser, f: MemberFilters) {
   return { rows, total };
 }
 
+/**
+ * A member's profile. `teamView`: a kid the user sees only through a team of one of its editions (see
+ * events/access.ts) — then only its identity, guardian contact, medical notes and the registrations to
+ * those editions; nothing from its other groups, activities, events, trips or badges.
+ */
 export async function getMemberProfile(user: CurrentUser, id: string) {
-  await assertCanSeeMember(user, id);
+  const scope = await memberViewScope(user, id);
+  if (!scope) throw new AuthError("FORBIDDEN");
   const member = await db.member.findUnique({
     where: { id },
     include: {
@@ -78,7 +85,27 @@ export async function getMemberProfile(user: CurrentUser, id: string) {
     },
   });
   if (!member) throw new AuthError("NOT_FOUND");
-  return member;
+  if (scope === "full") return { member, teamView: false };
+  const editions = await myEditionIds(user);
+  return {
+    member: {
+      ...member,
+      phone: null,
+      email: null,
+      address: null,
+      city: null,
+      notes: null,
+      group: null,
+      user: null,
+      childrenLinks: [],
+      monitoredGroups: [],
+      activityEnrollments: [],
+      eventRegistrations: member.eventRegistrations.filter((r) => editions.has(r.eventId)),
+      tripRegistrations: [],
+      badges: [],
+    },
+    teamView: true,
+  };
 }
 
 export async function memberAttendance(memberId: string, take = 40) {

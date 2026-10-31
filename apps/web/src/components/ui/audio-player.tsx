@@ -10,7 +10,7 @@ function fmt(s: number) {
 }
 
 /** Music-style audio player. `onPlay` lets the parent count plays. */
-export function AudioPlayer({ src, title, subtitle, color = "#E30613", onFirstPlay, className }: { src: string; title?: string; subtitle?: string; color?: string; onFirstPlay?: () => void; className?: string }) {
+export function AudioPlayer({ src, title, subtitle, color = "#0F7A3E", onFirstPlay, className }: { src: string; title?: string; subtitle?: string; color?: string; onFirstPlay?: () => void; className?: string }) {
   const t = useTranslations("common");
   const ref = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);

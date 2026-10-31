@@ -58,7 +58,7 @@ function FamilyPanel({ data }: { data: Data["children"] }) {
           const cur = byDay.get(k);
           if (!cur || PRIORITY.indexOf(r.status as (typeof PRIORITY)[number]) < PRIORITY.indexOf(cur as (typeof PRIORITY)[number])) byDay.set(k, r.status);
         }
-        const color = child.group?.color ?? "#E30613";
+        const color = child.group?.color ?? "#0F7A3E";
         return (
           <section key={child.id} className="card overflow-hidden">
             <div className="flex items-center gap-4 p-5" style={{ background: `linear-gradient(120deg, ${color}1F, transparent 70%)` }}>

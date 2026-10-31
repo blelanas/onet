@@ -40,7 +40,7 @@ export const EXPENSE_COLORS: Record<string, string> = {
   FOOD: "#FF6B4A",
   MATERIALS: "#7C4DFF",
   ACCOMMODATION: "#00A3A3",
-  RENT: "#E30613",
+  RENT: "#C2185B",
   UTILITIES: "#D98B00",
   EQUIPMENT: "#1E9460",
   COMMUNICATION: "#E8457C",

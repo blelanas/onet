@@ -9,6 +9,8 @@ import { conferenceCutoff, extractLinks, getConference, listConferences } from "
 import { listResources, resourceCategories } from "./resources";
 import { deleteSong, recordSongPlay, saveSong } from "./song-actions";
 import { deleteGame, saveGame } from "./game-actions";
+import { danceSteps, getDance, listDances } from "./dances";
+import { deleteDance, saveDance } from "./dance-actions";
 import { deleteConference, saveConference } from "./conference-actions";
 import { deleteResource, saveResource } from "./resource-actions";
 
@@ -76,6 +78,41 @@ router.get("/content/games/:id", query(gamePage));
 
 router.post("/content/games", mutation((req) => saveGame(req.body)));
 router.delete("/content/games/:id", mutation((req) => deleteGame(param(req, "id"))));
+
+// ── Dances ────────────────────────────────────────────────────────────────────
+
+export const DANCE_PAGE_SIZE = 24;
+
+/** Dances of the "baggage": filters q / category / ageGroup. */
+export async function dancesPage(req: Request) {
+  const user = await requirePermission("content.read");
+  const filters = { q: qs(req, "q")?.trim() || undefined, category: qs(req, "category"), ageGroup: qs(req, "ageGroup") };
+  const filtered = Object.values(filters).some(Boolean);
+  const { page, pageSize, skip, take } = paging(req, DANCE_PAGE_SIZE);
+  const { rows, total } = await listDances({ ...filters, skip, take });
+  return { rows, total, page, pageSize, filtered, canManage: can(user, "content.manage") };
+}
+router.get("/content/dances", query(dancesPage));
+
+/** Dance page: the dance + its steps (one per line). */
+export async function dancePage(req: Request) {
+  const user = await requirePermission("content.read");
+  const dance = await getDance(param(req, "id"));
+  return { dance, steps: danceSteps(dance.steps), canManage: can(user, "content.manage") };
+}
+router.get("/content/dances/:id", query(dancePage));
+
+/** Edit form of a dance (content.manage only: read straight away, without getDance()'s content.read check). */
+export async function danceFormPage(req: Request) {
+  await requirePermission("content.manage");
+  const dance = await db.dance.findUnique({ where: { id: param(req, "id") } });
+  if (!dance) throw new AuthError("NOT_FOUND");
+  return { dance };
+}
+router.get("/content/dances/:id/form", query(danceFormPage));
+
+router.post("/content/dances", mutation((req) => saveDance(req.body)));
+router.delete("/content/dances/:id", mutation((req) => deleteDance(param(req, "id"))));
 
 // ── Conferences ───────────────────────────────────────────────────────────────
 

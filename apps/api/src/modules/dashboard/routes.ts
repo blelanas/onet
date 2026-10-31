@@ -5,7 +5,6 @@ import { mutation, param, qs, query } from "@api/lib/http";
 import { DASHBOARD_PRIORITY, type Permission, type RoleKey } from "@onet/shared";
 import { adminDashboard } from "./admin";
 import { accountantDashboard } from "./accountant";
-import { monitorDashboard } from "./monitor";
 import { parentDashboard } from "./parent";
 import { kidDashboard } from "./kid";
 import { memberDashboard } from "./member";
@@ -38,7 +37,10 @@ function flavour(user: CurrentUser): RoleKey {
   );
 }
 
-/** Role dashboard: the flavour is chosen server-side from the user's roles. */
+/**
+ * Role dashboard: the flavour is chosen server-side from the user's roles. Members and monitors (the
+ * animators) share the member home.
+ */
 export async function dashboardPage(req: Request) {
   const user = await requirePermission("dashboard.view");
   switch (flavour(user)) {
@@ -47,8 +49,6 @@ export async function dashboardPage(req: Request) {
       return { kind: "admin" as const, data: await adminDashboard(user) };
     case "accountant":
       return { kind: "accountant" as const, data: await accountantDashboard(user.id) };
-    case "monitor":
-      return { kind: "monitor" as const, data: await monitorDashboard(user) };
     case "parent":
       return { kind: "parent" as const, data: await parentDashboard(user, qs(req, "child")) };
     case "kid":

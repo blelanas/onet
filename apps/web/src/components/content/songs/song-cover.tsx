@@ -2,7 +2,7 @@ import { assetUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const PAIRS: [string, string][] = [
-  ["#E30613", "#FFB400"],
+  ["#0F7A3E", "#FFB400"],
   ["#7C4DFF", "#E8457C"],
   ["#1E9BD7", "#2BB673"],
   ["#FF6B4A", "#FFB400"],

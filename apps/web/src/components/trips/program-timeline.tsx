@@ -1,7 +1,7 @@
 import { Flag, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const DOTS = ["#E30613", "#FF6B4A", "#FFB400", "#2BB673", "#1E9BD7", "#7C4DFF", "#00A3A3", "#E8457C"];
+const DOTS = ["#0F7A3E", "#FF6B4A", "#FFB400", "#2BB673", "#1E9BD7", "#7C4DFF", "#00A3A3", "#E8457C"];
 
 /** Vertical timeline for a trip program ("08:00 | Départ" lines). */
 export function ProgramTimeline({ steps }: { steps: { time: string; label: string }[] }) {

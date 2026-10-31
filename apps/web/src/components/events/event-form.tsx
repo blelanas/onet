@@ -25,10 +25,15 @@ export type EventFormValues = {
   requiresPayment?: boolean;
   status?: string;
   isPublic?: boolean;
+  /** Editions of a programme (series) also edit their number and season. */
+  seriesId?: string | null;
+  editionNumber?: number | null;
+  seasonYear?: number | null;
 };
 
 export function EventForm({ initial }: { initial: EventFormValues }) {
   const t = useTranslations("events.form");
+  const te = useTranslations("events.edition");
   const tc = useTranslations("common");
   const [price, setPrice] = useState(initial.price ? String(initial.price / 1000) : "");
   const paid = Number(price.replace(",", ".")) > 0;
@@ -39,7 +44,13 @@ export function EventForm({ initial }: { initial: EventFormValues }) {
         <>
           {initial.id && <input type="hidden" name="id" value={initial.id} />}
           <FormSection title={t("general")}>
-            <Input name="title" label={tc("fields.title")} defaultValue={initial.title} required wrapperClassName="sm:col-span-2" />
+            <Input name="title" label={tc("fields.title")} defaultValue={initial.title} required wrapperClassName="sm:col-span-2" dir="auto" />
+            {initial.seriesId && (
+              <>
+                <Input name="editionNumber" type="number" min={1} label={te("editionNumber")} defaultValue={initial.editionNumber ?? ""} dir="ltr" />
+                <Input name="seasonYear" type="number" min={1990} max={2100} label={te("seasonYear")} defaultValue={initial.seasonYear ?? ""} dir="ltr" />
+              </>
+            )}
             <Select name="category" label={tc("fields.category")} defaultValue={initial.category ?? "CHILDREN"} options={EVENT_CATEGORIES.map((v) => ({ value: v, label: tc(`enums.eventCategory.${v}`) }))} required />
             <Select name="status" label={tc("fields.status")} defaultValue={initial.status ?? "PUBLISHED"} options={EVENT_STATUSES.map((v) => ({ value: v, label: tc(`status.${v}`) }))} hint={t("statusHint")} />
             <Textarea name="description" label={tc("fields.description")} defaultValue={initial.description ?? ""} rows={4} wrapperClassName="sm:col-span-2" />

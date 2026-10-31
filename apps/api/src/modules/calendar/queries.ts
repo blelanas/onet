@@ -23,7 +23,7 @@ export type CalItem = {
   mine?: boolean;
 };
 
-export const ENTRY_COLORS: Record<string, string> = { MEETING: "#64748B", HOLIDAY: "#00A3A3", IMPORTANT: "#E30613", OTHER: "#7C4DFF" };
+export const ENTRY_COLORS: Record<string, string> = { MEETING: "#64748B", HOLIDAY: "#00A3A3", IMPORTANT: "#FF6B4A", OTHER: "#7C4DFF" };
 export const KIND_COLORS: Record<CalKind, string> = { activity: "#7C4DFF", group: "#1E9BD7", event: "#E8457C", trip: "#2BB673", conference: "#FF6B4A", entry: "#64748B" };
 
 /** Audiences of free calendar entries visible to this user. */

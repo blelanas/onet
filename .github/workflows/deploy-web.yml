@@ -64,7 +64,10 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           projectId: ${{ vars.FIREBASE_PROJECT_ID }}
-          expires: 7d
+          # Pinned: firebase-tools 15.34+ also checks that the Hosting API is enabled, which needs the extra
+          # "Service Usage Consumer" role on the service account (403 serviceusage.services.get otherwise).
+          firebaseToolsVersion: 15.33.0
+          expires: 30d # Firebase maximum; a new push or re-run gives a fresh link
       - name: Deploy production (main)
         if: steps.cfg.outputs.ready == 'true' && github.event_name == 'push'
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -72,4 +75,7 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           projectId: ${{ vars.FIREBASE_PROJECT_ID }}
+          # Pinned: firebase-tools 15.34+ also checks that the Hosting API is enabled, which needs the extra
+          # "Service Usage Consumer" role on the service account (403 serviceusage.services.get otherwise).
+          firebaseToolsVersion: 15.33.0
           channelId: live

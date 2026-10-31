@@ -83,11 +83,18 @@ export async function addTripMonitor(fd: FormData | Record<string, unknown>) {
     const user = await requirePermission("trips.manage");
     const [trip, member] = await Promise.all([db.trip.findUnique({ where: { id: d.tripId } }), db.member.findUnique({ where: { id: d.memberId }, select: { userId: true, type: true } })]);
     if (!trip || !member) throw new ActionError("errors.notFound");
-    if (member.type === "CHILD") throw new ActionError("errors.validation");
+    // Trip managers are members, monitors or staff (not children nor parent contacts).
+    if (!["MEMBER", "MONITOR", "STAFF"].includes(member.type)) throw new ActionError("errors.validation");
     await db.tripMonitor.upsert({ where: { tripId_memberId: d }, create: d, update: {} });
     await audit(user.id, "assign_monitor", "Trip", d.tripId, { memberId: d.memberId });
     if (member.userId) {
-      await notifyLocalized([member.userId], "TRIP_REGISTRATION", `/dashboard/trips/${trip.id}`, (t) => ({ title: t("notify.monitorAssigned", { title: trip.title }) }));
+      await notifyLocalized(
+        [member.userId],
+        "TRIP_REGISTRATION",
+        `/dashboard/trips/${trip.id}?tab=participants`,
+        (t) => ({ title: t("managerAssigned", { title: trip.title }), body: t("managerAssignedBody") }),
+        "trips.notify",
+      );
     }
     revalidatePath(`/dashboard/trips/${d.tripId}`);
   });

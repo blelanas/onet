@@ -7,38 +7,47 @@ import { chromium } from "playwright";
 const BASE = process.env.BASE_URL ?? "http://localhost:5173";
 const PASSWORD = "Onet2026!";
 
-const PUBLIC = ["/", "/about", "/activities", "/events", "/trips", "/news", "/gallery", "/songs", "/conferences", "/contact", "/join", "/login"];
+const PUBLIC = ["/", "/about", "/activities", "/events", "/trips", "/news", "/gallery", "/songs", "/conferences", "/contact", "/join", "/login", "/signup"];
 
 // Expected access per role: `allow` must render content, `deny` must show the forbidden page.
 const ROLES = {
   "admin@onet-teboulba.tn": {
-    allow: ["/dashboard", "/dashboard/members", "/dashboard/groups", "/dashboard/finance/invoices", "/dashboard/finance/reports", "/dashboard/reports", "/dashboard/settings/roles", "/dashboard/settings/audit"],
+    allow: ["/dashboard", "/dashboard/members", "/dashboard/groups", "/dashboard/finance/invoices", "/dashboard/finance/reports", "/dashboard/reports", "/dashboard/settings/roles", "/dashboard/settings/audit", "/dashboard/settings/bureau", "/dashboard/approvals", "/dashboard/content/dances", "/dashboard/content/dances/new"],
     deny: [],
   },
   "gestion@onet-teboulba.tn": {
-    allow: ["/dashboard", "/dashboard/members", "/dashboard/events", "/dashboard/finance/invoices", "/dashboard/settings/users"],
+    allow: ["/dashboard", "/dashboard/members", "/dashboard/events", "/dashboard/finance/invoices", "/dashboard/settings/users", "/dashboard/settings/bureau", "/dashboard/approvals", "/dashboard/approvals?tab=invitations", "/dashboard/approvals?tab=preapproved"],
     deny: ["/dashboard/finance/invoices/new", "/dashboard/settings/roles", "/dashboard/settings/audit"],
   },
   "comptable@onet-teboulba.tn": {
     allow: ["/dashboard", "/dashboard/finance/invoices", "/dashboard/finance/payments", "/dashboard/finance/expenses", "/dashboard/finance/reports"],
-    deny: ["/dashboard/groups", "/dashboard/activities", "/dashboard/attendance", "/dashboard/settings/users", "/dashboard/join-requests"],
+    deny: ["/dashboard/groups", "/dashboard/activities", "/dashboard/attendance", "/dashboard/settings/users", "/dashboard/settings/bureau", "/dashboard/join-requests", "/dashboard/approvals"],
   },
   "moniteur@onet-teboulba.tn": {
-    allow: ["/dashboard", "/dashboard/children", "/dashboard/groups", "/dashboard/attendance", "/dashboard/calendar", "/dashboard/messages"],
-    deny: ["/dashboard/members", "/dashboard/finance/invoices", "/dashboard/reports", "/dashboard/settings/users"],
+    allow: ["/dashboard", "/dashboard/children", "/dashboard/groups", "/dashboard/attendance", "/dashboard/calendar", "/dashboard/messages", "/dashboard/content/dances"],
+    deny: ["/dashboard/members", "/dashboard/finance/invoices", "/dashboard/reports", "/dashboard/settings/users", "/dashboard/settings/bureau", "/dashboard/approvals"],
   },
   "parent@onet-teboulba.tn": {
     allow: ["/dashboard", "/dashboard/my-children", "/dashboard/events", "/dashboard/trips", "/dashboard/finance/invoices", "/dashboard/messages", "/dashboard/content/songs"],
     deny: ["/dashboard/members", "/dashboard/groups", "/dashboard/finance/expenses", "/dashboard/finance/reports", "/dashboard/reports", "/dashboard/settings/users"],
   },
   "enfant@onet-teboulba.tn": {
-    allow: ["/dashboard", "/dashboard/achievements", "/dashboard/activities", "/dashboard/content/songs", "/dashboard/content/games", "/dashboard/announcements"],
+    allow: ["/dashboard", "/dashboard/achievements", "/dashboard/activities", "/dashboard/content/songs", "/dashboard/content/games", "/dashboard/content/dances", "/dashboard/announcements"],
     deny: ["/dashboard/children", "/dashboard/finance/invoices", "/dashboard/finance/payments", "/dashboard/messages", "/dashboard/documents", "/dashboard/attendance"],
   },
   "membre@onet-teboulba.tn": {
-    allow: ["/dashboard", "/dashboard/events", "/dashboard/trips", "/dashboard/content/songs"],
-    deny: ["/dashboard/children", "/dashboard/finance/invoices", "/dashboard/settings/users"],
+    allow: ["/dashboard", "/dashboard/events", "/dashboard/trips", "/dashboard/announcements", "/dashboard/messages", "/dashboard/content/songs", "/dashboard/content/dances"],
+    deny: ["/dashboard/finance/invoices", "/dashboard/settings/users", "/dashboard/settings/bureau", "/dashboard/content/dances/new", "/dashboard/approvals"],
   },
+};
+
+// Pages that must show a specific panel (data-testid), e.g. the tab selected by ?tab=.
+const EXPECT_TESTID = {
+  "/dashboard/approvals": "approvals-pending",
+  "/dashboard/approvals?tab=invitations": "approvals-invitations",
+  "/dashboard/approvals?tab=preapproved": "approvals-preapproved",
+  "/dashboard/settings/bureau": "bureau-list",
+  "/dashboard/content/dances": "dance-card",
 };
 
 const failures = [];
@@ -58,8 +67,9 @@ async function visit(page, path) {
   const has = async (id) => (await page.locator(`[data-testid="${id}"]`).count()) > 0;
   return {
     status: res?.status() ?? 0,
-    url: new URL(page.url()).pathname,
+    url: new URL(page.url()).pathname + new URL(page.url()).search,
     errors,
+    has,
     forbidden: await has("forbidden"),
     broken: (await has("error-state")) || (await has("not-found")),
   };
@@ -76,7 +86,7 @@ try {
       else if (r.errors.length) fail(`anonymous ${p} → page error: ${r.errors[0]}`);
     }
     const r = await visit(page, "/dashboard");
-    if (r.url !== "/login") fail(`anonymous /dashboard should redirect to /login, got ${r.url}`);
+    if (r.url.split("?")[0] !== "/login") fail(`anonymous /dashboard should redirect to /login, got ${r.url}`);
     await page.close();
   }
 
@@ -97,8 +107,11 @@ try {
     }
     for (const p of allow) {
       const r = await visit(page, p);
-      if (r.status !== 200 || r.url !== p || r.forbidden || r.broken) fail(`${email} ${p} should be allowed (HTTP ${r.status}, ended on ${r.url}${r.forbidden ? ", forbidden" : ""}${r.broken ? ", error/not-found state" : ""})`);
+      // Same page; a query string in `p` (?tab=…) must survive too.
+      const samePage = p.includes("?") ? r.url === p : r.url.split("?")[0] === p;
+      if (r.status !== 200 || !samePage || r.forbidden || r.broken) fail(`${email} ${p} should be allowed (HTTP ${r.status}, ended on ${r.url}${r.forbidden ? ", forbidden" : ""}${r.broken ? ", error/not-found state" : ""})`);
       else if (r.errors.length) fail(`${email} ${p} → page error: ${r.errors[0]}`);
+      else if (EXPECT_TESTID[p] && !(await r.has(EXPECT_TESTID[p]))) fail(`${email} ${p} should show [data-testid="${EXPECT_TESTID[p]}"]`);
     }
     for (const p of deny) {
       const r = await visit(page, p);
