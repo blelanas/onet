@@ -48,6 +48,9 @@ export function Component() {
 
 function HomePage({ data }: { data: Data }) {
   const org = data.org;
+  // `?? []`: a server from before the bureau feature omits the field (PR previews use the live API, and the
+  // website deploys a few minutes before the API on a merge) — the page must still render, without the section.
+  const bureau = data.bureau ?? [];
   const t = useTranslations("public.home");
   const tp = useTranslations("public.pillars");
   const tc = useTranslations("public.common");
@@ -57,10 +60,10 @@ function HomePage({ data }: { data: Data }) {
       <HomeHero kids={data.stats.children} foundedYear={org.foundedYear} />
 
       {/* Local bureau (أعضاء المكتب المحلي), floating over the bottom of the hero. */}
-      <BureauSection members={data.bureau} className="-mt-14 sm:-mt-16" />
+      <BureauSection members={bureau} className="-mt-14 sm:-mt-16" />
 
       {/* Pillars */}
-      <section aria-labelledby="pillars-title" className={cn("relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8", data.bureau.length ? "mt-10 sm:mt-12" : "-mt-6")}>
+      <section aria-labelledby="pillars-title" className={cn("relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8", bureau.length ? "mt-10 sm:mt-12" : "-mt-6")}>
         <h2 id="pillars-title" className="sr-only">
           {tp("title")}
         </h2>
