@@ -85,7 +85,11 @@ export async function editionKidsPage(req: Request) {
     rows,
     total,
     teams,
+    /** Has kid controls (adds kids); a leader only manages the kids of `ledTeamIds`. */
     canManage: access.manageKids,
+    /** Manages every kid of the edition (admins and the director). */
+    canManageAll: access.manageAllKids,
+    ledTeamIds: access.ledTeamIds,
     isAdmin: access.manage,
   };
 }

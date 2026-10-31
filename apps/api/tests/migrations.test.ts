@@ -155,4 +155,39 @@ describe("migrations", () => {
       client.close();
     }
   });
+
+  it("0006 adds the event frequency without touching events, teams, registrations or attendance; clubs weekly, festivals daily", async () => {
+    const file = path.join(mkdtempSync(path.join(os.tmpdir(), "onet-mig-")), "m.db");
+    const client = createClient({ url: `file:${file}` });
+    try {
+      for (const f of ["0001_init.sql", "0002_self_signup.sql", "0003_members_platform.sql", "0004_event_director.sql", "0005_account_roles.sql"]) await client.executeMultiple(sql(f));
+      const event = (id: string, series: string | null) =>
+        `INSERT INTO "Event" ("id", "title", "category", "startAt", "endAt", "updatedAt", "seriesId") VALUES ('${id}', 'E', 'CHILDREN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ${series ? `'${series}'` : "NULL"});`;
+      await client.executeMultiple(`
+        INSERT INTO "Member" ("id", "type", "firstName", "lastName", "membershipNumber", "updatedAt") VALUES ('k1', 'CHILD', 'K', 'Id', 'ONT-0001', CURRENT_TIMESTAMP), ('m1', 'MONITOR', 'Hela', 'D', 'ONT-0002', CURRENT_TIMESTAMP);
+        INSERT INTO "EventSeries" ("id", "name", "kind", "updatedAt") VALUES ('club', 'Club', 'CLUB', CURRENT_TIMESTAMP), ('fest', 'Festival', 'FESTIVAL', CURRENT_TIMESTAMP), ('other', 'Autre', 'OTHER', CURRENT_TIMESTAMP);
+        ${event("e_club", "club")} ${event("e_fest", "fest")} ${event("e_other", "other")} ${event("e_one", null)}
+        UPDATE "Event" SET "directorId" = 'm1' WHERE "id" = 'e_club';
+        INSERT INTO "EventTeam" ("id", "eventId", "name", "leaderId", "updatedAt") VALUES ('t1', 'e_club', 'Étoiles', 'm1', CURRENT_TIMESTAMP);
+        INSERT INTO "EventRegistration" ("id", "eventId", "memberId", "teamId", "updatedAt") VALUES ('r1', 'e_club', 'k1', 't1', CURRENT_TIMESTAMP);
+        INSERT INTO "Attendance" ("id", "date", "status", "memberId", "eventId", "contextKey", "updatedAt") VALUES ('a1', CURRENT_TIMESTAMP, 'PRESENT', 'k1', 'e_club', 'event:e_club', CURRENT_TIMESTAMP);
+      `);
+      // Like scripts/migrate.mjs: foreign keys enforced, the whole file in one write transaction.
+      await client.execute("PRAGMA foreign_keys = ON");
+      const tx = await client.transaction("write");
+      await tx.executeMultiple(sql("0006_event_frequency.sql"));
+      await tx.commit();
+      const count = async (t: string) => Number((await client.execute(`SELECT count(*) AS n FROM "${t}"`)).rows[0].n);
+      for (const [t, n] of [["Event", 4], ["EventSeries", 3], ["EventTeam", 1], ["EventRegistration", 1], ["Attendance", 1], ["Member", 2]] as const) expect(await count(t)).toBe(n);
+      const freq = Object.fromEntries((await client.execute(`SELECT "id", "frequency" FROM "Event" ORDER BY "id"`)).rows.map((r) => [r.id, r.frequency]));
+      expect(freq).toEqual({ e_club: "WEEKLY", e_fest: "DAILY", e_one: "ONCE", e_other: "ONCE" });
+      expect((await client.execute(`SELECT "directorId", "seriesId" FROM "Event" WHERE "id" = 'e_club'`)).rows[0]).toMatchObject({ directorId: "m1", seriesId: "club" });
+      expect((await client.execute(`SELECT "teamId" FROM "EventRegistration"`)).rows[0].teamId).toBe("t1");
+      // New events get the default.
+      await client.execute(event("e_new", null));
+      expect((await client.execute(`SELECT "frequency" FROM "Event" WHERE "id" = 'e_new'`)).rows[0].frequency).toBe("ONCE");
+    } finally {
+      client.close();
+    }
+  });
 });

@@ -4,7 +4,8 @@ import { db } from "@api/lib/db";
 import { requireAnyPermission, requirePermission } from "@api/lib/auth/guards";
 import { ActionError, formToObject, runAction, zs } from "@api/lib/actions";
 import { audit } from "@api/lib/audit";
-import { EVENT_CATEGORIES, EVENT_STATUSES } from "@api/lib/constants";
+import { EVENT_CATEGORIES, EVENT_FREQUENCIES, EVENT_STATUSES, zonedDayKey } from "@api/lib/constants";
+import { normalizeDay } from "@api/modules/attendance/day";
 import { saveRollCall } from "@api/modules/registrations/roll-call";
 import { deleteTeamChat, syncEditionChats } from "./team-chat";
 import { isEditionNumberClash } from "./series-actions";
@@ -31,6 +32,8 @@ const eventSchema = z
     requiresPayment: zs.bool,
     status: z.enum(EVENT_STATUSES),
     isPublic: zs.bool,
+    // Absent → left unchanged (ONCE for a new event).
+    frequency: z.preprocess((v) => (v === "" || v == null ? undefined : v), z.enum(EVENT_FREQUENCIES).optional()),
     // Editions of a series only: absent from the form of other events → left unchanged; submitted blank → cleared.
     editionNumber: optNullableInt(1, 9999),
     seasonYear: optNullableInt(1990, 2100),
@@ -102,7 +105,8 @@ export async function saveEventCheckIn(fd: FormData | Record<string, unknown>) {
     const user = await requireAnyPermission("events.manage", "attendance.manage");
     const event = await db.event.findUnique({ where: { id: d.id }, select: { id: true, startAt: true } });
     if (!event) throw new ActionError("errors.notFound");
-    const n = await saveRollCall(user, "event", event.id, event.startAt, d as Record<string, unknown>);
+    // The event's first day in Tunisian time: the same row as that session in the attendance tab.
+    const n = await saveRollCall(user, "event", event.id, normalizeDay(zonedDayKey(event.startAt)), d as Record<string, unknown>);
     revalidatePath(`/dashboard/events/${event.id}`);
     return { count: n };
   });

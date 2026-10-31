@@ -1,8 +1,9 @@
 // Demo data for the recurring programmes (series), their editions, teams, kids and team chats.
 // Called once at the end of seed.ts main(), after people, events and conversations exist.
 import type { PrismaClient } from "@prisma/client";
-import { zonedTimeToDate } from "@onet/shared";
+import { defaultFrequencyForKind, eventSessions, zonedDayKey, zonedTimeToDate } from "@onet/shared";
 import { syncTeamChat } from "../src/modules/events/team-chat";
+import { normalizeDay } from "../src/modules/attendance/day";
 
 type TeamDef = { name: string; color: string; leader: string; members: string[] };
 type EditionDef = {
@@ -175,6 +176,15 @@ const CHAT_MESSAGES: Record<string, [string, string, string, number][]> = {
 
 const DAY = 86400_000;
 
+/** Small deterministic generator (same demo attendance on every seed). */
+function random(seed: number) {
+  let x = seed;
+  return () => {
+    x = (x * 1103515245 + 12345) % 2147483648;
+    return x / 2147483648;
+  };
+}
+
 /** Whole years between a date of birth and a day (null without a birth date). */
 function ageOn(dob: Date | null, at: Date) {
   if (!dob) return null;
@@ -206,12 +216,16 @@ export async function seedSeries(db: PrismaClient) {
 
   const kidsByEdition = new Map<string, string[]>();
   const now = Date.now();
+  const today = zonedDayKey(new Date(now));
+  let attendanceRows = 0;
   for (const s of SERIES) {
     const series = await db.eventSeries.create({ data: { name: s.name, nameAr: s.nameAr, kind: s.kind, color: s.color, description: s.description, sortOrder: s.sortOrder } });
     for (const e of s.editions) {
       const startAt = zonedTimeToDate(e.start[0], e.start[1], e.start[2], 9, 0);
       const endAt = zonedTimeToDate(e.end[0], e.end[1], e.end[2], 18, 0);
       const title = e.title ?? (s.kind === "FESTIVAL" ? `${s.nameAr} ${e.editionNumber}` : `${s.name} ${e.seasonYear}-${e.seasonYear + 1}`);
+      // Clubs meet every week of the school year, the festival every day.
+      const frequency = defaultFrequencyForKind(s.kind);
       const event = await db.event.create({
         data: {
           seriesId: series.id,
@@ -228,11 +242,12 @@ export async function seedSeries(db: PrismaClient) {
           capacity: 120,
           status: +endAt < now ? "COMPLETED" : "PUBLISHED",
           isPublic: true,
+          frequency,
           createdAt: new Date(+startAt - 30 * DAY),
         },
       });
 
-      const teams = [];
+      const teams: { id: string; name: string }[] = [];
       for (const t of e.teams) {
         const leader = memberOf(t.leader);
         const team = await db.eventTeam.create({
@@ -258,6 +273,27 @@ export async function seedSeries(db: PrismaClient) {
         });
       }
 
+      // Attendance of the past sessions (not today's: its roll call is left to do), taken by each team's leader.
+      const rnd = random(e.editionNumber * 7919 + e.seasonYear);
+      const leaderUser = new Map(e.teams.map((t, i) => [teams[i].id, memberOf(t.leader).userId ?? admin.id]));
+      const rows = eventSessions({ startAt, endAt, frequency })
+        .filter((day) => day < today)
+        .flatMap((day) =>
+          chosen.map((memberId, i) => {
+            const r = rnd();
+            const teamId = teams[i % teams.length].id;
+            return {
+              memberId,
+              date: normalizeDay(day),
+              contextKey: `event:${event.id}`,
+              eventId: event.id,
+              recordedById: leaderUser.get(teamId) ?? admin.id,
+              status: r < 0.78 ? "PRESENT" : r < 0.86 ? "LATE" : r < 0.93 ? "EXCUSED" : "ABSENT",
+            };
+          }),
+        );
+      if (rows.length) attendanceRows += (await db.attendance.createMany({ data: rows })).count;
+
       for (const [i, [teamName, email, body, daysAgo]] of (CHAT_MESSAGES[e.key] ?? []).entries()) {
         const sender = memberOf(email);
         const team = teams.find((t) => t.name === teamName);
@@ -269,4 +305,5 @@ export async function seedSeries(db: PrismaClient) {
       }
     }
   }
+  console.log(`  ${attendanceRows} attendance rows for the programmes`);
 }

@@ -9,11 +9,14 @@ import { visibleMemberIds } from "@api/lib/auth/scope";
  * Access rules for series editions, their teams and their kids (one place, used by the events and
  * kids modules and by the member profile scope):
  *  - events.manage (admins) may do everything;
- *  - the leaders of an edition (Member = EventTeam.leaderId of any team of that event) may add, edit and
- *    remove its kids, assign kids to teams, and change the members of their own team;
- *  - the director of an event (Event.directorId) has a leader's rights on it and, like an admin inside the
- *    event, manages all its teams (create, rename, delete, choose leaders and members) and its kids. Editing
- *    the event itself (dates, publication, deletion) stays with events.manage;
+ *  - a team leader (Member = EventTeam.leaderId) manages only the kids of the teams they lead: adds kids
+ *    (existing or new) into one of those teams, moves a kid between those teams, takes an unassigned kid into
+ *    one of them, edits the cards of those kids and removes them from the edition; changes the members of their
+ *    own team and takes its attendance. Kids of other teams stay read-only for them;
+ *  - the director of an event (Event.directorId), like an admin inside the event, manages all its teams
+ *    (create, rename, delete, choose leaders and members), all its kids and all the attendance. Editing the
+ *    event itself (dates, publication, deletion) stays with events.manage;
+ *  - the other team members are read-only (kids list, attendance of their team);
  *  - anyone with events.read may read series, editions and teams (the animators' phone numbers only for
  *    the admins and the edition's teams and director);
  *  - kids and their parents' phone numbers: members.read_all / events.manage see every kid, other users
@@ -88,8 +91,10 @@ export type EditionAccess = {
   myTeamIds: string[];
   /** May list the kids (and their parents' phones), and see the animators' phones. */
   seeKids: boolean;
-  /** May add / edit / remove kids and assign them to teams. */
+  /** Has kid controls: may add kids (a leader: only into the teams they lead, see ledTeamIds). */
   manageKids: boolean;
+  /** May add / edit / remove / move every kid of the edition, whatever their team: admins and the director. */
+  manageAllKids: boolean;
   /** May create, edit (leader included) and delete every team of this edition: admins and the director. */
   manageTeams: boolean;
 };
@@ -112,6 +117,7 @@ export async function editionAccess(user: CurrentUser, eventId: string): Promise
     myTeamIds: mine.map((t) => t.id),
     seeKids: seesAllKids(user) || isOnTeam || isDirector,
     manageKids: manage || isLeader || isDirector,
+    manageAllKids: manage || isDirector,
     manageTeams: manage || isDirector,
   };
 }
@@ -173,8 +179,16 @@ export async function myEditionIds(user: CurrentUser) {
 }
 
 /**
- * Kid card data (photo, names, birth date, parent contact): member managers, admins, or a leader or the
- * director of one of the kid's editions.
+ * May the user manage a kid of the edition that is in `teamId` (null: no team)? Admins and the director: every
+ * kid; a leader: only the kids of the teams they lead.
+ */
+export function canManageKidOfTeam(access: Pick<EditionAccess, "manageAllKids" | "ledTeamIds">, teamId: string | null) {
+  return access.manageAllKids || (!!teamId && access.ledTeamIds.includes(teamId));
+}
+
+/**
+ * Kid card data (photo, names, birth date, parent contact): member managers, admins, the director of one of the
+ * kid's editions, or the leader of the kid's team in one of its editions (while ACTIVE).
  */
 export async function canEditKid(user: CurrentUser, kidId: string) {
   if (can(user, "members.manage") || canManageEditions(user)) return true;
@@ -183,7 +197,7 @@ export async function canEditKid(user: CurrentUser, kidId: string) {
     where: {
       memberId: kidId,
       ...ACTIVE_KID_REG,
-      event: { OR: [{ teams: { some: { leaderId: user.memberId, leader: { membershipStatus: "ACTIVE" } } } }, directedByWhere(user.memberId)] },
+      OR: [{ team: { leaderId: user.memberId, leader: { membershipStatus: "ACTIVE" } } }, { event: directedByWhere(user.memberId) }],
     },
   });
   return n > 0;

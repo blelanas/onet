@@ -1,6 +1,6 @@
 import type { Request } from "express";
 import type { Prisma } from "@prisma/client";
-import { APP_TIME_ZONE } from "@onet/shared";
+import { APP_TIME_ZONE, defaultFrequencyForKind } from "@onet/shared";
 import { db } from "@api/lib/db";
 import type { CurrentUser } from "@api/lib/auth/session";
 import { AuthError, requirePermission } from "@api/lib/auth/guards";
@@ -116,7 +116,8 @@ export async function seriesPage(req: Request) {
 
 /**
  * Prefill of the "new edition" form: next number, current season, default title, previous edition (for "copy
- * teams") and its director when they can still direct (proposed for the new edition).
+ * teams"), its director when they can still direct (proposed for the new edition) and its frequency (else the
+ * series kind's default).
  */
 export async function nextEditionDefaults(series: { id: string; name: string; nameAr: string | null; kind: string }) {
   const [max, previous] = await Promise.all([
@@ -124,7 +125,7 @@ export async function nextEditionDefaults(series: { id: string; name: string; na
     db.event.findFirst({
       where: { seriesId: series.id },
       orderBy: [{ startAt: "desc" }],
-      select: { id: true, title: true, editionNumber: true, directorId: true, _count: { select: { teams: true } } },
+      select: { id: true, title: true, editionNumber: true, directorId: true, frequency: true, _count: { select: { teams: true } } },
     }),
   ]);
   const directorId = previous?.directorId && (await db.member.count({ where: { id: previous.directorId, ...TEAM_ELIGIBLE } })) ? previous.directorId : null;
@@ -136,6 +137,7 @@ export async function nextEditionDefaults(series: { id: string; name: string; na
     title: defaultEditionTitle(series, editionNumber, seasonYear),
     previous: previous ? { id: previous.id, title: previous.title, editionNumber: previous.editionNumber, teamsCount: previous._count.teams } : null,
     directorId,
+    frequency: previous?.frequency ?? defaultFrequencyForKind(series.kind),
   };
 }
 

@@ -32,6 +32,9 @@ export const EVENT_STATUSES = ["DRAFT", "PUBLISHED", "CANCELLED", "COMPLETED"] a
 /** Recurring programmes: a yearly festival with numbered editions (تظاهرة الطفولة), a club with seasons, or other. */
 export const SERIES_KINDS = ["FESTIVAL", "CLUB", "OTHER"] as const;
 export type SeriesKind = (typeof SERIES_KINDS)[number];
+/** How often an event meets: its sessions (roll-call days) are computed by `eventSessions` (sessions.ts). */
+export const EVENT_FREQUENCIES = ["ONCE", "DAILY", "WEEKLY", "MONTHLY"] as const;
+export type EventFrequency = (typeof EVENT_FREQUENCIES)[number];
 
 export const TRIP_CATEGORIES = ["EDUCATIONAL", "CAMPING", "CULTURAL", "OUTDOOR", "EXCURSION", "REGIONAL"] as const;
 export const TRIP_STATUSES = ["DRAFT", "OPEN", "FULL", "CLOSED", "COMPLETED", "CANCELLED"] as const;

@@ -4,7 +4,8 @@ import { AuthError, can, canAny, requireAnyPermission, requirePermission, requir
 import { audit } from "@api/lib/audit";
 import { mutation, param, qs, query, sendCsv } from "@api/lib/http";
 import { slugify } from "@api/lib/utils";
-import { toCsv, toDateInput } from "@onet/shared";
+import { eventSessions, toCsv, toDateInput, zonedDayKey } from "@onet/shared";
+import { normalizeDay } from "@api/modules/attendance/day";
 import { eventDirector, eventTabCounts, familyRegistrationsFor, getEvent, getEventForEdit, listEvents, type EventTab } from "./queries";
 import { deleteEvent, saveEvent, saveEventCheckIn } from "./actions";
 import { addableMembers, canSeeMoney, eventParticipants, familyEntries, hideInvoiceMoney, hidePrice, paymentState, registrationStats, rollCall } from "@api/modules/registrations/queries";
@@ -14,6 +15,7 @@ import { KIDS_OF_EDITION, seriesFormPage, seriesListPage, seriesPage } from "./s
 import { createEdition, deleteSeries, saveSeries } from "./series-actions";
 import { allTeamsPage, editionTeams, editionTeamsPage, myTeamsPage, teamCandidates, withTeamPhones } from "./teams";
 import { deleteTeam, saveTeam } from "./team-actions";
+import { eventAttendancePage, saveEventAttendance } from "./attendance";
 
 /** events module routes (mounted under /api). */
 export const router = Router();
@@ -63,6 +65,11 @@ export async function eventPage(req: Request) {
     director,
     isDirector: access.isDirector,
     canManageTeams: access.manageTeams,
+    /** Number of sessions (roll-call days) given the event's frequency. */
+    sessionsCount: eventSessions(e).length,
+    /** The attendance tab: teams to call (the director, admins, the members on a team; who records is per team). */
+    canSeeAttendance: access.seeKids && teams.length > 0,
+    canManageAllKids: access.manageAllKids,
     teams: teams.map((t) => ({ id: t.id, name: t.name, color: t.color, leader: withTeamPhones(t, access.seeKids).leader, memberCount: t.memberCount, kidsCount: t.kidsCount, members: t.members.map((m) => ({ id: m.id, firstName: m.firstName, lastName: m.lastName, photoUrl: m.photoUrl })), conversationId: access.myTeamIds.includes(t.id) ? t.conversationId : null })),
     kidsCount,
     canManage: access.manage,
@@ -100,7 +107,9 @@ export async function eventCheckInPage(req: Request) {
   const user = await requireAnyPermission("events.manage", "attendance.manage");
   const id = param(req, "id");
   const e = await getEvent(user, id);
-  const [rows, saved] = await Promise.all([eventParticipants(id), rollCall(`event:${id}`, e.startAt)]);
+  // The event's first day in Tunisian time (the same day key as the attendance tab's sessions).
+  const day = normalizeDay(zonedDayKey(e.startAt));
+  const [rows, saved] = await Promise.all([eventParticipants(id), rollCall(`event:${id}`, day)]);
   const active = rows.filter((r) => r.status === "CONFIRMED" || r.status === "PENDING");
   return {
     day: e.startAt,
@@ -158,6 +167,7 @@ router.get(
 );
 router.get("/events/:id/participants", query(eventParticipantsPage));
 router.get("/events/:id/teams", query(editionTeamsPage));
+router.get("/events/:id/attendance", query(eventAttendancePage));
 router.get("/events/:id/checkin", query(eventCheckInPage));
 router.get("/events/:id/form", query(eventFormPage));
 router.get("/events/:id", query(eventPage));
@@ -169,6 +179,10 @@ router.post(
 router.delete(
   "/events/:id",
   mutation((req) => deleteEvent(param(req, "id"))),
+);
+router.post(
+  "/events/:id/attendance",
+  mutation((req) => saveEventAttendance({ ...req.body, eventId: param(req, "id") })),
 );
 router.post(
   "/events/:id/checkin",

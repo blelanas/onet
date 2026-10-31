@@ -4,7 +4,7 @@ import { db } from "@api/lib/db";
 import { requirePermission } from "@api/lib/auth/guards";
 import { ActionError, formToObject, runAction, zs } from "@api/lib/actions";
 import { audit } from "@api/lib/audit";
-import { EVENT_CATEGORIES, SERIES_KINDS } from "@api/lib/constants";
+import { EVENT_CATEGORIES, EVENT_FREQUENCIES, SERIES_KINDS, defaultFrequencyForKind } from "@api/lib/constants";
 import { defaultEditionTitle, tunisYear } from "./series";
 import { syncTeamChat } from "./team-chat";
 import { TEAM_ELIGIBLE } from "./teams";
@@ -82,6 +82,7 @@ const editionSchema = z
     isPublic: optBool,
     copyTeams: zs.bool,
     directorId: directorField,
+    frequency: z.preprocess((v) => (v === "" || v == null ? undefined : v), z.enum(EVENT_FREQUENCIES).optional()),
   })
   .refine((d) => d.endAt >= d.startAt, { path: ["endAt"], message: "errors.validation" })
   .refine((d) => !d.title || d.title.length <= 160, { path: ["title"], message: "errors.validation" });
@@ -91,6 +92,8 @@ const editionSchema = z
  * given, season = current year unless given, title from the series kind unless given. `copyTeams` copies
  * the previous edition's teams (name, colour, leader, members — not the kids) with fresh group chats.
  * `directorId`: the edition's director (optional, notified); the form proposes the previous edition's one.
+ * `frequency`: how often it meets; by default the latest edition's, else from the series kind (club → weekly,
+ * festival → daily, other → once).
  */
 export async function createEdition(fd: FormData | Record<string, unknown>) {
   return runAction(editionSchema, formToObject(fd), async (d) => {
@@ -102,6 +105,8 @@ export async function createEdition(fd: FormData | Record<string, unknown>) {
     if (d.editionNumber && (await db.event.count({ where: { seriesId: series.id, editionNumber: d.editionNumber } }))) throw new ActionError("errors.inUse");
     await assertDirectorEligible(d.directorId);
     const seasonYear = d.seasonYear ?? tunisYear();
+    const latest = d.frequency ? null : await db.event.findFirst({ where: { seriesId: series.id }, orderBy: { startAt: "desc" }, select: { frequency: true } });
+    const frequency = d.frequency ?? latest?.frequency ?? defaultFrequencyForKind(series.kind);
     const title = d.title ?? defaultEditionTitle(series, editionNumber, seasonYear);
     // The edition the teams are copied from: the closest lower number, else the most recent one.
     const previous = d.copyTeams
@@ -130,6 +135,7 @@ export async function createEdition(fd: FormData | Record<string, unknown>) {
           status: "PUBLISHED",
           isPublic: d.isPublic ?? true,
           directorId: d.directorId ?? null,
+          frequency,
         },
       });
       let copied = 0;

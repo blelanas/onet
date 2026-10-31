@@ -444,6 +444,8 @@ model Event {
   // The event's director: an animator who gets a team leader's rights on every team and kid of the event.
   directorId           String?
   director             Member?      @relation("EventDirector", fields: [directorId], references: [id], onDelete: SetNull)
+  // How often it meets: ONCE | DAILY | WEEKLY | MONTHLY. Its sessions (roll-call days) come from eventSessions().
+  frequency            String       @default("ONCE")
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
 

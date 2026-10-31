@@ -209,11 +209,13 @@ describe("kids of an edition", () => {
 
   it("adds an existing kid, and refuses duplicates", async () => {
     const existing = await db.member.findFirstOrThrow({ where: { type: "CHILD", parentLinks: { some: { parent: { email: "mohamed.gharbi0@example.tn" } } } }, orderBy: { membershipNumber: "asc" } });
-    const r = await call<Result<{ registrationId: string }>>("POST", `/events/${edition1}/kids`, { token: leader, body: { memberId: existing.id } });
+    // A leader adds kids only into a team they lead.
+    expect((await call("POST", `/events/${edition1}/kids`, { token: leader, body: { memberId: existing.id } })).body).toMatchObject({ ok: false, error: "errors.teamRequired" });
+    const r = await call<Result<{ registrationId: string }>>("POST", `/events/${edition1}/kids`, { token: leader, body: { memberId: existing.id, teamId } });
     expect(r.body.ok, JSON.stringify(r.body)).toBe(true);
-    expect((await call("POST", `/events/${edition1}/kids`, { token: leader, body: { memberId: existing.id } })).body).toMatchObject({ ok: false, error: "errors.alreadyRegistered" });
+    expect((await call("POST", `/events/${edition1}/kids`, { token: leader, body: { memberId: existing.id, teamId } })).body).toMatchObject({ ok: false, error: "errors.alreadyRegistered" });
     // The same new kid typed twice: already in the edition → alreadyRegistered.
-    const again = { firstName: "Nour", lastName: "Testi", dateOfBirth: "2017-03-04", parentName: "Hichem Testi", parentPhone: "+216 22 333 444" };
+    const again = { firstName: "Nour", lastName: "Testi", dateOfBirth: "2017-03-04", parentName: "Hichem Testi", parentPhone: "+216 22 333 444", teamId };
     expect((await call("POST", `/events/${edition1}/kids`, { token: leader, body: again })).body).toMatchObject({ ok: false, error: "errors.alreadyRegistered" });
     // Missing parent contact for a new kid → field errors.
     const missing = await call<{ ok: boolean; fieldErrors: Record<string, string> }>("POST", `/events/${edition1}/kids`, { token: leader, body: { firstName: "A", lastName: "B" } });
@@ -228,7 +230,7 @@ describe("kids of an edition", () => {
       expect(bad.body.fieldErrors?.parentPhone, parentPhone).toBe("errors.phone");
     }
     // The same new kid sent twice at once: one is created, the other is told it's already there.
-    const both = await Promise.all([1, 2].map(() => call<Result<{ memberId: string; registrationId: string }>>("POST", `/events/${edition1}/kids`, { token: leader, body: { ...kid, parentPhone: "+216 22 444 555" } })));
+    const both = await Promise.all([1, 2].map(() => call<Result<{ memberId: string; registrationId: string }>>("POST", `/events/${edition1}/kids`, { token: leader, body: { ...kid, parentPhone: "+216 22 444 555", teamId } })));
     expect(both.filter((r) => r.body.ok)).toHaveLength(1);
     expect(both.find((r) => !r.body.ok)?.body.error).toBe("errors.alreadyRegistered");
     const sami = await db.member.findFirstOrThrow({ where: { type: "CHILD", firstName: "Sami", lastName: "Doublon" }, include: { parentLinks: true } });
@@ -237,7 +239,7 @@ describe("kids of an edition", () => {
     const reg = await db.eventRegistration.findFirstOrThrow({ where: { eventId: edition1, memberId: sami.id } });
     const inv = await db.invoice.create({ data: { number: `TEST-KID-${Date.now()}`, description: "Test", amount: 5000, dueDate: new Date(), status: "CANCELLED", payerId: sami.id, childId: sami.id, eventId: edition1 } });
     await db.eventRegistration.update({ where: { id: reg.id }, data: { status: "CANCELLED", invoiceId: inv.id } });
-    expect((await call("POST", `/events/${edition1}/kids`, { token: leader, body: { memberId: sami.id } })).body).toMatchObject({ ok: true });
+    expect((await call("POST", `/events/${edition1}/kids`, { token: leader, body: { memberId: sami.id, teamId } })).body).toMatchObject({ ok: true });
     expect(await db.eventRegistration.findUniqueOrThrow({ where: { id: reg.id } })).toMatchObject({ status: "CONFIRMED", invoiceId: null });
     // Clean up (the edition's kid counts are checked further down).
     await db.eventRegistration.delete({ where: { id: reg.id } });
@@ -247,7 +249,9 @@ describe("kids of an edition", () => {
   });
 
   it("assigns kids to teams; the kids list filters by team and shows the parent contact", async () => {
-    expect((await call("POST", `/events/${edition1}/kids/${newKidReg}/team`, { token: leader, body: { teamId: null } })).body).toMatchObject({ ok: true, data: { teamId: null } });
+    // A leader can't leave a kid without a team; admins can, and the leader then takes the kid back into their team.
+    expect((await call("POST", `/events/${edition1}/kids/${newKidReg}/team`, { token: leader, body: { teamId: null } })).body).toMatchObject({ ok: false, error: "errors.teamRequired" });
+    expect((await call("POST", `/events/${edition1}/kids/${newKidReg}/team`, { token: admin, body: { teamId: null } })).body).toMatchObject({ ok: true, data: { teamId: null } });
     const none = await call<{ rows: { registrationId: string }[] }>("GET", `/events/${edition1}/kids?teamId=none`, { token: leader });
     expect(none.body.rows.map((r) => r.registrationId)).toContain(newKidReg);
     expect((await call("POST", `/events/${edition1}/kids/${newKidReg}/team`, { token: leader, body: { teamId } })).body).toMatchObject({ ok: true, data: { teamId } });
@@ -338,13 +342,14 @@ describe("editions history, copy of teams, global kids list", () => {
 
   it("kid history is grouped by season year, newest first, with team and series", async () => {
     // Typing an existing kid again as a "new kid" is refused: the existing record must be used.
-    const retyped = { firstName: "Nour", lastName: "Testi", dateOfBirth: "2017-03-04", parentName: "Hichem Testi", parentPhone: "+216 22 333 444" };
+    const team2 = (await db.eventTeam.findFirstOrThrow({ where: { eventId: edition2 } })).id;
+    const retyped = { firstName: "Nour", lastName: "Testi", dateOfBirth: "2017-03-04", parentName: "Hichem Testi", parentPhone: "+216 22 333 444", teamId: team2 };
     expect((await call("POST", `/events/${edition2}/kids`, { token: leader, body: retyped })).body).toMatchObject({ ok: false, error: "errors.kidExists" });
-    expect((await call("POST", `/events/${edition2}/kids`, { token: leader, body: { memberId: newKidId } })).body).toMatchObject({ ok: true });
+    expect((await call("POST", `/events/${edition2}/kids`, { token: leader, body: { memberId: newKidId, teamId: team2 } })).body).toMatchObject({ ok: true });
     const h = await call<{ years: { year: number; editions: { event: { id: string; series: { id: string } }; team: { id: string } | null }[] }[] }>("GET", `/kids/${newKidId}/history`, { token: leader });
     expect(h.status).toBe(200);
     expect(h.body.years.map((y) => y.year)).toEqual([2026, 2025]);
-    expect(h.body.years[0].editions[0]).toMatchObject({ event: { id: edition2, series: { id: seriesId } }, team: null });
+    expect(h.body.years[0].editions[0]).toMatchObject({ event: { id: edition2, series: { id: seriesId } }, team: { id: team2 } });
     expect(h.body.years[1].editions[0]).toMatchObject({ event: { id: edition1 }, team: { id: teamId } });
     expect((await call("GET", `/kids/${newKidId}/history`, { token: outsider })).status).toBe(403);
   });
