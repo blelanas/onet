@@ -78,6 +78,33 @@ Optional hardening: GitHub **Settings → Environments → preview** → *Requir
 
 Manual deploy from a computer: `VITE_API_URL=https://onet-api.onrender.com npm run build -w @onet/web && npx firebase-tools deploy --only hosting`.
 
+## Google sign-in (optional, free)
+
+Adds a **"Continue with Google"** button on the sign-in and sign-up pages. It only signs in people who already have an
+account with the same e-mail (or a pending sign-up); a Google account never creates an account by itself — someone
+without an account is sent to the sign-up form, prefilled with their name and e-mail. Free, no card needed.
+
+1. Open <https://console.cloud.google.com> and select the project **`onet-teboulba`** at the top (it already exists: Firebase created it).
+2. **APIs & Services → OAuth consent screen** (also called *Google Auth Platform → Branding*):
+   user type **External**, app name `ONET Teboulba`, user support e-mail = yours, developer contact e-mail = yours → Save.
+   If it asks for *Audience*, choose **In production** (only the basic e-mail/profile scopes are used, so no review is needed).
+3. **APIs & Services → Credentials → Create credentials → OAuth client ID**:
+   - Application type: **Web application**, name `ONET web`.
+   - **Authorised JavaScript origins** → add these three:
+     `https://onet-teboulba.web.app`, `https://onet-teboulba.firebaseapp.com`, `http://localhost:5173`
+     (if your Firebase project id is different, use it instead of `onet-teboulba`).
+   - No redirect URI is needed → **Create**.
+4. Copy the **Client ID** (it ends with `.apps.googleusercontent.com`) and put it in two places:
+   1. GitHub → repository **Settings → Secrets and variables → Actions → Variables** tab → *New repository variable* →
+      name `GOOGLE_CLIENT_ID`, value = the client ID. The next deploy of the website shows the button.
+   2. Render → **onet-api → Environment** → add `GOOGLE_CLIENT_ID` = the same client ID → *Save* (it redeploys).
+5. Locally: start the API with `GOOGLE_CLIENT_ID=<client id>` and the web app with `VITE_GOOGLE_CLIENT_ID=<client id>`.
+
+> The client ID is **not a secret** (it is visible in the website's code), so a *variable* is fine.
+> Google only allows the origins listed above, and pull-request preview links have random URLs:
+> Google sign-in works on the live site and locally, not on PR previews (the button may show an error there).
+> To turn it off, delete the two variables (the button disappears and the API answers "not configured").
+
 ## 4. Protect `main`
 
 GitHub → Settings → Branches → **Add rule** for `main`: require a pull request and the status checks
@@ -93,4 +120,6 @@ GitHub → Settings → Branches → **Add rule** for `main`: require a pull req
 | `PORT` | API | set by Render |
 | `PAYMENT_PROVIDER` | API | `mock` until a real gateway is integrated (unknown values are rejected) |
 | `ALLOW_MOCK_PAYMENTS` | API | `false` (default). The `mock` provider marks every online payment as paid, so it is refused when `NODE_ENV=production` unless this is `true` — only for a demo deployment |
+| `GOOGLE_CLIENT_ID` | API (optional) | OAuth client id `…apps.googleusercontent.com` for "Continue with Google"; unset = disabled |
 | `VITE_API_URL` | web build | `https://onet-api.onrender.com` |
+| `VITE_GOOGLE_CLIENT_ID` | web build (optional) | same client id (GitHub variable `GOOGLE_CLIENT_ID`); empty = button hidden |

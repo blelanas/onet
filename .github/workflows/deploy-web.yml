@@ -57,6 +57,7 @@ jobs:
           npm run build -w @onet/web
         env:
           VITE_API_URL: ${{ vars.API_URL }}
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
       - name: Deploy preview channel (pull request)
         if: steps.cfg.outputs.ready == 'true' && github.event_name == 'pull_request'
         uses: FirebaseExtended/action-hosting-deploy@v0
