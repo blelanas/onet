@@ -152,7 +152,14 @@ export async function createEdition(fd: FormData | Record<string, unknown>) {
       if (isEditionNumberClash(e)) throw new ActionError("errors.inUse");
       throw e;
     });
-    if (d.directorId) await notifyDirectorAssigned(d.directorId, { id: result.id, title }, user.id);
+    // The edition is committed: a failed notification must not report its creation as failed.
+    if (d.directorId) {
+      try {
+        await notifyDirectorAssigned(d.directorId, { id: result.id, title }, user.id);
+      } catch (err) {
+        console.error("[events] director notification failed for edition", result.id, err);
+      }
+    }
     await audit(user.id, "create", "Event", result.id, { title, seriesId: series.id, editionNumber, seasonYear, copiedTeams: result.copied, directorId: d.directorId ?? null });
     return { id: result.id, editionNumber, seasonYear, title, copiedTeams: result.copied };
   });

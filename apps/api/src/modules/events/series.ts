@@ -127,7 +127,9 @@ export async function nextEditionDefaults(series: { id: string; name: string; na
       select: { id: true, title: true, editionNumber: true, directorId: true, _count: { select: { teams: true } } },
     }),
   ]);
-  const directorId = previous?.directorId && (await db.member.count({ where: { id: previous.directorId, ...TEAM_ELIGIBLE } })) ? previous.directorId : null;
+  const director = previous?.directorId
+    ? await db.member.findFirst({ where: { id: previous.directorId, ...TEAM_ELIGIBLE }, select: { id: true, firstName: true, lastName: true, photoUrl: true, type: true } })
+    : null;
   const editionNumber = (max._max.editionNumber ?? 0) + 1;
   const seasonYear = tunisYear();
   return {
@@ -135,7 +137,9 @@ export async function nextEditionDefaults(series: { id: string; name: string; na
     seasonYear,
     title: defaultEditionTitle(series, editionNumber, seasonYear),
     previous: previous ? { id: previous.id, title: previous.title, editionNumber: previous.editionNumber, teamsCount: previous._count.teams } : null,
-    directorId,
+    directorId: director?.id ?? null,
+    /** Shown by the director picker even before (or without) its candidates list. */
+    director,
   };
 }
 

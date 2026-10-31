@@ -94,6 +94,33 @@ describe("permission enforcement on the API", () => {
     }
   });
 
+  it("editing an old parent-only account drops its retired role and hides it from the users list", async () => {
+    const token = await login("admin@onet-teboulba.tn");
+    const role = await db.role.findUniqueOrThrow({ where: { key: "parent" } });
+    const u = await db.user.create({ data: { email: "old-parent-roles@x.tn", name: "Old parent roles", passwordHash: "x", isActive: false, roles: { create: [{ roleId: role.id }] } } });
+    try {
+      // The users list doesn't show the retired role, and the role filter still works.
+      const listed = await call("GET", "/settings/users?q=old-parent-roles", { token });
+      const row = (listed.body!.rows as { id: string; roles: { role: { key: string } }[] }[]).find((r) => r.id === u.id);
+      expect(row?.roles).toEqual([]);
+      const byRole = (await call("GET", "/settings/users?role=member", { token })).body!.rows as { roles: { role: { key: string } }[] }[];
+      expect(byRole.length).toBeGreaterThan(0);
+      expect(byRole.every((r) => r.roles.some((x) => x.role.key === "member"))).toBe(true);
+
+      // Re-submitting the retired role along with an account role keeps only the account role.
+      const r = await call("POST", `/settings/users/${u.id}/roles`, { token, body: { roles: ["member", "parent"] } });
+      expect(r.body).toMatchObject({ ok: true });
+      const keys = (await db.userRole.findMany({ where: { userId: u.id }, select: { role: { select: { key: true } } } })).map((x) => x.role.key);
+      expect(keys).toEqual(["member"]);
+      // Submitting only the retired role would leave no account role: refused.
+      await db.userRole.deleteMany({ where: { userId: u.id } });
+      await db.userRole.create({ data: { userId: u.id, roleId: role.id } });
+      expect((await call("POST", `/settings/users/${u.id}/roles`, { token, body: { roles: ["parent"] } })).body).toMatchObject({ ok: false, error: "errors.validation" });
+    } finally {
+      await db.user.delete({ where: { id: u.id } });
+    }
+  });
+
   it("kids and parents are records: no login account can be created for them", async () => {
     const token = await login("admin@onet-teboulba.tn");
     for (const type of ["CHILD", "PARENT"] as const) {

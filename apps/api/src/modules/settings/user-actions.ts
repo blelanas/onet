@@ -61,12 +61,16 @@ export async function updateUserRoles(fd: FormData | Record<string, unknown>) {
   return runAction(rolesSchema, formToObject(fd), async (d) => {
     const actor = await requirePermission("users.manage");
     const current = await targetRoleKeys(d.userId);
-    const next = [...new Set(d.roles)];
+    const submitted = [...new Set(d.roles)];
+    // Retired roles (parent / kid / monitor) can't be granted, and are never kept: an old account
+    // re-submitting its retired role along with an account role silently loses the retired one.
+    assertGrantable(submitted.filter((k) => !current.includes(k)));
+    const next = submitted.filter((k) => !isRetiredRole(k));
+    if (!next.length) throw new ActionError("errors.validation");
     const added = next.filter((k) => !current.includes(k));
     const removed = current.filter((k) => !next.includes(k));
     // Managing an admin account, or granting/revoking an admin role, requires roles.manage.
     assertCanTouchPrivileged(actor, [...current, ...added, ...removed]);
-    assertGrantable(added);
     if (removed.includes("super_admin")) {
       if (d.userId === actor.id) throw new ActionError("errors.forbidden");
       await assertAnotherSuperAdmin(d.userId);

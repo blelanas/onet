@@ -17,6 +17,7 @@ export type NextEdition = {
   previous: { id: string; title: string; editionNumber: number | null; teamsCount: number } | null;
   /** The previous edition's director (when still eligible): proposed for the new one. */
   directorId: string | null;
+  director: { id: string; firstName: string; lastName: string; photoUrl: string | null; type: string } | null;
 };
 
 /** Same rule as the API: "تظاهرة الطفولة 16" for a festival, "<name> 2026-2027" otherwise. */
@@ -103,7 +104,7 @@ function EditionForm({ series, next, onCancel }: { series: Series; next: NextEdi
             <Input name="endAt" type="datetime-local" label={tf("endAt")} required />
             <Input name="location" label={tc("fields.location")} wrapperClassName="sm:col-span-2" />
           </div>
-          <DirectorSelect defaultValue={next.directorId} hint={next.directorId ? `${td("hint")} ${td("hintPrevious")}` : td("hint")} />
+          <DirectorSelect defaultValue={next.directorId} current={next.director} hint={next.directorId ? `${td("hint")} ${td("hintPrevious")}` : td("hint")} />
           <Textarea name="description" label={tc("fields.description")} rows={3} />
           <Upload name="coverUrl" kind="image" label={tc("fields.cover")} />
           {next.previous && next.previous.teamsCount > 0 && (

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { db } from "@api/lib/db";
-import { AuthError, requirePermission } from "@api/lib/auth/guards";
+import { AuthError, requireAnyPermission } from "@api/lib/auth/guards";
 import { ActionError, formToObject, runAction, zs } from "@api/lib/actions";
 import { audit } from "@api/lib/audit";
 import { assertCanManageTeams, editionAccess, teamEditRights } from "./access";
@@ -26,7 +26,7 @@ const teamSchema = z.object({
  */
 export async function saveTeam(fd: FormData | Record<string, unknown>) {
   return runAction(teamSchema, formToObject(fd), async (d) => {
-    const user = await requirePermission("events.read");
+    const user = await requireAnyPermission("events.read", "events.manage");
     const event = await db.event.findUnique({ where: { id: d.eventId }, select: { id: true, title: true } });
     if (!event) throw new ActionError("errors.notFound");
     const existing = d.id
@@ -70,7 +70,7 @@ export async function saveTeam(fd: FormData | Record<string, unknown>) {
  */
 export async function deleteTeam(teamId: string) {
   return runAction(zs.id, teamId, async (id) => {
-    const user = await requirePermission("events.read");
+    const user = await requireAnyPermission("events.read", "events.manage");
     const team = await db.eventTeam.findUnique({ where: { id }, select: { id: true, name: true, eventId: true, conversationId: true } });
     if (!team) throw new ActionError("errors.notFound");
     await assertCanManageTeams(user, team.eventId);

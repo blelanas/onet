@@ -28,7 +28,8 @@ export async function listUsers(f: { q?: string; role?: string; status?: string;
         lastLoginAt: true,
         createdAt: true,
         member: { select: { id: true, type: true } },
-        roles: { select: { role: { select: { id: true, key: true, name: true, color: true, isSystem: true } } } },
+        // Old accounts may still hold a retired role row (parent, kid, monitor): it is no longer shown nor offered.
+        roles: { where: { role: { key: { notIn: [...RETIRED_ROLE_KEYS] } } }, select: { role: { select: { id: true, key: true, name: true, color: true, isSystem: true } } } },
       },
     }),
     db.user.count({ where }),

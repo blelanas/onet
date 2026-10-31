@@ -11,8 +11,9 @@ type Person = { id: string; firstName: string; lastName: string; photoUrl: strin
 
 /**
  * Director picker of the event forms (admins): the team candidates (ACTIVE animators), optional ("no
- * director"). The value travels in a hidden input, so a slow candidates list never clears the current
- * director; `current` keeps a director who is no longer a candidate selectable (the API keeps them).
+ * director"). The value always travels in a hidden input (the API validates it), so a slow candidates list
+ * never clears the current director. Pass the prefilled director as `current`: it is then shown before
+ * (or without) the candidates list, and stays selectable when no longer a candidate (the API keeps them).
  */
 export function DirectorSelect({ defaultValue, current, hint, className }: { defaultValue?: string | null; current?: Person | null; hint?: string; className?: string }) {
   const t = useTranslations("events.director");
@@ -25,8 +26,7 @@ export function DirectorSelect({ defaultValue, current, hint, className }: { def
   const chosen = people.find((p) => p.id === value) ?? null;
   return (
     <div className={className}>
-      {/* Until the list is loaded (or if it failed), the field is left out: the API then keeps the current director. */}
-      {(chosen || !value) && <input type="hidden" name="directorId" value={value} />}
+      <input type="hidden" name="directorId" value={value} />
       <div className="flex items-end gap-3">
         <Select
           label={t("label")}
