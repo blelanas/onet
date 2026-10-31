@@ -667,7 +667,7 @@ async function main() {
   console.log(`✓ seeded: ${counts[0]} members, ${counts[1]} invoices, ${counts[2]} payments, ${counts[3]} attendance rows`);
   console.log(`\nDemo accounts (password: ${PASSWORD})`);
   for (const e of ["admin", "gestion", "comptable", "membre", "moniteur"]) console.log(`  ${e}@onet-teboulba.tn`);
-  console.log(`\nDemo monitor invitation: /signup?invite=${inviteToken}`);
+  console.log(`\nDemo member invitation: /signup?invite=${inviteToken}`);
 
   await seedMembersContent(db);
 }
