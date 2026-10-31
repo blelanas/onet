@@ -7,10 +7,11 @@ import { OCCUPATIONS, toDateInput, type Occupation } from "@onet/shared";
 import { apiSend, formToObject, type ActionResult } from "@/lib/api";
 import { signIn, useAuth } from "@/lib/auth";
 import { useApi } from "@/lib/query";
-import { Link, useSearchParams } from "@/lib/router";
+import { Link, useLocation, useSearchParams } from "@/lib/router";
 import { usePageTitle } from "@/lib/title";
 import type { Loaded } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { GoogleSignIn, type GoogleProfile } from "@/components/auth/google-button";
 import { AuthLayout } from "@/components/layout/auth-layout";
 import { ActionForm } from "@/components/ui/action-form";
 import { Button, LinkButton } from "@/components/ui/button";
@@ -130,9 +131,31 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h2 className="pt-2 text-xs font-extrabold tracking-[0.12em] text-muted uppercase">{children}</h2>;
 }
 
+/**
+ * Prefill from "Continue with Google" when that e-mail has no account yet: router state set by the
+ * Google button on /login (`{ google: GoogleProfile }`), or `?email=&firstName=&lastName=`.
+ */
+function googlePrefill(state: unknown, params: URLSearchParams): GoogleProfile | null {
+  const g = (state as { google?: Partial<GoogleProfile> | null } | null)?.google;
+  const pick = (v: unknown) => (typeof v === "string" ? v.trim().slice(0, 254) : "");
+  const email = pick(g?.email) || pick(params.get("email"));
+  if (!email) return null;
+  return {
+    email,
+    firstName: pick(g ? g.firstName : params.get("firstName")).slice(0, 40),
+    lastName: pick(g ? g.lastName : params.get("lastName")).slice(0, 40),
+  };
+}
+
 function SignupForm({ invite }: { invite?: string }) {
   const t = useTranslations("auth.signup");
   const tl = useTranslations("auth.login");
+  const tg = useTranslations("auth.google");
+  const location = useLocation();
+  const params = useSearchParams();
+  const [google, setGoogle] = useState<GoogleProfile | null>(() => googlePrefill(location.state, params));
+  // Remounts the name and e-mail fields with the Google values (the other fields keep what was typed).
+  const prefillKey = google ? `g:${google.email}` : "blank";
   const [show, setShow] = useState(false);
   const [dob, setDob] = useState("");
   const [occupation, setOccupation] = useState<Occupation | null>(null);
@@ -151,73 +174,82 @@ function SignupForm({ invite }: { invite?: string }) {
 
   const detail = occupation ?? "none";
   return (
-    <ActionForm action={submit} redirectTo="/dashboard" className="mt-6 flex flex-col gap-4">
-      {(pending) => (
-        <>
-          <SectionTitle>{t("sections.identity")}</SectionTitle>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Input name="firstName" autoComplete="given-name" label={t("firstName")} icon={<User className="size-4" />} required maxLength={40} dir="auto" />
-            <Input name="lastName" autoComplete="family-name" label={t("lastName")} required maxLength={40} dir="auto" />
-          </div>
-          <div className="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-            <Input
-              name="dateOfBirth"
-              type="date"
-              autoComplete="bday"
-              label={t("dateOfBirth")}
-              hint={t("ageHint")}
-              icon={<CalendarDays className="size-4" />}
-              required
-              min="1900-01-01"
-              max={today}
-              value={dob}
-              onChange={(e) => setDob(e.target.value)}
-            />
-            <p
-              aria-live="polite"
-              className={cn(
-                "inline-flex h-10 items-center justify-center justify-self-start rounded-xl px-4 text-sm font-extrabold whitespace-nowrap transition sm:mb-[22px]",
-                age == null ? "bg-surface-2 text-muted" : age < MIN_AGE || age > MAX_AGE ? "bg-red-50 text-red-700" : "bg-leaf-soft text-emerald-800",
-              )}
-              data-testid="signup-age"
-            >
-              {age == null ? t("ageEmpty") : age < MIN_AGE ? t("ageTooYoung", { min: MIN_AGE }) : t("age", { age })}
-            </p>
-          </div>
-
-          <SectionTitle>{t("sections.contact")}</SectionTitle>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Input name="email" type="email" autoComplete="email" label={t("email")} icon={<Mail className="size-4" />} required placeholder="nom@exemple.tn" dir="ltr" />
-            <Input name="phone" type="tel" autoComplete="tel" label={t("phone")} icon={<Phone className="size-4" />} required placeholder="+216 22 345 678" dir="ltr" />
-          </div>
-
-          <SectionTitle>{t("sections.occupation")}</SectionTitle>
-          <OccupationCards value={occupation} onChange={setOccupation} />
-          <Input
-            key={detail}
-            name="occupationDetail"
-            label={t(`detail.${detail}.label`)}
-            placeholder={t(`detail.${detail}.placeholder`)}
-            required
-            maxLength={120}
-            disabled={!occupation}
-            dir="auto"
-          />
-
-          <SectionTitle>{t("sections.security")}</SectionTitle>
-          <div className="relative">
-            <Input name="password" type={show ? "text" : "password"} autoComplete="new-password" label={t("password")} hint={t("passwordHint")} icon={<Lock className="size-4" />} required className="pe-11" />
-            <button type="button" onClick={() => setShow((s) => !s)} className="absolute end-2 top-[34px] rounded-lg p-1.5 text-muted hover:text-ink" aria-label={tl("showPassword")} aria-pressed={show}>
-              {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-            </button>
-          </div>
-          <Input name="confirm" type={show ? "text" : "password"} autoComplete="new-password" label={t("confirm")} icon={<Lock className="size-4" />} required />
-          <Button type="submit" size="lg" className="mt-2 w-full" loading={pending}>
-            {t("submit")}
-          </Button>
-        </>
+    <>
+      {google ? (
+        <p className="mt-6 rounded-2xl border border-sky-200/70 bg-sky-soft p-4 text-sm text-sky-900" role="status" data-testid="google-prefill">
+          {tg("noAccount")}
+        </p>
+      ) : (
+        <GoogleSignIn onNoAccount={(p) => p && setGoogle(p)} />
       )}
-    </ActionForm>
+      <ActionForm action={submit} redirectTo="/dashboard" className="mt-6 flex flex-col gap-4">
+        {(pending) => (
+          <>
+            <SectionTitle>{t("sections.identity")}</SectionTitle>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input key={`fn-${prefillKey}`} name="firstName" autoComplete="given-name" label={t("firstName")} icon={<User className="size-4" />} required maxLength={40} dir="auto" defaultValue={google?.firstName} />
+              <Input key={`ln-${prefillKey}`} name="lastName" autoComplete="family-name" label={t("lastName")} required maxLength={40} dir="auto" defaultValue={google?.lastName} />
+            </div>
+            <div className="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+              <Input
+                name="dateOfBirth"
+                type="date"
+                autoComplete="bday"
+                label={t("dateOfBirth")}
+                hint={t("ageHint")}
+                icon={<CalendarDays className="size-4" />}
+                required
+                min="1900-01-01"
+                max={today}
+                value={dob}
+                onChange={(e) => setDob(e.target.value)}
+              />
+              <p
+                aria-live="polite"
+                className={cn(
+                  "inline-flex h-10 items-center justify-center justify-self-start rounded-xl px-4 text-sm font-extrabold whitespace-nowrap transition sm:mb-[22px]",
+                  age == null ? "bg-surface-2 text-muted" : age < MIN_AGE || age > MAX_AGE ? "bg-red-50 text-red-700" : "bg-leaf-soft text-emerald-800",
+                )}
+                data-testid="signup-age"
+              >
+                {age == null ? t("ageEmpty") : age < MIN_AGE ? t("ageTooYoung", { min: MIN_AGE }) : t("age", { age })}
+              </p>
+            </div>
+
+            <SectionTitle>{t("sections.contact")}</SectionTitle>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input key={`em-${prefillKey}`} name="email" type="email" autoComplete="email" label={t("email")} icon={<Mail className="size-4" />} required placeholder="nom@exemple.tn" dir="ltr" defaultValue={google?.email} />
+              <Input name="phone" type="tel" autoComplete="tel" label={t("phone")} icon={<Phone className="size-4" />} required placeholder="+216 22 345 678" dir="ltr" />
+            </div>
+
+            <SectionTitle>{t("sections.occupation")}</SectionTitle>
+            <OccupationCards value={occupation} onChange={setOccupation} />
+            <Input
+              key={detail}
+              name="occupationDetail"
+              label={t(`detail.${detail}.label`)}
+              placeholder={t(`detail.${detail}.placeholder`)}
+              required
+              maxLength={120}
+              disabled={!occupation}
+              dir="auto"
+            />
+
+            <SectionTitle>{t("sections.security")}</SectionTitle>
+            <div className="relative">
+              <Input name="password" type={show ? "text" : "password"} autoComplete="new-password" label={t("password")} hint={t("passwordHint")} icon={<Lock className="size-4" />} required className="pe-11" />
+              <button type="button" onClick={() => setShow((s) => !s)} className="absolute end-2 top-[34px] rounded-lg p-1.5 text-muted hover:text-ink" aria-label={tl("showPassword")} aria-pressed={show}>
+                {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
+            <Input name="confirm" type={show ? "text" : "password"} autoComplete="new-password" label={t("confirm")} icon={<Lock className="size-4" />} required />
+            <Button type="submit" size="lg" className="mt-2 w-full" loading={pending}>
+              {t("submit")}
+            </Button>
+          </>
+        )}
+      </ActionForm>
+    </>
   );
 }
 

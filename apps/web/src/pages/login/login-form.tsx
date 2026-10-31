@@ -6,6 +6,7 @@ import { isLocale } from "@onet/shared";
 import { apiSend, formToObject, type ActionResult } from "@/lib/api";
 import { signIn } from "@/lib/auth";
 import { useLocaleSwitch } from "@/lib/i18n";
+import { GoogleSignIn } from "@/components/auth/google-button";
 import { ActionForm } from "@/components/ui/action-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +60,7 @@ export function LoginForm({ next }: { next?: string }) {
           </>
         )}
       </ActionForm>
+      <GoogleSignIn next={next} />
       <p className="mt-6 text-center text-sm text-ink-2">
         {t("noAccount")}{" "}
         <Link href="/signup" className="font-bold text-brand-600 hover:underline">
