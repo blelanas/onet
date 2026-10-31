@@ -1,7 +1,7 @@
 import { useTranslations } from "use-intl";
 import { useState } from "react";
 import { saveEvent } from "@/api/events";
-import { EVENT_CATEGORIES, EVENT_STATUSES } from "@onet/shared";
+import { EVENT_CATEGORIES, EVENT_FREQUENCIES, EVENT_STATUSES } from "@onet/shared";
 import { toDateTimeInput } from "@onet/shared";
 import { ActionForm } from "@/components/ui/action-form";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,8 @@ export type EventFormValues = {
   editionNumber?: number | null;
   seasonYear?: number | null;
   directorId?: string | null;
+  /** ONCE | DAILY | WEEKLY | MONTHLY: the event's sessions (roll-call days). */
+  frequency?: string | null;
   director?: { id: string; firstName: string; lastName: string; photoUrl: string | null; type: string } | null;
 };
 
@@ -39,6 +41,7 @@ export function EventForm({ initial }: { initial: EventFormValues }) {
   const te = useTranslations("events.edition");
   const tc = useTranslations("common");
   const td = useTranslations("events.director");
+  const tf = useTranslations("events.frequency");
   const [price, setPrice] = useState(initial.price ? String(initial.price / 1000) : "");
   const paid = Number(price.replace(",", ".")) > 0;
 
@@ -64,6 +67,7 @@ export function EventForm({ initial }: { initial: EventFormValues }) {
           <FormSection title={t("when")}>
             <Input name="startAt" type="datetime-local" label={t("startAt")} defaultValue={toDateTimeInput(initial.startAt)} required />
             <Input name="endAt" type="datetime-local" label={t("endAt")} defaultValue={toDateTimeInput(initial.endAt)} required />
+            <Select name="frequency" label={tf("label")} defaultValue={initial.frequency ?? "ONCE"} options={EVENT_FREQUENCIES.map((v) => ({ value: v, label: tf(v) }))} hint={tf("hint")} wrapperClassName="sm:col-span-2" />
             <Input name="location" label={tc("fields.location")} defaultValue={initial.location ?? ""} />
             <Input name="organizer" label={t("organizer")} defaultValue={initial.organizer ?? "ONET Teboulba"} />
           </FormSection>

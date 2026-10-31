@@ -13,3 +13,7 @@ export const createEdition = formAction<{ id: string; editionNumber: number; sea
 // Edition teams (each team has a group chat kept in sync by the API).
 export const saveTeam = formAction<{ id: string; conversationId: string | null }>("POST", (v) => `/events/${v.eventId}/teams`);
 export const deleteTeam = (teamId: string) => apiSend("DELETE", `/events/teams/${teamId}`);
+
+// Group attendance of an event: one roll call per team and per session ("YYYY-MM-DD").
+export const saveEventAttendance = (eventId: string, input: { date: string; teamId: string; entries: { memberId: string; status: string; note?: string }[] }) =>
+  apiSend<{ saved: number; present: number }>("POST", `/events/${eventId}/attendance`, input);

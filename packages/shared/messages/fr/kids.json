@@ -57,6 +57,7 @@
     "relation": "Lien de parenté",
     "team": "Équipe",
     "noTeam": "Sans équipe",
+    "teamLeaderHint": "Vous ajoutez les enfants dans une équipe dont vous êtes responsable.",
     "added": "Enfant ajouté à l'édition"
   },
   "edit": {
@@ -72,6 +73,7 @@
   },
   "team": {
     "label": "Équipe de {name}",
+    "leaderHint": "Vous gérez les enfants de votre équipe ; ceux des autres équipes sont en lecture seule. Un enfant sans équipe peut rejoindre la vôtre.",
     "saved": "Équipe mise à jour"
   },
   "errors": {

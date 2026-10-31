@@ -4,6 +4,7 @@ import { useRouter } from "@/lib/router";
 import { Check, CheckCheck, Clock, HeartPulse, MessageSquareText, ShieldCheck, X } from "lucide-react";
 import { toast } from "sonner";
 import { saveAttendance } from "@/api/attendance";
+import type { ActionResult } from "@/lib/api";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { inputClasses } from "@/components/ui/input";
@@ -13,11 +14,37 @@ import { ATTENDANCE_COLORS, ATTENDANCE_TEXT_COLORS } from "./status-style";
 
 type Member = { id: string; firstName: string; lastName: string; photoUrl: string | null; age: number | null; medical: boolean };
 type Entry = { status?: AttendanceStatus; note: string };
+export type RollCallSave = (entries: { memberId: string; status: AttendanceStatus; note?: string }[]) => Promise<ActionResult<{ saved: number; notified?: number }>>;
 
 const ICONS = { PRESENT: Check, ABSENT: X, LATE: Clock, EXCUSED: ShieldCheck } as const;
 
-/** Phone-first roll call: one row per child with four big status buttons + optional note. */
-export function RollCall({ contextKey, date, members, initial, color }: { contextKey: string; date: string; members: Member[]; initial: Record<string, { status: string; note: string }>; color: string }) {
+/**
+ * Phone-first roll call: one row per child with four big status buttons + optional note. Saves a group /
+ * activity roll call (contextKey + date) unless `onSave` is given (e.g. an event team's roll call);
+ * `readOnly` shows the saved statuses without controls; `inline` keeps the save bar in the flow (several roll
+ * calls on one page) and `notice` replaces its hint.
+ */
+export function RollCall({
+  contextKey,
+  date,
+  members,
+  initial,
+  color,
+  onSave,
+  readOnly,
+  inline,
+  notice,
+}: {
+  contextKey?: string;
+  date?: string;
+  members: Member[];
+  initial: Record<string, { status: string; note: string }>;
+  color: string;
+  onSave?: RollCallSave;
+  readOnly?: boolean;
+  inline?: boolean;
+  notice?: string;
+}) {
   const t = useTranslations("attendance.roll");
   const tc = useTranslations("common");
   const router = useRouter();
@@ -51,7 +78,7 @@ export function RollCall({ contextKey, date, members, initial, color }: { contex
       return;
     }
     start(async () => {
-      const res = await saveAttendance({ contextKey, date, entries: list });
+      const res = onSave ? await onSave(list) : await saveAttendance({ contextKey: contextKey ?? "", date: date ?? "", entries: list });
       if (res.ok) {
         toast.success(res.data?.notified ? t("savedNotified", { count: res.data.notified }) : t("saved", { count: list.length }));
         setDirty(false);
@@ -71,9 +98,11 @@ export function RollCall({ contextKey, date, members, initial, color }: { contex
           ))}
           {counts.NONE > 0 && <span className="inline-flex items-center rounded-full bg-surface-2 px-3 py-1 text-sm font-bold text-muted">{t("unmarked", { count: counts.NONE })}</span>}
         </div>
-        <Button variant="success" onClick={allPresent} className="w-full sm:w-auto">
-          <CheckCheck className="size-4" /> {t("allPresent")}
-        </Button>
+        {!readOnly && (
+          <Button variant="success" onClick={allPresent} className="w-full sm:w-auto">
+            <CheckCheck className="size-4" /> {t("allPresent")}
+          </Button>
+        )}
       </div>
 
       <ul className="space-y-2.5">
@@ -104,6 +133,7 @@ export function RollCall({ contextKey, date, members, initial, color }: { contex
                   </div>
                   <button
                     type="button"
+                    hidden={readOnly && !e?.note}
                     onClick={() => setNotesOpen((n) => ({ ...n, [m.id]: !n[m.id] }))}
                     className={cn("grid size-10 shrink-0 place-items-center rounded-xl transition md:order-last", notesOpen[m.id] || e?.note ? "bg-sky-soft text-sky-700" : "text-muted hover:bg-surface-2")}
                     aria-label={t("note")}
@@ -122,10 +152,12 @@ export function RollCall({ contextKey, date, members, initial, color }: { contex
                         type="button"
                         role="radio"
                         aria-checked={on}
+                        disabled={readOnly}
                         onClick={() => set(m.id, { status: s })}
                         className={cn(
-                          "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border-2 px-1 text-[11px] font-extrabold transition active:scale-95 sm:text-xs",
-                          on ? "border-transparent text-white shadow-md" : "border-line bg-surface text-ink-2 hover:border-current",
+                          "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border-2 px-1 text-[11px] font-extrabold transition sm:text-xs",
+                          on ? "border-transparent text-white shadow-md" : "border-line bg-surface text-ink-2",
+                          readOnly ? (on ? "" : "opacity-50") : on ? "active:scale-95" : "hover:border-current active:scale-95",
                         )}
                         style={on ? { background: ATTENDANCE_TEXT_COLORS[s] } : { color: undefined }}
                       >
@@ -138,6 +170,7 @@ export function RollCall({ contextKey, date, members, initial, color }: { contex
               </div>
               {notesOpen[m.id] && (
                 <input
+                  readOnly={readOnly}
                   value={e?.note ?? ""}
                   onChange={(ev) => set(m.id, { note: ev.target.value })}
                   maxLength={300}
@@ -151,20 +184,22 @@ export function RollCall({ contextKey, date, members, initial, color }: { contex
         })}
       </ul>
 
-      <div className="sticky bottom-20 z-20 mt-5 lg:bottom-4">
-        <div className="flex items-center gap-3 rounded-2xl border border-line bg-surface/95 p-3 shadow-[var(--shadow-lift)] backdrop-blur">
-          <div className="hidden size-10 shrink-0 place-items-center rounded-xl text-white sm:grid" style={{ background: color }}>
-            <Check className="size-5" />
+      {!readOnly && (
+        <div className={cn("mt-5", inline ? "" : "sticky bottom-20 z-20 lg:bottom-4")}>
+          <div className="flex items-center gap-3 rounded-2xl border border-line bg-surface/95 p-3 shadow-[var(--shadow-lift)] backdrop-blur">
+            <div className="hidden size-10 shrink-0 place-items-center rounded-xl text-white sm:grid" style={{ background: color }}>
+              <Check className="size-5" />
+            </div>
+            <p className="min-w-0 flex-1 text-sm">
+              <span className="block font-extrabold text-ink">{t("summary", { marked: members.length - counts.NONE, total: members.length })}</span>
+              <span className="block truncate text-xs text-muted">{dirty ? t("unsaved") : (notice ?? t("absentNotice"))}</span>
+            </p>
+            <Button onClick={save} loading={pending} size="lg" className="shrink-0">
+              {t("save")}
+            </Button>
           </div>
-          <p className="min-w-0 flex-1 text-sm">
-            <span className="block font-extrabold text-ink">{t("summary", { marked: members.length - counts.NONE, total: members.length })}</span>
-            <span className="block truncate text-xs text-muted">{dirty ? t("unsaved") : t("absentNotice")}</span>
-          </p>
-          <Button onClick={save} loading={pending} size="lg" className="shrink-0">
-            {t("save")}
-          </Button>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -201,6 +201,57 @@ export default {
     call: T("Appeler {name}", "الاتصال بـ{name}", "Call {name}"),
   },
 
+  // ── How often an event meets: its sessions are the roll-call days of the attendance tab ──
+  frequency: {
+    label: T("Séances", "الحصص", "Sessions"),
+    hint: T("Les jours de séance servent à faire l'appel des équipes (onglet Présences).", "تُستعمل أيام الحصص لتسجيل حضور الفرق (تبويب الحضور).", "Session days are used for the teams' roll call (Attendance tab)."),
+    ONCE: T("Une seule fois", "مرة واحدة", "Once"),
+    DAILY: T("Chaque jour", "كل يوم", "Every day"),
+    WEEKLY: T("Chaque semaine", "كل أسبوع", "Every week"),
+    MONTHLY: T("Chaque mois", "كل شهر", "Every month"),
+    count: T(
+      "{count, plural, =0 {Aucune séance} one {# séance} other {# séances}}",
+      "{count, plural, =0 {لا توجد حصص} one {حصة واحدة} two {حصتان} few {# حصص} many {# حصةً} other {# حصة}}",
+      "{count, plural, =0 {No sessions} one {# session} other {# sessions}}",
+    ),
+  },
+
+  // ── Group attendance of an event: one roll call per team and per session ──
+  attendance: {
+    tab: T("Présences", "الحضور", "Attendance"),
+    session: T("Séance", "الحصة", "Session"),
+    sessionOf: T("Séance {n} sur {total}", "الحصة {n} من {total}", "Session {n} of {total}"),
+    today: T("aujourd'hui", "اليوم", "today"),
+    future: T("Cette séance n'a pas encore eu lieu : l'appel se fera le jour même.", "هذه الحصة لم تحن بعد: يُسجَّل الحضور في يومها.", "This session hasn't happened yet: take the roll call on the day."),
+    noSessions: T("Aucune séance pour cet événement", "لا توجد حصص لهذا الحدث", "No sessions for this event"),
+    noTeams: T("Aucune équipe à appeler", "لا يوجد فريق لتسجيل حضوره", "No team to call"),
+    noTeamsHint: T("Créez les équipes et répartissez les enfants pour faire l'appel.", "أنشئ الفرق ووزّع الأطفال لتسجيل الحضور.", "Create the teams and assign the kids to take the roll call."),
+    teamCount: T("{present} / {total} présents", "{present}/{total} حاضرون", "{present} / {total} present"),
+    leader: T("Responsable : {name}", "القائد: {name}", "Leader: {name}"),
+    emptyTeam: T("Aucun enfant dans cette équipe", "لا يوجد أطفال في هذا الفريق", "No kids in this team"),
+    readOnly: T("Lecture seule : l'appel est fait par le responsable de l'équipe ou le directeur.", "للاطلاع فقط: يسجّل الحضورَ قائدُ الفريق أو المدير.", "Read only: the roll call is taken by the team's leader or the director."),
+    notice: T("« En retard » compte comme présent.", "«متأخر» يُحتسب حاضرًا.", "\"Late\" counts as present."),
+    jump: T("Aller à l'équipe", "الانتقال إلى الفريق", "Go to the team"),
+    history: {
+      title: T("Séances passées", "الحصص السابقة", "Past sessions"),
+      line: T("{present} / {marked} présents", "{present}/{marked} حاضرون", "{present} / {marked} present"),
+      notTaken: T("Appel non fait", "لم يُسجَّل الحضور", "No roll call"),
+      empty: T("Aucune séance passée pour l'instant", "لا توجد حصص سابقة بعد", "No past sessions yet"),
+      open: T("Ouvrir la séance du {date}", "فتح حصة {date}", "Open the session of {date}"),
+    },
+    rates: {
+      title: T("Assiduité par enfant", "مواظبة كل طفل", "Attendance per kid"),
+      hint: T("Sur les séances passées où l'enfant a été appelé.", "على الحصص السابقة التي سُجّل فيها حضور الطفل.", "Over the past sessions where the kid was called."),
+      line: T(
+        "{present, plural, one {# présence} other {# présences}} sur {marked}",
+        "{present, plural, =0 {لا حضور} one {حضور واحد} two {حضوران} few {# حضورات} many {# حضورًا} other {# حضور}} من {marked}",
+        "present {present} times out of {marked}",
+      ),
+      none: T("Pas encore appelé", "لم يُسجَّل حضوره بعد", "Not called yet"),
+      empty: T("Aucun enfant dans vos équipes", "لا يوجد أطفال في فرقك", "No kids in your teams"),
+    },
+  },
+
   // ── Programmes (series), their editions and the edition teams ──
   series: {
     title: T("Programmes", "البرامج", "Programmes"),
@@ -247,7 +298,11 @@ export default {
     mine: T("Mon équipe", "فريقي", "My team"),
     dates: T("Du {from} au {to}", "من {from} إلى {to}", "From {from} to {to}"),
     tabs: { teams: T("Équipes", "الفرق", "Teams"), kids: T("Enfants", "الأطفال", "Kids") },
-    roleLeader: T("Vous êtes responsable d'une équipe de cette édition : vous pouvez inscrire les enfants et les répartir dans les équipes.", "أنت قائد فريق في هذه الدورة: يمكنك تسجيل الأطفال وتوزيعهم على الفرق.", "You lead a team in this edition: you can register kids and assign them to teams."),
+    roleLeader: T(
+      "Vous êtes responsable d'une équipe de cette édition : vous inscrivez les enfants de votre équipe, gérez leurs fiches et faites l'appel.",
+      "أنت قائد فريق في هذه الدورة: تسجّل أطفال فريقك، وتدير بطاقاتهم، وتسجّل حضورهم.",
+      "You lead a team in this edition: you register your team's kids, manage their cards and take the roll call.",
+    ),
     roleMember: T("Vous faites partie d'une équipe de cette édition.", "أنت عضو في فريق من هذه الدورة.", "You are on a team in this edition."),
     roleDirector: T(
       "Vous dirigez cette édition : vous créez et gérez ses équipes (responsables et animateurs), inscrivez les enfants et les répartissez.",

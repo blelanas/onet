@@ -73,8 +73,11 @@ function KidFields({ initial = {}, withArabic }: { initial?: KidFormValues; with
   );
 }
 
-/** "Add a kid" button + modal: a kid ONET already knows (search) or a new kid with the parent contact. */
-export function AddKidButton({ eventId, teams }: { eventId: string; teams: TeamOption[] }) {
+/**
+ * "Add a kid" button + modal: a kid ONET already knows (search) or a new kid with the parent contact.
+ * `teams`: the teams the kid may be put into; `requireTeam` (team leaders): one of them must be chosen.
+ */
+export function AddKidButton({ eventId, teams, requireTeam = false }: { eventId: string; teams: TeamOption[]; requireTeam?: boolean }) {
   const t = useTranslations("kids.add");
   const [open, setOpen] = useState(false);
   return (
@@ -83,20 +86,29 @@ export function AddKidButton({ eventId, teams }: { eventId: string; teams: TeamO
         <UserPlus className="size-4" /> {t("button")}
       </Button>
       <Modal open={open} onClose={() => setOpen(false)} title={t("title")} size="lg">
-        {open && <AddKid eventId={eventId} teams={teams} onDone={() => setOpen(false)} />}
+        {open && <AddKid eventId={eventId} teams={teams} requireTeam={requireTeam} onDone={() => setOpen(false)} />}
       </Modal>
     </>
   );
 }
 
-function AddKid({ eventId, teams, onDone }: { eventId: string; teams: TeamOption[]; onDone: () => void }) {
+function AddKid({ eventId, teams, requireTeam, onDone }: { eventId: string; teams: TeamOption[]; requireTeam: boolean; onDone: () => void }) {
   const t = useTranslations("kids.add");
   const tk = useTranslations("kids");
   const tc = useTranslations("common");
   const [mode, setMode] = useState<"existing" | "new">("existing");
-  const [teamId, setTeamId] = useState("");
+  // A leader adds kids into one of the teams they lead: preselected, never "no team".
+  const [teamId, setTeamId] = useState(requireTeam ? (teams[0]?.id ?? "") : "");
   const teamSelect = teams.length > 0 && (
-    <Select label={t("team")} value={teamId} onChange={(e) => setTeamId(e.target.value)} placeholder={t("noTeam")} options={teams.map((x) => ({ value: x.id, label: x.name }))} />
+    <Select
+      label={t("team")}
+      value={teamId}
+      onChange={(e) => setTeamId(e.target.value)}
+      placeholder={requireTeam ? undefined : t("noTeam")}
+      required={requireTeam}
+      hint={requireTeam ? t("teamLeaderHint") : undefined}
+      options={teams.map((x) => ({ value: x.id, label: x.name }))}
+    />
   );
   // The API answers errors.kidExists (kids namespace) when a "new" kid matches an existing record.
   const action = async (fd: FormData): Promise<ActionResult<{ registrationId: string; memberId: string }>> => {

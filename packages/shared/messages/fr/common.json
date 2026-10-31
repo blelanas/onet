@@ -104,6 +104,9 @@
     "maxUses": "500 inscriptions au maximum",
     "listTooLong": "Liste trop longue (2 000 lignes et 200 000 caractères au maximum)",
     "phone": "Numéro de téléphone invalide",
+    "teamRequired": "Choisissez l'équipe de l'enfant : une des équipes dont vous êtes responsable",
+    "notSession": "Cette date n'est pas une séance de l'événement",
+    "futureSession": "Cette séance n'a pas encore eu lieu",
     "passwordMismatch": "Les mots de passe ne correspondent pas",
     "wrongPassword": "Mot de passe actuel incorrect"
   },

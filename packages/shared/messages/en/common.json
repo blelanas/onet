@@ -104,6 +104,9 @@
     "maxUses": "500 sign-ups at most",
     "listTooLong": "List too long (2,000 lines and 200,000 characters at most)",
     "phone": "Invalid phone number",
+    "teamRequired": "Choose the kid's team: one of the teams you lead",
+    "notSession": "This date is not one of the event's sessions",
+    "futureSession": "This session hasn't happened yet",
     "passwordMismatch": "Passwords do not match",
     "wrongPassword": "Current password is incorrect"
   },

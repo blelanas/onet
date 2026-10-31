@@ -56,6 +56,7 @@ export default {
     relation: T("Lien de parenté", "صلة القرابة", "Relationship"),
     team: T("Équipe", "الفريق", "Team"),
     noTeam: T("Sans équipe", "دون فريق", "No team"),
+    teamLeaderHint: T("Vous ajoutez les enfants dans une équipe dont vous êtes responsable.", "تضيف الأطفال إلى فريق تقوده.", "You add kids into a team you lead."),
     added: T("Enfant ajouté à l'édition", "أُضيف الطفل إلى الدورة", "Kid added to the edition"),
   },
   edit: {
@@ -71,6 +72,11 @@ export default {
   },
   team: {
     label: T("Équipe de {name}", "فريق {name}", "{name}'s team"),
+    leaderHint: T(
+      "Vous gérez les enfants de votre équipe ; ceux des autres équipes sont en lecture seule. Un enfant sans équipe peut rejoindre la vôtre.",
+      "تدير أطفال فريقك؛ أطفال الفرق الأخرى للاطلاع فقط. يمكن لطفل دون فريق الانضمام إلى فريقك.",
+      "You manage your team's kids; the other teams' kids are read only. A kid without a team can join yours.",
+    ),
     saved: T("Équipe mise à jour", "تم تحديث الفريق", "Team updated"),
   },
   errors: {

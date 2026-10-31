@@ -4,7 +4,8 @@ import { CalendarPlus } from "lucide-react";
 import { createEdition } from "@/api/events";
 import { ActionForm } from "@/components/ui/action-form";
 import { Button } from "@/components/ui/button";
-import { Checkbox, Input, Textarea } from "@/components/ui/input";
+import { EVENT_FREQUENCIES } from "@onet/shared";
+import { Checkbox, Input, Select, Textarea } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Upload } from "@/components/ui/upload";
 import { DirectorSelect } from "./director-select";
@@ -17,6 +18,8 @@ export type NextEdition = {
   previous: { id: string; title: string; editionNumber: number | null; teamsCount: number } | null;
   /** The previous edition's director (when still eligible): proposed for the new one. */
   directorId: string | null;
+  /** The previous edition's frequency, else the series kind's default (club: weekly, festival: daily). */
+  frequency: string;
 };
 
 /** Same rule as the API: "تظاهرة الطفولة 16" for a festival, "<name> 2026-2027" otherwise. */
@@ -45,6 +48,7 @@ function EditionForm({ series, next, onCancel }: { series: Series; next: NextEdi
   const tf = useTranslations("events.form");
   const tc = useTranslations("common");
   const td = useTranslations("events.director");
+  const tfr = useTranslations("events.frequency");
   const [number, setNumber] = useState(String(next.editionNumber));
   const [year, setYear] = useState(String(next.seasonYear));
   const [title, setTitle] = useState(next.title);
@@ -101,6 +105,7 @@ function EditionForm({ series, next, onCancel }: { series: Series; next: NextEdi
             />
             <Input name="startAt" type="datetime-local" label={tf("startAt")} required />
             <Input name="endAt" type="datetime-local" label={tf("endAt")} required />
+            <Select name="frequency" label={tfr("label")} defaultValue={next.frequency} options={EVENT_FREQUENCIES.map((v) => ({ value: v, label: tfr(v) }))} hint={tfr("hint")} wrapperClassName="sm:col-span-2" />
             <Input name="location" label={tc("fields.location")} wrapperClassName="sm:col-span-2" />
           </div>
           <DirectorSelect defaultValue={next.directorId} hint={next.directorId ? `${td("hint")} ${td("hintPrevious")}` : td("hint")} />

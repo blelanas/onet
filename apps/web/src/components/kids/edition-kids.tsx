@@ -26,7 +26,11 @@ import { useKidsView, ViewToggle } from "./view-toggle";
 type Data = Loaded<typeof editionKidsPage>;
 type Row = Data["rows"][number];
 
-/** Kids tab of an edition: list (with inline team assignment for managers), printable cards, add / edit / remove, CSV. */
+/**
+ * Kids tab of an edition: list (with inline team assignment for managers), printable cards, add / edit / remove, CSV.
+ * Admins and the director manage every kid; a team leader only the kids of the teams they lead (plus taking an
+ * unassigned kid into one of them); the other kids are read-only for them.
+ */
 export function EditionKids({ eventId }: { eventId: string }) {
   const sp = useSearchParamsObject();
   const query = useApi<Data>(`/events/${eventId}/kids`, { q: sp.q, teamId: sp.teamId });
@@ -41,7 +45,14 @@ function KidsView({ eventId, data, filtered, q, teamId }: { eventId: string; dat
   const t = useTranslations("kids");
   const tc = useTranslations("common");
   const view = useKidsView();
-  const { rows, teams, canManage, total, edition } = data;
+  const { rows, teams, canManage, canManageAll, total, edition } = data;
+  const led = new Set(data.ledTeamIds);
+  // Teams the user may put a kid into, and the kids they manage.
+  const myTeams = canManageAll ? teams : teams.filter((x) => led.has(x.id));
+  const manages = (r: Row) => canManageAll || (!!r.team && led.has(r.team.id));
+  const canAssign = (r: Row) => manages(r) || (canManage && !r.team && myTeams.length > 0);
+  const teamCell = (r: Row) =>
+    canAssign(r) ? <TeamSelect key={`${r.registrationId}-${r.team?.id ?? ""}`} eventId={eventId} r={r} teams={myTeams} allowNone={canManageAll} /> : <TeamBadge team={r.team} />;
   const [editing, setEditing] = useState<(KidFormValues & { id: string }) | null>(null);
   const edit = (r: Row) =>
     setEditing({
@@ -62,7 +73,7 @@ function KidsView({ eventId, data, filtered, q, teamId }: { eventId: string; dat
 
   const columns: Column<Row>[] = [
     { key: "kid", header: t("columns.kid"), cell: (r) => <KidName r={r} /> },
-    { key: "team", header: t("columns.team"), cell: (r) => (canManage ? <TeamSelect key={`${r.registrationId}-${r.team?.id ?? ""}`} eventId={eventId} r={r} teams={teams} /> : <TeamBadge team={r.team} />) },
+    { key: "team", header: t("columns.team"), cell: teamCell },
     {
       key: "parent",
       header: t("columns.parent"),
@@ -78,7 +89,9 @@ function KidsView({ eventId, data, filtered, q, teamId }: { eventId: string; dat
         ),
     },
     { key: "phone", header: t("columns.phone"), cell: (r) => <PhoneLink phone={r.guardian?.phone} /> },
-    ...(canManage ? [{ key: "actions", header: <span className="sr-only">{tc("fields.actions")}</span>, align: "end" as const, cell: (r: Row) => <RowActions eventId={eventId} r={r} onEdit={() => edit(r)} /> }] : []),
+    ...(canManage
+      ? [{ key: "actions", header: <span className="sr-only">{tc("fields.actions")}</span>, align: "end" as const, cell: (r: Row) => (manages(r) ? <RowActions eventId={eventId} r={r} onEdit={() => edit(r)} /> : null) }]
+      : []),
   ];
 
   return (
@@ -96,10 +109,11 @@ function KidsView({ eventId, data, filtered, q, teamId }: { eventId: string; dat
           <Button variant="outline" onClick={() => void download(`/events/${eventId}/kids/export.csv`, { q, teamId })} aria-label={tc("actions.exportCsv")}>
             <Download className="size-4" /> <span className="hidden sm:inline">{tc("actions.exportCsv")}</span>
           </Button>
-          {canManage && <AddKidButton eventId={eventId} teams={teams} />}
+          {canManage && (canManageAll || myTeams.length > 0) && <AddKidButton eventId={eventId} teams={myTeams} requireTeam={!canManageAll} />}
         </div>
       </Toolbar>
       <p className="no-print text-sm font-semibold text-muted">{t("total", { count: filtered ? rows.length : total })}</p>
+      {canManage && !canManageAll && <p className="no-print rounded-2xl bg-surface-2/70 px-4 py-3 text-sm text-ink-2">{t("team.leaderHint")}</p>}
 
       {!rows.length ? (
         <div className="card">
@@ -107,7 +121,7 @@ function KidsView({ eventId, data, filtered, q, teamId }: { eventId: string; dat
             icon={<Smile className="size-5" />}
             title={filtered ? tc("states.noResults") : t("emptyEdition")}
             description={filtered ? tc("states.noResultsHint") : canManage ? t("emptyEditionHint") : undefined}
-            action={!filtered && canManage ? <AddKidButton eventId={eventId} teams={teams} /> : undefined}
+            action={!filtered && canManage && (canManageAll || myTeams.length > 0) ? <AddKidButton eventId={eventId} teams={myTeams} requireTeam={!canManageAll} /> : undefined}
           />
         </div>
       ) : view === "cards" ? (
@@ -121,10 +135,10 @@ function KidsView({ eventId, data, filtered, q, teamId }: { eventId: string; dat
             <div className="space-y-3">
               <div className="flex items-start justify-between gap-2">
                 <KidName r={r} />
-                {canManage && <RowActions eventId={eventId} r={r} onEdit={() => edit(r)} />}
+                {manages(r) && <RowActions eventId={eventId} r={r} onEdit={() => edit(r)} />}
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                {canManage ? <TeamSelect key={`${r.registrationId}-${r.team?.id ?? ""}`} eventId={eventId} r={r} teams={teams} /> : <TeamBadge team={r.team} />}
+                {teamCell(r)}
                 <PhoneLink phone={r.guardian?.phone} />
               </div>
               {r.guardian && (
@@ -178,8 +192,11 @@ function PhoneLink({ phone }: { phone?: string | null }) {
   );
 }
 
-/** Inline team assignment: saves on change. */
-function TeamSelect({ eventId, r, teams }: { eventId: string; r: Row; teams: { id: string; name: string; color: string }[] }) {
+/**
+ * Inline team assignment: saves on change. `teams`: the teams the user may put the kid into; `allowNone`: may
+ * leave the kid without a team (admins and the director).
+ */
+function TeamSelect({ eventId, r, teams, allowNone }: { eventId: string; r: Row; teams: { id: string; name: string; color: string }[]; allowNone: boolean }) {
   const t = useTranslations("kids");
   const tc = useTranslations("common");
   const [pending, start] = useTransition();
@@ -208,7 +225,7 @@ function TeamSelect({ eventId, r, teams }: { eventId: string; r: Row; teams: { i
       className={cn(inputClasses, "w-auto max-w-44 cursor-pointer py-1.5 ps-3 pe-7 text-sm font-bold")}
       style={color ? { borderColor: color, boxShadow: `inset 4px 0 0 ${color}` } : undefined}
     >
-      <option value="">{t("filters.noTeam")}</option>
+      {(allowNone || !value) && <option value="">{t("filters.noTeam")}</option>}
       {teams.map((x) => (
         <option key={x.id} value={x.id}>
           {x.name}

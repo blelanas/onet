@@ -1,18 +1,35 @@
 // End-to-end smoke test against the running web app + API (default http://localhost:5173, seeded demo data).
 // Checks that public pages render, that every role can sign in, reaches the pages it is allowed to,
 // is denied the ones it is not, and that no page throws a client-side error.
-// Usage: BASE_URL=http://localhost:5173 node tests/e2e/smoke.mjs
+// Usage: BASE_URL=http://localhost:5173 API_URL=http://localhost:4000 node tests/e2e/smoke.mjs
 import { chromium } from "playwright";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:5173";
+const API = (process.env.API_URL ?? "http://localhost:4000").replace(/\/$/, "");
 const PASSWORD = "Onet2026!";
+
+/** API call returning the (superjson) payload. */
+async function api(path, { token, body } = {}) {
+  const res = await fetch(`${API}/api${path}`, {
+    method: body ? "POST" : "GET",
+    headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json();
+  return data?.json ?? data;
+}
+
+// The attendance tab of a seeded edition: the "Techno Club" season, directed by the demo member.
+const admin = await api("/auth/login", { body: { email: "gestion@onet-teboulba.tn", password: PASSWORD } });
+const techno = (await api("/series", { token: admin.data.token })).series.find((s) => s.name === "Techno Club");
+const EDITION_ATTENDANCE = `/dashboard/events/${techno.latestEdition.id}?tab=attendance`;
 
 const PUBLIC = ["/", "/about", "/activities", "/events", "/trips", "/news", "/gallery", "/songs", "/conferences", "/contact", "/join", "/login", "/signup"];
 
 // Expected access per role: `allow` must render content, `deny` must show the forbidden page.
 const ROLES = {
   "admin@onet-teboulba.tn": {
-    allow: ["/dashboard", "/dashboard/members", "/dashboard/groups", "/dashboard/finance/invoices", "/dashboard/finance/reports", "/dashboard/reports", "/dashboard/settings/roles", "/dashboard/settings/audit", "/dashboard/settings/bureau", "/dashboard/approvals", "/dashboard/content/dances", "/dashboard/content/dances/new"],
+    allow: ["/dashboard", "/dashboard/members", "/dashboard/groups", "/dashboard/finance/invoices", "/dashboard/finance/reports", "/dashboard/reports", "/dashboard/settings/roles", "/dashboard/settings/audit", "/dashboard/settings/bureau", "/dashboard/approvals", "/dashboard/content/dances", "/dashboard/content/dances/new", EDITION_ATTENDANCE],
     deny: [],
   },
   "gestion@onet-teboulba.tn": {
@@ -28,7 +45,7 @@ const ROLES = {
     deny: ["/dashboard/members", "/dashboard/finance/invoices", "/dashboard/reports", "/dashboard/settings/users", "/dashboard/settings/bureau", "/dashboard/approvals"],
   },
   "membre@onet-teboulba.tn": {
-    allow: ["/dashboard", "/dashboard/events", "/dashboard/trips", "/dashboard/announcements", "/dashboard/messages", "/dashboard/content/songs", "/dashboard/content/dances"],
+    allow: ["/dashboard", "/dashboard/events", "/dashboard/trips", "/dashboard/announcements", "/dashboard/messages", "/dashboard/content/songs", "/dashboard/content/dances", EDITION_ATTENDANCE],
     deny: ["/dashboard/finance/invoices", "/dashboard/settings/users", "/dashboard/settings/bureau", "/dashboard/content/dances/new", "/dashboard/approvals"],
   },
 };
@@ -40,6 +57,7 @@ const EXPECT_TESTID = {
   "/dashboard/approvals?tab=preapproved": "approvals-preapproved",
   "/dashboard/settings/bureau": "bureau-list",
   "/dashboard/content/dances": "dance-card",
+  [EDITION_ATTENDANCE]: "event-attendance",
 };
 
 const failures = [];
