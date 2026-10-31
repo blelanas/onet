@@ -65,7 +65,7 @@ Order: **1. database → 2. API → 3. website** (each step needs the previous o
      - `API_URL` = the Render URL, e.g. `https://onet-api.onrender.com`
 6. In Render, update `CORS_ORIGINS` with the real project id (step 2.3) → *Save* (it redeploys).
 7. Done:
-   - every **pull request** gets a comment *"Visit the preview URL for this PR"* (link valid 7 days);
+   - every **pull request** gets a comment *"Visit the preview URL for this PR"* (link valid 30 days; push a commit or re-run the "Deploy web" workflow to renew it);
    - every push to **`main`** deploys the live site at `https://<project-id>.web.app`.
 
 Optional hardening: GitHub **Settings → Environments → preview** → *Required reviewers* = you, so each preview deploy waits for your approval before the credential is used.
