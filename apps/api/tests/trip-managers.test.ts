@@ -5,6 +5,7 @@ import superjson from "superjson";
 import fr from "@onet/shared/messages/fr.json";
 import { createApp } from "@api/app";
 import { db } from "@api/lib/db";
+import { ensureLegacyParent } from "./legacy-accounts";
 
 let server: Server;
 let base = "";
@@ -59,7 +60,7 @@ let tripId = "";
 let managerMemberId = "";
 
 beforeAll(async () => {
-  for (const [k, email] of Object.entries({ manager: "membre@onet-teboulba.tn", monitor: "karim.jaziri@onet-teboulba.tn", parent: "parent@onet-teboulba.tn", admin: "gestion@onet-teboulba.tn", accountant: "comptable@onet-teboulba.tn" })) {
+  for (const [k, email] of Object.entries({ manager: "membre@onet-teboulba.tn", monitor: "karim.jaziri@onet-teboulba.tn", parent: await ensureLegacyParent(), admin: "gestion@onet-teboulba.tn", accountant: "comptable@onet-teboulba.tn" })) {
     T[k] = await login(email);
   }
   managerMemberId = (await db.member.findFirstOrThrow({ where: { user: { email: "membre@onet-teboulba.tn" } } })).id;

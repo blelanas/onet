@@ -1,8 +1,9 @@
 // Demo data for the recurring programmes (series), their editions, teams, kids and team chats.
 // Called once at the end of seed.ts main(), after people, events and conversations exist.
 import type { PrismaClient } from "@prisma/client";
-import { zonedTimeToDate } from "@onet/shared";
+import { defaultFrequencyForKind, eventSessions, zonedDayKey, zonedTimeToDate } from "@onet/shared";
 import { syncTeamChat } from "../src/modules/events/team-chat";
+import { normalizeDay } from "../src/modules/attendance/day";
 
 type TeamDef = { name: string; color: string; leader: string; members: string[] };
 type EditionDef = {
@@ -14,6 +15,8 @@ type EditionDef = {
   location: string;
   description: string;
   teams: TeamDef[];
+  /** The edition's director (e-mail), always one of its team leaders here so the demo scopes stay the same. */
+  director?: string;
   /** Kids picked from the seeded CHILD members (by age), a share of them coming back from `returning`. */
   kids: { ageMin: number; ageMax: number; count: number; returningFrom?: string; returning?: number };
   key: string;
@@ -40,6 +43,7 @@ const SERIES: SeriesDef[] = [
     editions: [
       {
         key: "festival15",
+        director: YASMINE,
         editionNumber: 15,
         seasonYear: 2025,
         start: [2025, 7, 14],
@@ -55,6 +59,7 @@ const SERIES: SeriesDef[] = [
       },
       {
         key: "festival16",
+        director: AMEL,
         editionNumber: 16,
         seasonYear: 2026,
         start: [2026, 7, 13],
@@ -94,6 +99,7 @@ const SERIES: SeriesDef[] = [
       },
       {
         key: "club2026",
+        director: YASMINE,
         editionNumber: 2,
         seasonYear: 2026,
         start: [2026, 10, 3],
@@ -142,6 +148,7 @@ const SERIES: SeriesDef[] = [
     editions: [
       {
         key: "techno2026",
+        director: AMEL,
         editionNumber: 1,
         seasonYear: 2026,
         start: [2026, 10, 7],
@@ -169,6 +176,15 @@ const CHAT_MESSAGES: Record<string, [string, string, string, number][]> = {
 
 const DAY = 86400_000;
 
+/** Small deterministic generator (same demo attendance on every seed). */
+function random(seed: number) {
+  let x = seed;
+  return () => {
+    x = (x * 1103515245 + 12345) % 2147483648;
+    return x / 2147483648;
+  };
+}
+
 /** Whole years between a date of birth and a day (null without a birth date). */
 function ageOn(dob: Date | null, at: Date) {
   if (!dob) return null;
@@ -193,24 +209,29 @@ export async function seedSeries(db: PrismaClient) {
   };
   const admin = await db.user.findUniqueOrThrow({ where: { email: HELA } });
   const kids = await db.member.findMany({ where: { type: "CHILD", membershipStatus: "ACTIVE" }, orderBy: { membershipNumber: "asc" }, select: { id: true, dateOfBirth: true } });
-  // The demo family's kids (enfant@ and siblings) come first so their history is rich.
-  const demoKid = await db.member.findFirst({ where: { user: { email: "enfant@onet-teboulba.tn" } }, select: { id: true, parentLinks: { select: { parent: { select: { childrenLinks: { select: { childId: true } } } } } } } });
-  const demoIds = new Set(demoKid?.parentLinks.flatMap((l) => l.parent.childrenLinks.map((c) => c.childId)) ?? []);
+  // The demo family's kids (Mohamed Gharbi's children) come first so their history is rich.
+  const demoParent = await db.member.findFirst({ where: { type: "PARENT", email: "mohamed.gharbi0@example.tn" }, select: { childrenLinks: { select: { childId: true } } } });
+  const demoIds = new Set(demoParent?.childrenLinks.map((c) => c.childId) ?? []);
   const ordered = [...kids.filter((k) => demoIds.has(k.id)), ...kids.filter((k) => !demoIds.has(k.id))];
 
   const kidsByEdition = new Map<string, string[]>();
   const now = Date.now();
+  const today = zonedDayKey(new Date(now));
+  let attendanceRows = 0;
   for (const s of SERIES) {
     const series = await db.eventSeries.create({ data: { name: s.name, nameAr: s.nameAr, kind: s.kind, color: s.color, description: s.description, sortOrder: s.sortOrder } });
     for (const e of s.editions) {
       const startAt = zonedTimeToDate(e.start[0], e.start[1], e.start[2], 9, 0);
       const endAt = zonedTimeToDate(e.end[0], e.end[1], e.end[2], 18, 0);
       const title = e.title ?? (s.kind === "FESTIVAL" ? `${s.nameAr} ${e.editionNumber}` : `${s.name} ${e.seasonYear}-${e.seasonYear + 1}`);
+      // Clubs meet every week of the school year, the festival every day.
+      const frequency = defaultFrequencyForKind(s.kind);
       const event = await db.event.create({
         data: {
           seriesId: series.id,
           editionNumber: e.editionNumber,
           seasonYear: e.seasonYear,
+          directorId: e.director ? memberOf(e.director).id : null,
           title,
           description: e.description,
           category: "CHILDREN",
@@ -221,11 +242,12 @@ export async function seedSeries(db: PrismaClient) {
           capacity: 120,
           status: +endAt < now ? "COMPLETED" : "PUBLISHED",
           isPublic: true,
+          frequency,
           createdAt: new Date(+startAt - 30 * DAY),
         },
       });
 
-      const teams = [];
+      const teams: { id: string; name: string }[] = [];
       for (const t of e.teams) {
         const leader = memberOf(t.leader);
         const team = await db.eventTeam.create({
@@ -251,6 +273,27 @@ export async function seedSeries(db: PrismaClient) {
         });
       }
 
+      // Attendance of the past sessions (not today's: its roll call is left to do), taken by each team's leader.
+      const rnd = random(e.editionNumber * 7919 + e.seasonYear);
+      const leaderUser = new Map(e.teams.map((t, i) => [teams[i].id, memberOf(t.leader).userId ?? admin.id]));
+      const rows = eventSessions({ startAt, endAt, frequency })
+        .filter((day) => day < today)
+        .flatMap((day) =>
+          chosen.map((memberId, i) => {
+            const r = rnd();
+            const teamId = teams[i % teams.length].id;
+            return {
+              memberId,
+              date: normalizeDay(day),
+              contextKey: `event:${event.id}`,
+              eventId: event.id,
+              recordedById: leaderUser.get(teamId) ?? admin.id,
+              status: r < 0.78 ? "PRESENT" : r < 0.86 ? "LATE" : r < 0.93 ? "EXCUSED" : "ABSENT",
+            };
+          }),
+        );
+      if (rows.length) attendanceRows += (await db.attendance.createMany({ data: rows })).count;
+
       for (const [i, [teamName, email, body, daysAgo]] of (CHAT_MESSAGES[e.key] ?? []).entries()) {
         const sender = memberOf(email);
         const team = teams.find((t) => t.name === teamName);
@@ -262,4 +305,5 @@ export async function seedSeries(db: PrismaClient) {
       }
     }
   }
+  console.log(`  ${attendanceRows} attendance rows for the programmes`);
 }

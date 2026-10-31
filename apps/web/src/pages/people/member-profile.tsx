@@ -291,12 +291,13 @@ function MemberProfile({ id, data }: { id: string; data: Data }) {
               </Section>
             )}
 
-            {can(user, "users.manage") && (
+            {/* Kids and parents are records (kid card, guardian contact), not accounts. */}
+            {can(user, "users.manage") && (m.user || (m.type !== "CHILD" && m.type !== "PARENT")) && (
               <Section title={t("profile.account")}>
                 {m.user ? (
                   <div className="space-y-2 text-sm">
                     <p className="flex items-center gap-2 text-ink-2">
-                      <KeyRound className="size-4 text-leaf" /> {t("profile.hasAccount", { email: m.user.email })}
+                      <KeyRound className={m.user.isActive ? "size-4 text-leaf" : "size-4 text-muted"} /> {t(m.user.isActive ? "profile.hasAccount" : "profile.accountDisabled", { email: m.user.email })}
                     </p>
                     <div className="flex flex-wrap gap-1">
                       {m.user.roles.map((r) => (
@@ -310,7 +311,7 @@ function MemberProfile({ id, data }: { id: string; data: Data }) {
                     </p>
                   </div>
                 ) : (
-                  <AccountForm memberId={id} defaultEmail={m.email ?? ""} defaultRole={isChild ? "kid" : m.type === "PARENT" ? "parent" : m.type === "MONITOR" ? "monitor" : "member"} canAdmin={can(user, "roles.manage")} />
+                  <AccountForm memberId={id} defaultEmail={m.email ?? ""} defaultRole="member" canAdmin={can(user, "roles.manage")} />
                 )}
               </Section>
             )}

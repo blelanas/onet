@@ -17,6 +17,16 @@ export default {
       "Events, trips, teams, chats, songs, dances and games: everything animators need, in one place.",
     ),
   },
+  google: {
+    or: T("ou", "أو", "or"),
+    button: T("Continuer avec Google", "المتابعة باستخدام Google", "Continue with Google"),
+    unavailable: T("La connexion avec Google n'a pas pu être chargée.", "تعذّر تحميل تسجيل الدخول عبر Google.", "Google sign-in couldn't be loaded."),
+    noAccount: T(
+      "Aucun compte avec cette adresse Google pour l'instant : complétez le formulaire pour demander l'accès.",
+      "لا يوجد حساب بعنوان Google هذا بعد: أكمل الاستمارة لطلب الانضمام.",
+      "No account with this Google e-mail yet: complete the form to request access.",
+    ),
+  },
   signup: {
     title: T("Devenir membre", "كن عضوًا", "Become a member"),
     subtitle: T(

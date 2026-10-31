@@ -123,7 +123,7 @@ async function main() {
   ];
   const monitors: Awaited<ReturnType<typeof db.member.create>>[] = [];
   for (const m of monitorDefs) {
-    const user = m.login ? await makeUser(m.email, `${m.first} ${m.last}`, ["monitor"]) : null;
+    const user = m.login ? await makeUser(m.email, `${m.first} ${m.last}`, ["member"]) : null;
     monitors.push(
       await db.member.create({
         data: {
@@ -167,7 +167,7 @@ async function main() {
 
   // Families
   console.log("→ families");
-  const families: { parentIds: string[]; children: { id: string; age: number; userId?: string }[]; payerId: string; lastName: string }[] = [];
+  const families: { parentIds: string[]; children: { id: string; age: number; featured?: boolean }[]; payerId: string; lastName: string }[] = [];
   const usedLast = new Set<number>();
   for (let f = 0; f < 18; f++) {
     let li = int(0, LAST.length - 1);
@@ -178,16 +178,14 @@ async function main() {
     const [fFirst, fFirstAr] = isDemo ? ADULT_M[0] : pick(ADULT_M);
     const [mFirst, mFirstAr] = isDemo ? ADULT_F[0] : pick(ADULT_F);
     const address = `${int(1, 90)} ${pick(STREETS)}, Teboulba`;
-    const parentUser = isDemo
-      ? await makeUser("parent@onet-teboulba.tn", `${fFirst} ${last}`, ["parent"])
-      : f < 8
-        ? await makeUser(`${fFirst.toLowerCase()}.${last.toLowerCase().replace(/\s/g, "")}${f}@example.tn`, `${fFirst} ${last}`, ["parent"], pick(["fr", "ar", "fr"]))
-        : null;
+    // Parents are contacts on the kid cards, not accounts.
+    const parentEmail = f < 8 ? `${fFirst.toLowerCase()}.${last.toLowerCase().replace(/\s/g, "")}${f}@example.tn` : null;
+    if (f > 0 && f < 8) pick(["fr", "ar", "fr"]); // keeps the PRNG sequence, so the rest of the demo data is unchanged
     const father = await db.member.create({
       data: {
         type: "PARENT", firstName: fFirst, lastName: last, firstNameAr: fFirstAr, lastNameAr: lastAr, gender: "M", dateOfBirth: dob(int(34, 52)),
-        phone: `+216 ${pick(["20", "22", "50", "55", "98", "97"])} ${int(100, 999)} ${int(100, 999)}`, email: parentUser?.email ?? null,
-        address, membershipNumber: nextNumber(), membershipDate: daysFromNow(-int(60, 1500)), userId: parentUser?.id,
+        phone: `+216 ${pick(["20", "22", "50", "55", "98", "97"])} ${int(100, 999)} ${int(100, 999)}`, email: parentEmail,
+        address, membershipNumber: nextNumber(), membershipDate: daysFromNow(-int(60, 1500)),
       },
     });
     const parentIds = [father.id];
@@ -202,23 +200,22 @@ async function main() {
       parentIds.push(mother.id);
     }
     const nKids = isDemo ? 3 : int(1, 3);
-    const children: { id: string; age: number; userId?: string }[] = [];
+    const children: { id: string; age: number; featured?: boolean }[] = [];
     for (let k = 0; k < nKids; k++) {
       const girl = isDemo ? k === 1 : rnd() < 0.5;
       const [first, firstAr] = isDemo ? (k === 0 ? BOYS[0] : k === 1 ? GIRLS[0] : BOYS[1]) : girl ? pick(GIRLS) : pick(BOYS);
       const age = isDemo ? [11, 8, 5][k] : int(4, 17);
-      const kidUser = isDemo && k === 0 ? await makeUser("enfant@onet-teboulba.tn", `${first} ${last}`, ["kid"]) : null;
       const status = rnd() < 0.9 ? "ACTIVE" : pick(["PENDING", "INACTIVE"]);
       const child = await db.member.create({
         data: {
           type: "CHILD", firstName: first, lastName: last, firstNameAr: firstAr, lastNameAr: lastAr, gender: girl ? "F" : "M", dateOfBirth: dob(age),
           address, membershipNumber: nextNumber(), membershipStatus: status, membershipDate: daysFromNow(-int(30, 1200)),
-          groupId: groupForAge(age).id, emergencyName: `${fFirst} ${last}`, emergencyPhone: father.phone, userId: kidUser?.id,
+          groupId: groupForAge(age).id, emergencyName: `${fFirst} ${last}`, emergencyPhone: father.phone,
           medicalNotes: rnd() < 0.12 ? pick(["Asthme léger — inhalateur dans le sac.", "Allergie aux arachides.", "Porte des lunettes."]) : null,
           points: int(20, 260),
         },
       });
-      children.push({ id: child.id, age, userId: kidUser?.id });
+      children.push({ id: child.id, age, featured: isDemo && k === 0 });
       for (const [pi, pid] of parentIds.entries())
         await db.guardianship.create({ data: { parentId: pid, childId: child.id, relation: pi === 0 ? "FATHER" : "MOTHER", isPrimary: pi === 0 } });
     }
@@ -243,7 +240,7 @@ async function main() {
   ];
   const badges = await Promise.all(badgeDefs.map((b) => db.badge.create({ data: b })));
   for (const c of allChildren) {
-    const n = c.userId ? 5 : int(0, 4);
+    const n = c.featured ? 5 : int(0, 4);
     const chosen = [...badges].sort(() => rnd() - 0.5).slice(0, n);
     for (const b of chosen) await db.memberBadge.create({ data: { memberId: c.id, badgeId: b.id, awardedAt: daysFromNow(-int(5, 200)) } });
   }
@@ -427,7 +424,7 @@ async function main() {
   const k1 = await db.tripRegistration.findUnique({ where: { tripId_memberId: { tripId: trips[0].id, memberId: demo.children[0].id } } });
   if (!k1) {
     const inv = await invoiceFor({ payerId: demo.payerId, childId: demo.children[0].id, amount: trips[0].price, description: `Sortie : ${trips[0].title}`, tripId: trips[0].id, issued: daysFromNow(-3), due: trips[0].registrationDeadline!, payState: "none" });
-    await db.tripRegistration.create({ data: { tripId: trips[0].id, memberId: demo.children[0].id, invoiceId: inv.id, status: "PENDING", registeredById: (await db.user.findUnique({ where: { email: "parent@onet-teboulba.tn" } }))!.id } });
+    await db.tripRegistration.create({ data: { tripId: trips[0].id, memberId: demo.children[0].id, invoiceId: inv.id, status: "PENDING", registeredById: uAdmin.id } });
   }
 
   // Expenses (6 months)
@@ -544,12 +541,11 @@ async function main() {
 
   // ── Communication ──
   console.log("→ communication");
-  const parentUser = (await db.user.findUnique({ where: { email: "parent@onet-teboulba.tn" } }))!;
   const annDefs = [
-    { title: "Inscriptions ouvertes : sortie à Kairouan", body: "Les inscriptions pour la sortie culturelle à Kairouan sont ouvertes jusqu'à la date limite. Places limitées !", audience: "PARENTS", priority: "IMPORTANT", isPinned: true, d: -3 },
+    { title: "Inscriptions ouvertes : sortie à Kairouan", body: "Les inscriptions pour la sortie culturelle à Kairouan sont ouvertes jusqu'à la date limite. Places limitées !", audience: "ALL", priority: "IMPORTANT", isPinned: true, d: -3 },
     { title: "Répétition générale de la chorale", body: "Répétition générale vendredi à 16h à la salle de musique. Merci d'être à l'heure.", audience: "GROUP", groupId: groups[4].id, priority: "NORMAL", d: -1 },
-    { title: "Formation premiers secours obligatoire", body: "Tous les moniteurs doivent participer à la session de formation premiers secours lors de la prochaine réunion générale.", audience: "MONITORS", priority: "URGENT", d: -4 },
-    { title: "Bienvenue à tous les enfants !", body: "Une nouvelle année pleine de jeux, de chants et de découvertes commence. Amusez-vous bien !", audience: "KIDS", priority: "NORMAL", isPinned: true, d: -20 },
+    { title: "Formation premiers secours obligatoire", body: "Tous les membres (animateurs) doivent participer à la session de formation premiers secours lors de la prochaine réunion générale.", audience: "MONITORS", priority: "URGENT", d: -4 },
+    { title: "Bienvenue pour cette nouvelle année !", body: "Une nouvelle année pleine de jeux, de chants et de découvertes commence avec les enfants. Bon courage à toute l'équipe !", audience: "ALL", priority: "NORMAL", isPinned: true, d: -20 },
     { title: "Horaires d'été du siège", body: "Le siège est ouvert du lundi au samedi de 9h à 13h et de 16h à 19h.", audience: "ALL", priority: "NORMAL", d: -10 },
   ];
   for (const a of annDefs) {
@@ -557,9 +553,13 @@ async function main() {
   }
 
   const allUsers = await db.user.findMany({ include: { roles: { include: { role: true } } } });
+  // The attendance reminder only makes sense for the members who supervise a group.
+  const supervisors = new Set(
+    (await db.groupMonitor.findMany({ where: { member: { userId: { not: null } } }, select: { member: { select: { userId: true } } } })).map((g) => g.member.userId),
+  );
   for (const u of allUsers) {
     const rk = u.roles.map((r) => r.role.key);
-    const list: { type: string; title: string; body: string; link: string; read: boolean; d: number }[] = [
+    const list: { type: string; title: string; body: string; link: string; read: boolean; d: number; skip?: boolean }[] = [
       { type: "ANNOUNCEMENT", title: "Nouvelle annonce publiée", body: "Horaires d'été du siège", link: "/dashboard/announcements", read: true, d: -10 },
       { type: "EVENT_NEW", title: "Nouvel événement : Fête de l'enfance", body: "Journée portes ouvertes sur la place de la municipalité.", link: "/dashboard/events", read: false, d: -2 },
     ];
@@ -571,22 +571,24 @@ async function main() {
       );
     }
     if (rk.includes("accountant") || rk.includes("super_admin")) list.push({ type: "PAYMENT_CONFIRMED", title: "Paiement reçu", body: "Paiement en ligne de 35 TND reçu.", link: "/dashboard/finance/payments", read: false, d: -1 });
-    if (rk.includes("monitor")) list.push({ type: "ACTIVITY", title: "Rappel : feuille de présence", body: "Pensez à faire l'appel de votre groupe ce samedi.", link: "/dashboard/attendance", read: false, d: 0 });
+    // Pushed (and dated, below) for every member so the PRNG sequence stays the same, then left out unless they supervise a group.
+    if (rk.includes("member")) list.push({ type: "ACTIVITY", title: "Rappel : feuille de présence", body: "Pensez à faire l'appel de votre groupe ce samedi.", link: "/dashboard/attendance", read: false, d: 0, skip: !supervisors.has(u.id) });
     if (rk.includes("kid")) list.push({ type: "ACTIVITY", title: "Nouveau badge débloqué ! ⭐", body: "Tu as gagné le badge « Explorateur ».", link: "/dashboard/achievements", read: false, d: -1 });
-    await db.notification.createMany({ data: list.map((n) => ({ userId: u.id, type: n.type, title: n.title, body: n.body, link: n.link, readAt: n.read ? daysFromNow(n.d) : null, createdAt: daysFromNow(n.d, 9 + int(0, 8)) })) });
+    const rows = list.map((n) => ({ skip: n.skip, data: { userId: u.id, type: n.type, title: n.title, body: n.body, link: n.link, readAt: n.read ? daysFromNow(n.d) : null, createdAt: daysFromNow(n.d, 9 + int(0, 8)) } }));
+    await db.notification.createMany({ data: rows.filter((r) => !r.skip).map((r) => r.data) });
   }
 
-  // Conversation parent ↔ monitor
+  // Conversation between two members (animators)
   const conv = await db.conversation.create({
     data: {
       subject: "Sortie à Kairouan — Adam",
-      participants: { create: [{ userId: parentUser.id, lastReadAt: daysFromNow(-1) }, { userId: monitorUser!.id, lastReadAt: daysFromNow(-1) }] },
+      participants: { create: [{ userId: uMember.id, lastReadAt: daysFromNow(-1) }, { userId: monitorUser!.id, lastReadAt: daysFromNow(-1) }] },
     },
   });
   const msgs = [
-    [parentUser.id, "Bonjour Mme Yasmine, Adam peut-il prendre son appareil photo pour la sortie à Kairouan ?", -2],
-    [monitorUser!.id, "Bonjour M. Gharbi, oui bien sûr ! Il en sera responsable. Pensez aussi à la casquette 😊", -2],
-    [parentUser.id, "Parfait, merci beaucoup. L'autorisation signée sera déposée samedi.", -1],
+    [uMember.id, "Salut Yasmine, le papa d'Adam demande s'il peut prendre son appareil photo pour la sortie à Kairouan ?", -2],
+    [monitorUser!.id, "Oui bien sûr ! Il en sera responsable. Qu'il pense aussi à la casquette 😊", -2],
+    [uMember.id, "Parfait, je lui transmets. L'autorisation signée sera déposée samedi.", -1],
   ] as const;
   for (const [sender, body, d] of msgs) await db.message.create({ data: { conversationId: conv.id, senderId: sender, body, createdAt: daysFromNow(d, 18) } });
   const conv2 = await db.conversation.create({
@@ -599,7 +601,7 @@ async function main() {
     data: [
       { title: "Conseil d'administration", type: "MEETING", startAt: daysFromNow(7, 18), endAt: daysFromNow(7, 20), location: "Siège ONET", audience: "STAFF", createdById: uSuper.id },
       { title: "Vacances scolaires", type: "HOLIDAY", startAt: daysFromNow(50, 0), endAt: daysFromNow(57, 0), allDay: true, audience: "ALL", createdById: uAdmin.id },
-      { title: "Date limite des cotisations", type: "IMPORTANT", startAt: daysFromNow(21, 0), allDay: true, audience: "PARENTS", createdById: uAcc.id },
+      { title: "Date limite des cotisations", type: "IMPORTANT", startAt: daysFromNow(21, 0), allDay: true, audience: "ALL", createdById: uAcc.id },
     ],
   });
   await db.task.createMany({
@@ -622,7 +624,7 @@ async function main() {
   // Self sign-ups: an invitation link for monitors, people waiting for approval, a pre-approved list.
   const inviteToken = randomBytes(24).toString("base64url");
   const invitation = await db.invitation.create({
-    data: { tokenHash: createHash("sha256").update(inviteToken).digest("hex"), role: "monitor", label: "Moniteurs 2026", expiresAt: daysFromNow(5, 23, 59), maxUses: 30, uses: 2, createdById: uAdmin.id, createdAt: daysFromNow(-2) },
+    data: { tokenHash: createHash("sha256").update(inviteToken).digest("hex"), role: "member", label: "Membres 2026", expiresAt: daysFromNow(5, 23, 59), maxUses: 30, uses: 2, createdById: uAdmin.id, createdAt: daysFromNow(-2) },
   });
   await db.invitation.create({
     data: { tokenHash: createHash("sha256").update(randomBytes(24).toString("base64url")).digest("hex"), role: "member", label: "Bénévoles rentrée", expiresAt: daysFromNow(-20), maxUses: 20, uses: 7, createdById: uSuper.id, createdAt: daysFromNow(-60) },
@@ -632,12 +634,12 @@ async function main() {
     { name: "Bilel Lassoued", email: "bilel.lassoued@example.tn", phone: "+216 29 870 113", hoursAgo: 3 },
   ]) {
     await db.user.create({
-      data: { name: p.name, email: p.email, phone: p.phone, passwordHash, status: "PENDING", requestedRole: "monitor", invitationId: invitation.id, createdAt: new Date(Date.now() - p.hoursAgo * 3_600_000) },
+      data: { name: p.name, email: p.email, phone: p.phone, passwordHash, status: "PENDING", requestedRole: "member", invitationId: invitation.id, createdAt: new Date(Date.now() - p.hoursAgo * 3_600_000) },
     });
   }
   await db.preapprovedPerson.createMany({
     data: [
-      { name: "Hiba Mabrouk", email: "hiba.mabrouk@example.tn", phone: "21697300411", role: "monitor", createdById: uAdmin.id },
+      { name: "Hiba Mabrouk", email: "hiba.mabrouk@example.tn", phone: "21697300411", role: "member", createdById: uAdmin.id },
       { name: "Anis Ben Amor", email: null, phone: "21624118790", role: "member", createdById: uAdmin.id },
     ],
   });
@@ -670,8 +672,8 @@ async function main() {
   const counts = await Promise.all([db.member.count(), db.invoice.count(), db.payment.count(), db.attendance.count()]);
   console.log(`✓ seeded: ${counts[0]} members, ${counts[1]} invoices, ${counts[2]} payments, ${counts[3]} attendance rows`);
   console.log(`\nDemo accounts (password: ${PASSWORD})`);
-  for (const e of ["admin", "gestion", "comptable", "moniteur", "parent", "enfant", "membre"]) console.log(`  ${e}@onet-teboulba.tn`);
-  console.log(`\nDemo monitor invitation: /signup?invite=${inviteToken}`);
+  for (const e of ["admin", "gestion", "comptable", "membre", "moniteur"]) console.log(`  ${e}@onet-teboulba.tn`);
+  console.log(`\nDemo member invitation: /signup?invite=${inviteToken}`);
 
   await seedMembersContent(db);
 }

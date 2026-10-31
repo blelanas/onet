@@ -31,6 +31,8 @@ services:
         sync: false # at least 10 characters; can be removed once you have logged in
       - key: ADMIN_NAME
         sync: false # e.g. your full name
+      - key: GOOGLE_CLIENT_ID
+        sync: false # optional, "Continue with Google": the OAuth client id (<…>.apps.googleusercontent.com), not a secret
       - key: PAYMENT_PROVIDER
         value: mock
       - key: ALLOW_MOCK_PAYMENTS

@@ -7,7 +7,7 @@ import { ActionError, formToObject, runAction, zs } from "@api/lib/actions";
 import { audit } from "@api/lib/audit";
 import { GENDERS, GUARDIAN_RELATIONS } from "@api/lib/constants";
 import { nextMembershipNumber } from "@api/modules/members/actions";
-import { assertCanManageKids, canEditKid } from "@api/modules/events/access";
+import { assertCanManageKids, canEditKid, canManageKidOfTeam, type EditionAccess } from "@api/modules/events/access";
 import { normalizePhone } from "@api/modules/signup/lib";
 
 const optEnum = <T extends readonly [string, ...string[]]>(values: T) => z.preprocess((v) => (v === "" || v == null ? undefined : v), z.enum(values).optional());
@@ -66,6 +66,26 @@ async function editionTeamOrNull(eventId: string, teamId: string | undefined) {
   return team.id;
 }
 
+/**
+ * The team a kid is put into must be one the user manages: any team (or none) for admins and the director;
+ * for a leader, one of the teams they lead (a leader can't leave a kid without a team: errors.teamRequired).
+ */
+function assertTargetTeam(access: EditionAccess, teamId: string | null) {
+  if (access.manageAllKids) return;
+  if (!teamId) throw new ActionError("errors.teamRequired");
+  if (!access.ledTeamIds.includes(teamId)) throw new AuthError("FORBIDDEN");
+}
+
+/**
+ * Inside the write transaction: a leader (not an admin / the director) must still lead the target team (with an
+ * ACTIVE membership) — the access snapshot was read before the transaction.
+ */
+async function assertStillLeads(tx: Prisma.TransactionClient, user: CurrentUser, access: EditionAccess, teamId: string | null) {
+  if (access.manageAllKids || !teamId) return;
+  const n = await tx.eventTeam.count({ where: { id: teamId, leaderId: user.memberId ?? "__none__", leader: { membershipStatus: "ACTIVE" } } });
+  if (!n) throw new AuthError("FORBIDDEN");
+}
+
 const addKidSchema = z
   .object({
     eventId: zs.id,
@@ -90,7 +110,8 @@ const addKidSchema = z
   });
 
 /**
- * POST /events/:id/kids — adds a kid to an edition (admins and the edition's leaders): an existing kid
+ * POST /events/:id/kids — adds a kid to an edition (admins and the director: into any team or none; a team
+ * leader: only into a team they lead, `teamId` required): an existing kid
  * ({memberId}) or a new one (CHILD member + parent contact without login + primary guardianship), then
  * a CONFIRMED registration without invoice. The duplicate checks and the writes run in one write
  * transaction (libSQL serialises writers), so two identical requests can't both create the kid. A kid can't
@@ -103,10 +124,12 @@ export async function addKid(fd: FormData | Record<string, unknown>) {
     const user = await requirePermission("events.read");
     const event = await db.event.findUnique({ where: { id: d.eventId }, select: { id: true, title: true } });
     if (!event) throw new ActionError("errors.notFound");
-    await assertCanManageKids(user, event.id);
+    const access = await assertCanManageKids(user, event.id);
     const teamId = await editionTeamOrNull(event.id, d.teamId);
+    assertTargetTeam(access, teamId);
 
     const result = await db.$transaction(async (tx) => {
+      await assertStillLeads(tx, user, access, teamId);
       let memberId = d.memberId;
       const registration = (kidId: string) =>
         tx.eventRegistration.findUnique({ where: { eventId_memberId: { eventId: event.id, memberId: kidId } }, select: { id: true, status: true, invoice: { select: { status: true } } } });
@@ -155,32 +178,58 @@ export async function addKid(fd: FormData | Record<string, unknown>) {
   });
 }
 
-async function editionRegistration(user: CurrentUser, eventId: string, registrationId: string) {
-  await assertCanManageKids(user, eventId);
-  const reg = await db.eventRegistration.findUnique({ where: { id: registrationId }, select: { id: true, eventId: true, memberId: true, invoiceId: true, invoice: { select: { status: true } }, member: { select: { type: true } } } });
+/**
+ * A kid's registration in the edition. `unassignedOk`: a leader may also act on a kid without a team (to take
+ * them into their team); otherwise the kid must be in a team the user leads (admins and the director: any kid).
+ */
+async function editionRegistration(user: CurrentUser, eventId: string, registrationId: string, unassignedOk = false) {
+  const access = await assertCanManageKids(user, eventId);
+  const reg = await db.eventRegistration.findUnique({
+    where: { id: registrationId },
+    select: { id: true, eventId: true, memberId: true, teamId: true, invoiceId: true, invoice: { select: { status: true } }, member: { select: { type: true } } },
+  });
   if (!reg || reg.eventId !== eventId || reg.member.type !== "CHILD") throw new ActionError("errors.notFound");
-  return reg;
+  if (!canManageKidOfTeam(access, reg.teamId) && !(unassignedOk && !reg.teamId)) throw new AuthError("FORBIDDEN");
+  return { reg, access };
 }
 
-/** POST /events/:id/kids/:registrationId/team — {teamId|null}: assigns a kid to one of the edition's teams. */
+/**
+ * POST /events/:id/kids/:registrationId/team — {teamId|null}: assigns a kid to one of the edition's teams.
+ * A leader moves kids only between the teams they lead, or takes an unassigned kid into one of them.
+ */
 export async function setKidTeam(fd: FormData | Record<string, unknown>) {
   return runAction(z.object({ eventId: zs.id, registrationId: zs.id, teamId: zs.optId }), formToObject(fd), async (d) => {
     const user = await requirePermission("events.read");
-    const reg = await editionRegistration(user, d.eventId, d.registrationId);
+    const { reg, access } = await editionRegistration(user, d.eventId, d.registrationId, true);
     const teamId = await editionTeamOrNull(d.eventId, d.teamId);
-    await db.eventRegistration.update({ where: { id: reg.id }, data: { teamId } });
+    assertTargetTeam(access, teamId);
+    // Race-safe: a leader only moves the kid if they are still in the team that was authorized above, and still
+    // leads the target team.
+    await db.$transaction(async (tx) => {
+      await assertStillLeads(tx, user, access, teamId);
+      const moved = await tx.eventRegistration.updateMany({ where: { id: reg.id, eventId: d.eventId, ...(access.manageAllKids ? {} : { teamId: reg.teamId }) }, data: { teamId } });
+      if (!moved.count) throw new ActionError("errors.notFound");
+    });
     await audit(user.id, "assign_team", "EventRegistration", reg.id, { eventId: d.eventId, teamId });
     return { teamId };
   });
 }
 
-/** DELETE /events/:id/kids/:registrationId — removes a kid from an edition (refused when an invoice is attached). */
+/**
+ * DELETE /events/:id/kids/:registrationId — removes a kid from an edition (refused when an invoice is attached).
+ * A leader only removes the kids of the teams they lead.
+ */
 export async function removeKid(eventId: string, registrationId: string) {
   return runAction(z.object({ eventId: zs.id, registrationId: zs.id }), { eventId, registrationId }, async (d) => {
     const user = await requirePermission("events.read");
-    const reg = await editionRegistration(user, d.eventId, d.registrationId);
+    const { reg, access } = await editionRegistration(user, d.eventId, d.registrationId);
     if (reg.invoiceId && reg.invoice && reg.invoice.status !== "CANCELLED") throw new ActionError("errors.inUse");
-    await db.eventRegistration.delete({ where: { id: reg.id } });
+    // Race-safe: only deletes the registration if it still has no live invoice and, for a leader, is still in the
+    // team that was authorized above.
+    const removed = await db.eventRegistration.deleteMany({
+      where: { id: reg.id, eventId: d.eventId, ...(access.manageAllKids ? {} : { teamId: reg.teamId }), OR: [{ invoiceId: null }, { invoice: { status: "CANCELLED" } }] },
+    });
+    if (!removed.count) throw new ActionError("errors.notFound");
     await audit(user.id, "remove_kid", "EventRegistration", reg.id, { eventId: d.eventId, memberId: reg.memberId });
   });
 }
@@ -202,7 +251,7 @@ const updateKidSchema = z.object({
 
 /**
  * POST /kids/:id — the kid card: photo, names, birth date, medical notes and the parent contact. Member
- * managers, admins, and the leaders of one of the kid's editions. A parent contact that has a login keeps
+ * managers, admins, the director of one of the kid's editions and the leader of the kid's team in one of them. A parent contact that has a login keeps
  * its own name / phone (the person manages them); only the relation is updated then.
  */
 export async function updateKid(fd: FormData | Record<string, unknown>) {

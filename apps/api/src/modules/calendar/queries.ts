@@ -5,6 +5,7 @@ import { AuthError, can } from "@api/lib/auth/guards";
 import { myChildren, myGroupIds } from "@api/lib/auth/scope";
 import { CATEGORY_COLORS } from "@api/lib/constants";
 import { addDaysLocal, normalizeDay } from "@api/modules/attendance/day";
+import { isAnimatorRole } from "@onet/shared";
 
 export const CAL_KINDS = ["activity", "group", "event", "trip", "conference", "entry"] as const;
 export type CalKind = (typeof CAL_KINDS)[number];
@@ -32,7 +33,7 @@ export function entryAudiences(user: CurrentUser): string[] | "all" {
   const a = new Set(["ALL"]);
   if (user.roles.includes("parent")) a.add("PARENTS");
   if (user.roles.includes("kid")) a.add("KIDS");
-  if (user.roles.includes("monitor")) {
+  if (isAnimatorRole(user.roles)) {
     a.add("MONITORS");
     a.add("STAFF");
   }

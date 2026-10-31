@@ -1,5 +1,5 @@
 import { useLocale, useTranslations } from "use-intl";
-import { CalendarClock, ClipboardCheck, Clock, CreditCard, Download, Edit, Hourglass, MapPin, Megaphone, Smile, Ticket, Trash2, Users, Wallet } from "lucide-react";
+import { CalendarClock, ClipboardCheck, Clock, CreditCard, Download, Edit, Hourglass, MapPin, Megaphone, Repeat, Smile, Ticket, Trash2, Users, Wallet } from "lucide-react";
 import type { eventCheckInPage, eventPage, eventParticipantsPage } from "@api/modules/events/routes";
 import { formatDate, formatMoney } from "@onet/shared";
 import { download } from "@/lib/api";
@@ -27,6 +27,8 @@ import { ParticipantsTable } from "@/components/registrations/participants-table
 import { RollCallForm } from "@/components/registrations/roll-call-form";
 import { CategoryIcon, DateTile, PlacesMeter, categoryColor } from "@/components/registrations/visuals";
 import { dateTime, hm } from "@/components/registrations/format";
+import { DirectorCard } from "@/components/events/director-card";
+import { EditionAttendance } from "@/components/events/edition-attendance";
 import { EditionOverview } from "@/components/events/edition-overview";
 import { EditionTeams } from "@/components/events/edition-teams";
 import { SeriesKindIcon, seriesName, useDateRange, useEditionLabel } from "@/components/events/series-visuals";
@@ -48,6 +50,7 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
   const t = useTranslations("events");
   const tc = useTranslations("common");
   const tn = useTranslations("nav");
+  const tf = useTranslations("events.frequency");
   const locale = useLocale();
   const tabParam = useSearchParams().get("tab");
   const { event: e, manage, staff, canCheckIn, showMoney, open } = data;
@@ -61,16 +64,24 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
   const taken = e._count.registrations;
   const left = Math.max(0, e.capacity - taken);
   const base = `/dashboard/events/${id}`;
+  // Those who manage the teams (admins, the director) also get the tab on a one-off event without teams yet,
+  // to create the first one.
+  const withTeams = !!series || !!data.director || data.teams.length > 0 || data.canManageTeams;
   const tabs = series
     ? [
         { key: "overview", label: t("detail.tabs.overview"), href: base },
         { key: "teams", label: t("edition.tabs.teams"), href: `${base}?tab=teams`, count: data.teams.length },
         ...(data.canSeeKids ? [{ key: "kids", label: t("edition.tabs.kids"), href: `${base}?tab=kids`, count: data.kidsCount }] : []),
+        ...(data.canSeeAttendance ? [{ key: "attendance", label: t("attendance.tab"), href: `${base}?tab=attendance` }] : []),
       ]
     : [
         { key: "overview", label: t("detail.tabs.overview"), href: base },
         ...(staff ? [{ key: "participants", label: t("detail.tabs.participants"), href: `${base}?tab=participants`, count: taken }] : []),
         ...(canCheckIn ? [{ key: "checkin", label: t("detail.tabs.checkin"), href: `${base}?tab=checkin` }] : []),
+        // A one-off event with a director gets the director's tools too: teams and kids.
+        ...(withTeams ? [{ key: "teams", label: t("edition.tabs.teams"), href: `${base}?tab=teams`, count: data.teams.length }] : []),
+        ...(withTeams && data.canSeeKids ? [{ key: "kids", label: t("edition.tabs.kids"), href: `${base}?tab=kids`, count: data.kidsCount }] : []),
+        ...(withTeams && data.canSeeAttendance ? [{ key: "attendance", label: t("attendance.tab"), href: `${base}?tab=attendance` }] : []),
       ];
   const tab = tabs.some((x) => x.key === tabParam) ? tabParam! : "overview";
 
@@ -159,6 +170,11 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
                       </span>
                     ),
                   },
+                  {
+                    icon: <Repeat className="size-4" />,
+                    label: tf("label"),
+                    value: data.sessionsCount > 1 ? `${tf(e.frequency as "ONCE")} · ${tf("count", { count: data.sessionsCount })}` : tf(e.frequency as "ONCE"),
+                  },
                   { icon: <MapPin className="size-4" />, label: tc("fields.location"), value: e.location ?? "—" },
                   { icon: <Megaphone className="size-4" />, label: t("form.organizer"), value: e.organizer ?? "—" },
                   { icon: <Users className="size-4" />, label: tc("fields.capacity"), value: tc("fields.places", { count: e.capacity }) },
@@ -192,6 +208,7 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
           </div>
 
           <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
+            {data.director && <DirectorCard director={data.director} color={color} />}
             <RegisterCard data={data} eventId={id} full={left === 0} />
             {e.status === "PUBLISHED" && e.endAt > new Date() && (
               <section className="card p-5">
@@ -209,9 +226,11 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
 
       {tab === "participants" && staff && <ParticipantsSection eventId={id} />}
 
-      {tab === "teams" && series && <EditionTeams eventId={id} />}
+      {tab === "teams" && withTeams && <EditionTeams eventId={id} />}
 
-      {tab === "kids" && series && data.canSeeKids && <EditionKids eventId={id} />}
+      {tab === "kids" && withTeams && data.canSeeKids && <EditionKids eventId={id} />}
+
+      {tab === "attendance" && withTeams && data.canSeeAttendance && <EditionAttendance eventId={id} />}
 
       {tab === "checkin" && canCheckIn && <CheckInSection eventId={id} />}
     </div>

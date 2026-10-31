@@ -200,7 +200,57 @@
       "WAITLIST": "{name} passe en liste d'attente pour « {title} »",
       "PENDING": "Inscription de {name} en attente de paiement (« {title} »)"
     },
-    "monitorAssigned": "Vous encadrez la sortie « {title} »"
+    "monitorAssigned": "Vous encadrez la sortie « {title} »",
+    "directorAssigned": "Vous êtes le directeur de « {title} »",
+    "directorAssignedBody": "Vous gérez ses équipes et ses enfants : ouvrez la page pour commencer."
+  },
+  "director": {
+    "label": "Directeur",
+    "section": "Direction",
+    "none": "Pas de directeur",
+    "hint": "Un animateur qui gère toutes les équipes (responsables, animateurs) et les enfants de l'événement. Il est prévenu par une notification.",
+    "hintPrevious": "Proposé : le directeur de l'édition précédente.",
+    "inactive": "Adhésion non active : sans droits sur l'événement",
+    "call": "Appeler {name}"
+  },
+  "frequency": {
+    "label": "Séances",
+    "hint": "Les jours de séance servent à faire l'appel des équipes (onglet Présences).",
+    "ONCE": "Une seule fois",
+    "DAILY": "Chaque jour",
+    "WEEKLY": "Chaque semaine",
+    "MONTHLY": "Chaque mois",
+    "count": "{count, plural, =0 {Aucune séance} one {# séance} other {# séances}}"
+  },
+  "attendance": {
+    "tab": "Présences",
+    "session": "Séance",
+    "sessionOf": "Séance {n} sur {total}",
+    "today": "aujourd'hui",
+    "future": "Cette séance n'a pas encore eu lieu : l'appel se fera le jour même.",
+    "noSessions": "Aucune séance pour cet événement",
+    "noTeams": "Aucune équipe à appeler",
+    "noTeamsHint": "Créez les équipes et répartissez les enfants pour faire l'appel.",
+    "teamCount": "{present} / {total} {present, plural, one {présent} other {présents}}",
+    "leader": "Responsable : {name}",
+    "emptyTeam": "Aucun enfant dans cette équipe",
+    "readOnly": "Lecture seule : l'appel est fait par le responsable de l'équipe ou le directeur.",
+    "notice": "« En retard » compte comme présent.",
+    "jump": "Aller à l'équipe",
+    "history": {
+      "title": "Séances passées",
+      "line": "{present} / {marked} {present, plural, one {présent} other {présents}}",
+      "notTaken": "Appel non fait",
+      "empty": "Aucune séance passée pour l'instant",
+      "open": "Ouvrir la séance du {date}"
+    },
+    "rates": {
+      "title": "Assiduité par enfant",
+      "hint": "Sur les séances passées où l'enfant a été appelé.",
+      "line": "{present, plural, one {# présence} other {# présences}} sur {marked}",
+      "none": "Pas encore appelé",
+      "empty": "Aucun enfant dans vos équipes"
+    }
   },
   "series": {
     "title": "Programmes",
@@ -254,8 +304,9 @@
       "teams": "Équipes",
       "kids": "Enfants"
     },
-    "roleLeader": "Vous êtes responsable d'une équipe de cette édition : vous pouvez inscrire les enfants et les répartir dans les équipes.",
+    "roleLeader": "Vous êtes responsable d'une équipe de cette édition : vous inscrivez les enfants de votre équipe, gérez leurs fiches et faites l'appel.",
     "roleMember": "Vous faites partie d'une équipe de cette édition.",
+    "roleDirector": "Vous dirigez cette édition : vous créez et gérez ses équipes (responsables et animateurs), inscrivez les enfants et les répartissez.",
     "kpi": {
       "kids": "Enfants",
       "teams": "Équipes",
@@ -301,7 +352,7 @@
       "name": "Nom de l'équipe",
       "color": "Couleur",
       "leader": "Responsable",
-      "leaderLocked": "Seuls les administrateurs changent le responsable.",
+      "leaderLocked": "Seuls les administrateurs et le directeur changent le responsable.",
       "members": "Animateurs de l'équipe",
       "membersHint": "Membres, moniteurs et équipe de l'ONET.",
       "search": "Rechercher un animateur…",

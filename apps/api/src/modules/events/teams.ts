@@ -63,7 +63,7 @@ export function withTeamPhones<T extends { leader: { phone: string | null } | nu
   return { ...team, leader: team.leader ? { ...team.leader, phone: null } : null, members: team.members.map((m) => ({ ...m, phone: null })) };
 }
 
-/** People who may lead / join a team. */
+/** People who may lead / join a team, or direct an event. */
 export async function teamCandidates() {
   return db.member.findMany({
     where: TEAM_ELIGIBLE,
@@ -72,18 +72,22 @@ export async function teamCandidates() {
   });
 }
 
-/** GET /events/:id/teams — the edition's teams; candidates for admins and the edition's leaders. */
+/**
+ * GET /events/:id/teams — the edition's teams; candidates for admins, the edition's director and leaders.
+ * `canManage`: create / delete teams and choose their leaders (admins and the director).
+ */
 export async function editionTeamsPage(req: Request) {
   const user = await requirePermission("events.read");
   const id = param(req, "id");
   const e = await getEvent(user, id);
   const access = await editionAccess(user, id);
-  const [teams, candidates] = await Promise.all([editionTeams(id), access.manage || access.isLeader ? teamCandidates() : Promise.resolve([])]);
+  const [teams, candidates] = await Promise.all([editionTeams(id), access.manageTeams || access.isLeader ? teamCandidates() : Promise.resolve([])]);
   return {
     edition: { id: e.id, title: e.title },
     teams: teams.map((t) => withTeamPhones(t, access.seeKids)),
     candidates,
-    canManage: access.manage,
+    canManage: access.manageTeams,
+    isDirector: access.isDirector,
     isLeader: access.isLeader,
     ledTeamIds: access.ledTeamIds,
     myTeamIds: access.myTeamIds,

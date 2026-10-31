@@ -57,6 +57,7 @@
     "relation": "Relationship",
     "team": "Team",
     "noTeam": "No team",
+    "teamLeaderHint": "You add kids into a team you lead.",
     "added": "Kid added to the edition"
   },
   "edit": {
@@ -72,6 +73,7 @@
   },
   "team": {
     "label": "{name}'s team",
+    "leaderHint": "You manage your teams' kids; the other teams' kids are read only. A kid without a team can join one of yours.",
     "saved": "Team updated"
   },
   "errors": {

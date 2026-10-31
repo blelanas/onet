@@ -6,7 +6,7 @@ import type { CurrentUser } from "@api/lib/auth/session";
 import { AuthError, requirePermission } from "@api/lib/auth/guards";
 import { param, qs } from "@api/lib/http";
 import { memberSearchWhere } from "@api/modules/members/queries";
-import { ACTIVE_KID_REG, assertCanSeeKids, canEditKid, kidScopeWhere, memberViewScope, myEditionIds, seesAllKids } from "@api/modules/events/access";
+import { ACTIVE_KID_REG, assertCanSeeKids, canEditKid, kidRegScopeWhere, kidScopeWhere, memberViewScope, myEditionIds, seesAllKids } from "@api/modules/events/access";
 import { getEvent } from "@api/modules/events/queries";
 import { editionVisibleWhere, seriesOptions, tunisYear } from "@api/modules/events/series";
 
@@ -85,7 +85,11 @@ export async function editionKidsPage(req: Request) {
     rows,
     total,
     teams,
+    /** Has kid controls (adds kids); a leader only manages the kids of `ledTeamIds`. */
     canManage: access.manageKids,
+    /** Manages every kid of the edition (admins and the director). */
+    canManageAll: access.manageAllKids,
+    ledTeamIds: access.ledTeamIds,
     isAdmin: access.manage,
   };
 }
@@ -151,31 +155,39 @@ export async function kidCandidatesPage(req: Request) {
 export type KidFilters = { q?: string; seriesId?: string; eventId?: string; year?: number; teamId?: string; skip?: number; take?: number };
 
 function kidsWhere(user: CurrentUser, f: KidFilters): Prisma.MemberWhereInput {
+  // The filters only match the registrations the user may see (not another edition of a kid they see).
   const reg: Prisma.EventRegistrationWhereInput = {
-    ...ACTIVE_KID_REG,
-    ...(f.eventId ? { eventId: f.eventId } : {}),
-    ...(f.teamId ? { teamId: f.teamId } : {}),
-    ...(f.seriesId || f.year ? { event: { ...(f.seriesId ? { seriesId: f.seriesId } : {}), ...(f.year ? { seasonYear: f.year } : {}) } } : {}),
+    AND: [
+      ACTIVE_KID_REG,
+      kidRegScopeWhere(user),
+      f.eventId ? { eventId: f.eventId } : {},
+      f.teamId ? { teamId: f.teamId } : {},
+      f.seriesId || f.year ? { event: { ...(f.seriesId ? { seriesId: f.seriesId } : {}), ...(f.year ? { seasonYear: f.year } : {}) } } : {},
+    ],
   };
   const filtered = f.eventId || f.teamId || f.seriesId || f.year;
   return { AND: [{ type: "CHILD" }, kidScopeWhere(user), memberSearchWhere(f.q), filtered ? { eventRegistrations: { some: reg } } : {}] };
 }
 
-const directorySelect = {
-  ...kidSelect,
-  eventRegistrations: {
-    where: { ...ACTIVE_KID_REG, event: { seriesId: { not: null } } },
-    orderBy: { event: { startAt: "desc" } },
-    take: 1,
-    select: { event: { select: { id: true, title: true, editionNumber: true, seasonYear: true, startAt: true, series: { select: { id: true, name: true, nameAr: true, color: true } } } }, team: { select: { id: true, name: true, color: true } } },
-  },
-  _count: { select: { eventRegistrations: { where: { ...ACTIVE_KID_REG, event: { seriesId: { not: null } } } } } },
-} satisfies Prisma.MemberSelect;
+/** Directory row: the kid, its latest edition and its editions count, among the registrations the user may see. */
+function directorySelect(user: CurrentUser) {
+  const regs: Prisma.EventRegistrationWhereInput = { AND: [ACTIVE_KID_REG, { event: { seriesId: { not: null } } }, kidRegScopeWhere(user)] };
+  return {
+    ...kidSelect,
+    eventRegistrations: {
+      where: regs,
+      orderBy: { event: { startAt: "desc" } },
+      take: 1,
+      select: { event: { select: { id: true, title: true, editionNumber: true, seasonYear: true, startAt: true, series: { select: { id: true, name: true, nameAr: true, color: true } } } }, team: { select: { id: true, name: true, color: true } } },
+    },
+    _count: { select: { eventRegistrations: { where: regs } } },
+  } satisfies Prisma.MemberSelect;
+}
 
 export async function listKids(user: CurrentUser, f: KidFilters) {
   const where = kidsWhere(user, f);
   const [rows, total] = await Promise.all([
-    db.member.findMany({ where, orderBy: [{ firstName: "asc" }, { lastName: "asc" }], skip: f.skip, take: f.take, select: directorySelect }),
+    db.member.findMany({ where, orderBy: [{ firstName: "asc" }, { lastName: "asc" }], skip: f.skip, take: f.take, select: directorySelect(user) }),
     db.member.count({ where }),
   ]);
   return {

@@ -13,7 +13,10 @@ import { ContentFieldErrors, FieldErrorText } from "@/components/content/shared/
 
 export type ResourceFormValues = { id?: string; title?: string; description?: string | null; type?: string; url?: string; category?: string | null; audience?: string; sizeBytes?: number | null };
 
-const AUDIENCES = ["ALL", "PARENTS", "MONITORS", "KIDS"] as const;
+// Parents and kids have no accounts: only everyone or the members (animators).
+const AUDIENCES = ["ALL", "MONITORS"] as const;
+/** An older item keeps its retired audience selectable, so saving it never widens who sees it. */
+const withStored = (offered: readonly string[], stored?: string | null) => (stored && !offered.includes(stored) ? [...offered, stored] : [...offered]);
 const UPLOAD_KIND: Record<string, "document" | "image" | "video"> = { PDF: "document", DOCUMENT: "document", IMAGE: "image", VIDEO: "video" };
 const isUpload = (u?: string | null) => isLocalFile(u);
 
@@ -77,7 +80,7 @@ export function ResourceFormButton({ initial, categories, variant = "new" }: { i
             <input type="hidden" name="sizeBytes" value={size} />
             <Input name="title" label={t("form.title")} defaultValue={initial?.title} required wrapperClassName="sm:col-span-2" dir="auto" />
             <Select name="type" label={t("form.type")} value={type} onChange={(e) => setType(e.target.value)} options={RESOURCE_TYPES.map((v) => ({ value: v, label: tc(`enums.resourceType.${v}`) }))} required />
-            <Select name="audience" label={t("form.audience")} defaultValue={initial?.audience ?? "ALL"} options={AUDIENCES.map((a) => ({ value: a, label: tc(`enums.audience.${a}`) }))} required />
+            <Select name="audience" label={t("form.audience")} defaultValue={initial?.audience ?? "ALL"} options={withStored(AUDIENCES, initial?.audience).map((a) => ({ value: a, label: tc(`enums.audience.${a}`) }))} required />
             <Input name="category" label={t("form.category")} hint={t("form.categoryHint")} defaultValue={initial?.category ?? ""} list="resource-categories" wrapperClassName="sm:col-span-2" dir="auto" />
             <datalist id="resource-categories">
               {categories.map((c) => (

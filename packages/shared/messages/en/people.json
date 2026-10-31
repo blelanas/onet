@@ -98,6 +98,7 @@
     "unlink": "Remove link",
     "account": "Login account",
     "hasAccount": "This member can sign in ({email}).",
+    "accountDisabled": "Account disabled ({email}): this member can't sign in.",
     "noAccount": "No login account.",
     "createAccount": "Create account",
     "role": "Role",

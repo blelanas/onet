@@ -5,6 +5,7 @@ import superjson from "superjson";
 import fr from "@onet/shared/messages/fr.json";
 import { createApp } from "@api/app";
 import { db } from "@api/lib/db";
+import { ensureLegacyParent } from "./legacy-accounts";
 
 let server: Server;
 let base = "";
@@ -67,7 +68,7 @@ beforeAll(async () => {
     monitor: "moniteur@onet-teboulba.tn",
     karim: "karim.jaziri@onet-teboulba.tn",
     ines: "ines.bouzid@onet-teboulba.tn",
-    parent: "parent@onet-teboulba.tn",
+    parent: await ensureLegacyParent(),
     admin: "gestion@onet-teboulba.tn",
   })) {
     T[k] = await login(email);
