@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { db } from "@api/lib/db";
-import { RETIRED_ROLE_KEYS } from "@onet/shared";
+import { RETIRED_ROLE_KEYS, isRetiredRole } from "@onet/shared";
 
 export async function listUsers(f: { q?: string; role?: string; status?: string; skip?: number; take?: number }) {
   const where: Prisma.UserWhereInput = {
@@ -8,7 +8,8 @@ export async function listUsers(f: { q?: string; role?: string; status?: string;
       // Pending and declined sign-ups are handled on the Approvals page.
       { status: "ACTIVE" },
       f.q ? { OR: [{ name: { contains: f.q } }, { email: { contains: f.q } }, { phone: { contains: f.q } }] } : {},
-      f.role ? { roles: { some: { role: { key: f.role } } } } : {},
+      // Retired roles are no longer shown: filtering by one is ignored.
+      f.role && !isRetiredRole(f.role) ? { roles: { some: { role: { key: f.role } } } } : {},
       f.status === "active" ? { isActive: true } : f.status === "inactive" ? { isActive: false } : {},
     ],
   };
