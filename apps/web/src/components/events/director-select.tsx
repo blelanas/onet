@@ -25,7 +25,8 @@ export function DirectorSelect({ defaultValue, current, hint, className }: { def
   const chosen = people.find((p) => p.id === value) ?? null;
   return (
     <div className={className}>
-      <input type="hidden" name="directorId" value={value} />
+      {/* Until the list is loaded (or if it failed), the field is left out: the API then keeps the current director. */}
+      {(chosen || !value) && <input type="hidden" name="directorId" value={value} />}
       <div className="flex items-end gap-3">
         <Select
           label={t("label")}

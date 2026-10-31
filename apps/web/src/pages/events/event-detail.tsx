@@ -62,6 +62,7 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
   const taken = e._count.registrations;
   const left = Math.max(0, e.capacity - taken);
   const base = `/dashboard/events/${id}`;
+  const withTeams = !!series || !!data.director || data.teams.length > 0;
   const tabs = series
     ? [
         { key: "overview", label: t("detail.tabs.overview"), href: base },
@@ -72,6 +73,9 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
         { key: "overview", label: t("detail.tabs.overview"), href: base },
         ...(staff ? [{ key: "participants", label: t("detail.tabs.participants"), href: `${base}?tab=participants`, count: taken }] : []),
         ...(canCheckIn ? [{ key: "checkin", label: t("detail.tabs.checkin"), href: `${base}?tab=checkin` }] : []),
+        // A one-off event with a director gets the director's tools too: teams and kids.
+        ...(withTeams ? [{ key: "teams", label: t("edition.tabs.teams"), href: `${base}?tab=teams`, count: data.teams.length }] : []),
+        ...(withTeams && data.canSeeKids ? [{ key: "kids", label: t("edition.tabs.kids"), href: `${base}?tab=kids`, count: data.kidsCount }] : []),
       ];
   const tab = tabs.some((x) => x.key === tabParam) ? tabParam! : "overview";
 
@@ -211,9 +215,9 @@ function EventDetail({ id, data }: { id: string; data: Data }) {
 
       {tab === "participants" && staff && <ParticipantsSection eventId={id} />}
 
-      {tab === "teams" && series && <EditionTeams eventId={id} />}
+      {tab === "teams" && withTeams && <EditionTeams eventId={id} />}
 
-      {tab === "kids" && series && data.canSeeKids && <EditionKids eventId={id} />}
+      {tab === "kids" && withTeams && data.canSeeKids && <EditionKids eventId={id} />}
 
       {tab === "checkin" && canCheckIn && <CheckInSection eventId={id} />}
     </div>

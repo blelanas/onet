@@ -60,21 +60,38 @@ describe("permission enforcement on the API", () => {
     expect((await call("GET", "/groups", { token: await login("comptable@onet-teboulba.tn") })).status).toBe(403);
   });
 
-  it("accounts only get the super admin, admin, accountant and member roles (and custom ones)", async () => {
+  it("accounts never get the retired parent, kid or monitor roles", async () => {
     const token = await login("admin@onet-teboulba.tn");
     for (const role of ["parent", "kid", "monitor"]) {
       const r = await call("POST", "/settings/users", { token, body: { name: "No", email: `no-${role}@x.tn`, password: "Abcdefg123", roles: [role] } });
       expect(r.status, role).toBe(400);
+      expect(r.body).toMatchObject({ ok: false, error: "errors.validation" });
     }
     const ok = await call("POST", "/settings/users", { token, body: { name: "Yes", email: "yes-member@x.tn", password: "Abcdefg123", roles: ["member"] } });
     expect(ok.body).toMatchObject({ ok: true });
     const id = (ok.body!.data as { id: string }).id;
-    expect((await call("POST", `/settings/users/${id}/roles`, { token, body: { roles: ["member", "kid"] } })).status).toBe(400);
-    // The roles offered by the settings pages are the four account roles.
-    const roles = ((await call("GET", "/settings/users", { token })).body!.roles as { key: string }[]).map((r) => r.key);
-    expect(roles).toEqual(expect.arrayContaining(["super_admin", "admin", "accountant", "member"]));
-    expect(roles.some((k) => ["parent", "kid", "monitor"].includes(k))).toBe(false);
-    await db.user.delete({ where: { id } });
+    try {
+      const edit = await call("POST", `/settings/users/${id}/roles`, { token, body: { roles: ["member", "kid"] } });
+      expect(edit.body).toMatchObject({ ok: false, error: "errors.validation" });
+      // The roles offered by the settings pages are the four account roles.
+      const roles = ((await call("GET", "/settings/users", { token })).body!.roles as { key: string }[]).map((r) => r.key);
+      expect(roles).toEqual(expect.arrayContaining(["super_admin", "admin", "accountant", "member"]));
+      expect(roles.some((k) => ["parent", "kid", "monitor"].includes(k))).toBe(false);
+    } finally {
+      await db.user.delete({ where: { id } });
+    }
+  });
+
+  it("an old parent-only account can't be reactivated as such", async () => {
+    const token = await login("admin@onet-teboulba.tn");
+    const role = await db.role.findUniqueOrThrow({ where: { key: "parent" } });
+    const u = await db.user.create({ data: { email: "old-parent@x.tn", name: "Old parent", passwordHash: "x", isActive: false, roles: { create: [{ roleId: role.id }] } } });
+    try {
+      expect((await call("POST", `/settings/users/${u.id}/active`, { token, body: { active: true } })).body).toMatchObject({ ok: false, error: "errors.validation" });
+      expect((await db.user.findUniqueOrThrow({ where: { id: u.id } })).isActive).toBe(false);
+    } finally {
+      await db.user.delete({ where: { id: u.id } });
+    }
   });
 
   it("kids and parents are records: no login account can be created for them", async () => {

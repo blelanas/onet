@@ -35,7 +35,12 @@ function loadGis(): Promise<Gis> {
     const script = document.createElement("script");
     script.src = GIS_SRC;
     script.async = true;
-    script.onload = () => (window.google?.accounts?.id ? resolve(window.google.accounts.id) : reject(new Error("GIS missing")));
+    script.onload = () => {
+      if (window.google?.accounts?.id) return resolve(window.google.accounts.id);
+      script.remove();
+      gisPromise = null; // allow a retry on the next visit
+      reject(new Error("GIS missing"));
+    };
     script.onerror = () => {
       script.remove();
       gisPromise = null; // allow a retry on the next visit
@@ -117,6 +122,9 @@ function GoogleSignInButton({ next, onNoAccount }: Props) {
       } else {
         toast.error(res.error.startsWith("errors.") ? tc(res.error) : res.error);
       }
+    } catch {
+      // e.g. the session check after sign-in failed (network): never leave the person without feedback.
+      toast.error(tc("errors.unexpected"));
     } finally {
       setPending(false);
     }
@@ -162,10 +170,10 @@ function GoogleSignInButton({ next, onNoAccount }: Props) {
 
   return (
     <div className="mt-6">
-      <div className="flex items-center gap-3 text-xs font-bold text-muted uppercase" aria-hidden>
-        <span className="h-px flex-1 bg-line" />
+      <div className="flex items-center gap-3 text-xs font-bold text-muted uppercase">
+        <span className="h-px flex-1 bg-line" aria-hidden />
         {t("or")}
-        <span className="h-px flex-1 bg-line" />
+        <span className="h-px flex-1 bg-line" aria-hidden />
       </div>
       <div
         ref={box}

@@ -89,17 +89,20 @@ describe("event director", () => {
   it("refuses directors who are not active animators, and non-admins can't pick one", async () => {
     const kid = await db.member.findFirstOrThrow({ where: { type: "CHILD" }, select: { id: true } });
     const suspended = await db.member.create({ data: { type: "MONITOR", firstName: "Sus", lastName: "Pendu", membershipNumber: "ONT-DIR-1", membershipStatus: "SUSPENDED" } });
-    for (const directorId of [kid.id, suspended.id, "nope"]) {
-      const r = await call<Result<unknown>>("POST", `/series/${seriesId}/editions`, { token: admin, body: { startAt: inFuture(90), endAt: inFuture(91), directorId } });
-      expect(r.body).toMatchObject({ ok: false, error: "errors.directorIneligible" });
+    try {
+      for (const directorId of [kid.id, suspended.id, "nope"]) {
+        const r = await call<Result<unknown>>("POST", `/series/${seriesId}/editions`, { token: admin, body: { startAt: inFuture(90), endAt: inFuture(91), directorId } });
+        expect(r.body).toMatchObject({ ok: false, error: "errors.directorIneligible" });
+      }
+      expect(await db.event.count({ where: { seriesId } })).toBe(2);
+      // The candidates list is the team candidates pool, for admins only.
+      const list = await call<{ candidates: { id: string }[] }>("GET", "/events/director-candidates", { token: admin });
+      expect(list.body.candidates.map((c) => c.id)).toContain(karim);
+      expect(list.body.candidates.map((c) => c.id)).not.toContain(suspended.id);
+      expect((await call("GET", "/events/director-candidates", { token: director })).status).toBe(403);
+    } finally {
+      await db.member.delete({ where: { id: suspended.id } });
     }
-    expect(await db.event.count({ where: { seriesId } })).toBe(2);
-    // The candidates list is the team candidates pool, for admins only.
-    const list = await call<{ candidates: { id: string }[] }>("GET", "/events/director-candidates", { token: admin });
-    expect(list.body.candidates.map((c) => c.id)).toContain(karim);
-    expect(list.body.candidates.map((c) => c.id)).not.toContain(suspended.id);
-    expect((await call("GET", "/events/director-candidates", { token: director })).status).toBe(403);
-    await db.member.delete({ where: { id: suspended.id } });
   });
 
   it("the director manages the teams of their edition (leader included), not those of another edition", async () => {

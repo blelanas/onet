@@ -132,19 +132,15 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * Prefill from "Continue with Google" when that e-mail has no account yet: router state set by the
- * Google button on /login (`{ google: GoogleProfile }`), or `?email=&firstName=&lastName=`.
+ * Prefill from "Continue with Google" when that e-mail has no account yet: only the router state set by
+ * the Google button after the server answered "no account" (`{ google: GoogleProfile }`).
  */
-function googlePrefill(state: unknown, params: URLSearchParams): GoogleProfile | null {
+function googlePrefill(state: unknown): GoogleProfile | null {
   const g = (state as { google?: Partial<GoogleProfile> | null } | null)?.google;
   const pick = (v: unknown) => (typeof v === "string" ? v.trim().slice(0, 254) : "");
-  const email = pick(g?.email) || pick(params.get("email"));
+  const email = pick(g?.email);
   if (!email) return null;
-  return {
-    email,
-    firstName: pick(g ? g.firstName : params.get("firstName")).slice(0, 40),
-    lastName: pick(g ? g.lastName : params.get("lastName")).slice(0, 40),
-  };
+  return { email, firstName: pick(g?.firstName).slice(0, 40), lastName: pick(g?.lastName).slice(0, 40) };
 }
 
 function SignupForm({ invite }: { invite?: string }) {
@@ -152,8 +148,7 @@ function SignupForm({ invite }: { invite?: string }) {
   const tl = useTranslations("auth.login");
   const tg = useTranslations("auth.google");
   const location = useLocation();
-  const params = useSearchParams();
-  const [google, setGoogle] = useState<GoogleProfile | null>(() => googlePrefill(location.state, params));
+  const [google, setGoogle] = useState<GoogleProfile | null>(() => googlePrefill(location.state));
   // Remounts the name and e-mail fields with the Google values (the other fields keep what was typed).
   const prefillKey = google ? `g:${google.email}` : "blank";
   const [show, setShow] = useState(false);

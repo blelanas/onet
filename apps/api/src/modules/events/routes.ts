@@ -50,14 +50,15 @@ export async function eventPage(req: Request) {
   const showMoney = canSeeMoney(user);
   const target = await loadTarget("event", id);
   const isKid = user.roles.includes("kid") && !can(user, "events.register");
-  const [entries, access, teams, kidsCount] = await Promise.all([
+  const [entries, access, teams, kidsCount, directorWithPhone] = await Promise.all([
     familyEntries(user, target),
     editionAccess(user, id),
     editionTeams(id),
     db.eventRegistration.count({ where: { eventId: id, ...KIDS_OF_EDITION } }),
+    eventDirector(id, true),
   ]);
   // The director's phone follows the animators' phone rule (admins, the edition's teams and director).
-  const director = await eventDirector(id, access.seeKids);
+  const director = directorWithPhone && !access.seeKids ? { ...directorWithPhone, phone: null } : directorWithPhone;
   return {
     director,
     isDirector: access.isDirector,

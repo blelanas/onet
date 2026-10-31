@@ -111,6 +111,8 @@ describe("migrations", () => {
         (await client.execute({ sql: `SELECT r."key" FROM "UserRole" ur JOIN "Role" r ON r."id" = ur."roleId" WHERE ur."userId" = ? ORDER BY r."key"`, args: [u] })).rows.map((r) => r.key);
       expect(await roles("u_mo")).toEqual(["member"]);
       expect(await roles("u_both")).toEqual(["member"]);
+      expect(await roles("u_pa_acc")).toEqual(["accountant"]);
+      expect(await roles("u_pa")).toEqual(["parent"]);
       const active = async (u: string) => Number((await client.execute({ sql: `SELECT "isActive" FROM "User" WHERE "id" = ?`, args: [u] })).rows[0].isActive);
       expect([await active("u_mo"), await active("u_pa"), await active("u_ki"), await active("u_pa_acc")]).toEqual([1, 0, 0, 1]);
       expect((await client.execute(`SELECT "userId" FROM "Session"`)).rows.map((r) => r.userId)).toEqual(["u_mo"]);

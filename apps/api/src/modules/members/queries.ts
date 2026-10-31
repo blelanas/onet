@@ -73,7 +73,7 @@ export async function getMemberProfile(user: CurrentUser, id: string) {
     where: { id },
     include: {
       group: { include: { monitors: { include: { member: true } } } },
-      user: { select: { id: true, email: true, lastLoginAt: true, roles: { include: { role: true } } } },
+      user: { select: { id: true, email: true, isActive: true, lastLoginAt: true, roles: { include: { role: true } } } },
       // Only what the profile shows: monitors can see a child without being scoped to its parents.
       parentLinks: { include: { parent: { select: { id: true, firstName: true, lastName: true, phone: true, photoUrl: true } } } },
       childrenLinks: { include: { child: { include: { group: true } } } },

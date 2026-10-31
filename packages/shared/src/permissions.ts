@@ -138,16 +138,16 @@ export const ROLE_COLORS: Record<RoleKey, string> = {
 /** Roles staff only (super admins) may grant: never obtainable through sign-up, invitations or the pre-approved list. */
 export const STAFF_ROLE_KEYS = ["super_admin", "admin", "accountant"] as const satisfies readonly RoleKey[];
 /**
- * The only roles a login account can hold: super admin, admin, accountant and member (= monitor / animator).
- * Parents and kids are records, not accounts (kid cards with their guardian's contact); "monitor" was merged
- * into "member". Custom roles created in Settings → Roles (e.g. a media lead) are allowed too.
+ * Accounts get the super admin, admin, accountant or member (= animator) system roles, or custom roles
+ * created in Settings → Roles (e.g. a media lead). Parents and kids are records, not accounts (kid cards
+ * with their guardian's contact), and "monitor" was merged into "member". These legacy system roles
+ * stay in the database for old rows, but are never offered, granted or shown any more.
  */
-export const ACCOUNT_ROLE_KEYS = ["super_admin", "admin", "accountant", "member"] as const satisfies readonly RoleKey[];
-/** Legacy system roles: kept in the database for old rows, never offered, granted or shown any more. */
 export const RETIRED_ROLE_KEYS = ["monitor", "parent", "kid"] as const satisfies readonly RoleKey[];
 export const isRetiredRole = (key: string) => (RETIRED_ROLE_KEYS as readonly string[]).includes(key);
 /** Members and the former "monitor" role are the same people (animators): same audiences, same home. */
-export const isAnimatorRole = (roles: readonly string[]) => roles.includes("member") || roles.includes("monitor");
+export const ANIMATOR_ROLE_KEYS = ["member", "monitor"] as const satisfies readonly RoleKey[];
+export const isAnimatorRole = (roles: readonly string[]) => ANIMATOR_ROLE_KEYS.some((k) => roles.includes(k));
 /** Roles that self sign-up, invitation links and the pre-approved list may grant (confirmed by the organisation). */
 export const SIGNUP_ROLE_KEYS = ["member"] as const satisfies readonly RoleKey[];
 export type SignupRole = (typeof SIGNUP_ROLE_KEYS)[number];

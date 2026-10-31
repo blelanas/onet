@@ -2,7 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { db } from "@api/lib/db";
 import type { CurrentUser } from "@api/lib/auth/session";
 import { myChildren, myGroupIds } from "@api/lib/auth/scope";
-import { isAnimatorRole } from "@onet/shared";
+import { ANIMATOR_ROLE_KEYS, isAnimatorRole } from "@onet/shared";
 
 export const STAFF_ROLES = ["super_admin", "admin", "accountant"] as const;
 
@@ -49,7 +49,7 @@ export async function announcementWhere(user: CurrentUser, opts: { includeExpire
 
 const ROLE_FOR_AUDIENCE: Record<string, string[]> = {
   PARENTS: ["parent"],
-  MONITORS: ["monitor", "member"],
+  MONITORS: [...ANIMATOR_ROLE_KEYS],
   KIDS: ["kid"],
   STAFF: [...STAFF_ROLES],
 };

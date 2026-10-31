@@ -17,7 +17,9 @@ beforeAll(async () => {
   await new Promise((r) => server.once("listening", r));
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api`;
 });
+const created: string[] = [];
 afterAll(async () => {
+  await db.user.deleteMany({ where: { id: { in: created } } });
   setGoogleVerifier(null);
   env.GOOGLE_CLIENT_ID = undefined;
   await new Promise((r) => server.close(r));
@@ -55,7 +57,9 @@ function fakeVerifier(credential: string, clientId: string): Promise<GoogleIdent
 const google = (credential: string, ip?: string) => call("POST", "/auth/google", { body: { credential }, ip });
 
 async function makeUser(data: { email: string; isActive?: boolean; status?: string }) {
-  return db.user.create({ data: { name: "Google Test", passwordHash: "x", ...data } });
+  const u = await db.user.create({ data: { name: "Google Test", passwordHash: "x", ...data } });
+  created.push(u.id);
+  return u;
 }
 
 describe("POST /auth/google", () => {

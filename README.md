@@ -59,7 +59,7 @@ Chaque pull request lance `.github/workflows/ci.yml` (3 jobs en parallèle, les 
 |---|---|
 | Lint, types & i18n | traductions à jour, migrations ↔ schéma, TypeScript (API + web), ESLint sans avertissement, `npm audit` (bloquant si critique) |
 | Unit & integration tests | tests de l'API (permissions, isolation des données, factures, endpoints HTTP) sur une base fraîche |
-| Build & end-to-end smoke test | builds de production, API + web démarrés, site public et permissions des 7 rôles dans Chromium |
+| Build & end-to-end smoke test | builds de production, API + web démarrés, site public et permissions des 4 rôles (5 comptes de démonstration) dans Chromium |
 
 `.github/workflows/deploy-web.yml` publie le site sur Firebase Hosting à chaque push sur `main` et crée un **lien de prévisualisation** sur chaque pull request (une fois les secrets configurés). Render redéploie l'API automatiquement.
 Dependabot propose chaque semaine les mises à jour npm (mineures et correctives regroupées, majeures séparément) et GitHub Actions (regroupées).

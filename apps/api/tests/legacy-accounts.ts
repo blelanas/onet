@@ -2,9 +2,10 @@ import { db } from "@api/lib/db";
 import { hashPassword } from "@api/lib/auth/password";
 
 /**
- * Parents no longer get accounts (they are contacts on the kid cards), so the demo data has none.
- * Some tests still need someone signed in from outside the team, as an old parent account would be:
- * this creates (once) a parent-role account with the demo password, linked to no member record.
+ * Parents no longer get accounts (they are contacts on the kid cards), so the demo data has none, and
+ * migration 0005 deactivates old ones. Some tests still need someone signed in from outside the team:
+ * this deliberately bypasses that rule and creates (once) an ACTIVE parent-role account with the demo
+ * password, linked to no member record, to check the parent-role code paths still refuse access.
  */
 export async function ensureLegacyParent() {
   const email = "legacy-parent@onet-teboulba.tn";

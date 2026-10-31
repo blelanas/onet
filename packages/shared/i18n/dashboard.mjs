@@ -131,7 +131,7 @@ export default {
     noTeamsHint: T("Les responsables d'édition vous ajouteront à un groupe.", "سيضيفك مسؤولو الدورة إلى مجموعة.", "Edition leaders will add you to a group."),
     leader: T("Responsable", "مسؤول(ة)", "Leader"),
     director: T("Directeur", "مدير", "Director"),
-    directedTeams: T("{count, plural, =0 {Aucune équipe} one {# équipe} other {# équipes}}", "{count} فريق", "{count, plural, =0 {No teams} one {# team} other {# teams}}"),
+    directedTeams: T("{count, plural, =0 {Aucune équipe} one {# équipe} other {# équipes}}", "{count, plural, =0 {لا فرق} one {فريق واحد} two {فريقان} few {# فرق} many {# فريقًا} other {# فريق}}", "{count, plural, =0 {No teams} one {# team} other {# teams}}"),
     teamMembers: T("{count, plural, one {# animateur} other {# animateurs}}", "{count} منشّط", "{count, plural, one {# animator} other {# animators}}"),
     teamKids: T("{count, plural, one {# enfant} other {# enfants}}", "{count} طفل", "{count, plural, one {# child} other {# children}}"),
     openChat: T("Discussion du groupe", "محادثة المجموعة", "Group chat"),

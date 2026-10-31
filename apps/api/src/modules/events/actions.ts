@@ -52,18 +52,25 @@ export async function saveEvent(fd: FormData | Record<string, unknown>) {
       registrationDeadline: d.registrationDeadline ?? null,
       requiresPayment: d.price > 0 && d.requiresPayment,
     };
-    const before = id ? await db.event.findUnique({ where: { id }, select: { title: true, directorId: true } }) : null;
+    const before = id ? await db.event.findUnique({ where: { id }, select: { title: true, directorId: true, status: true } }) : null;
     if (id && !before) throw new ActionError("errors.notFound");
     await assertDirectorEligible(d.directorId, before?.directorId ?? null);
-    const e = await (id ? db.event.update({ where: { id }, data }) : db.event.create({ data })).catch((err: unknown) => {
-      // Another edition of the series already has that number.
-      if (isEditionNumberClash(err)) throw new ActionError("errors.inUse");
-      throw err;
+    let directorChanged = false;
+    // One transaction: the event, its team chats' names and the director's notification are saved together.
+    const e = await db.$transaction(async (tx) => {
+      const e = await (id ? tx.event.update({ where: { id }, data }) : tx.event.create({ data })).catch((err: unknown) => {
+        // Another edition of the series already has that number.
+        if (isEditionNumberClash(err)) throw new ActionError("errors.inUse");
+        throw err;
+      });
+      // Team group chats are named after the edition.
+      if (before && before.title !== e.title) await syncEditionChats(tx, e.id);
+      directorChanged = e.directorId !== (before?.directorId ?? null);
+      // Directors are told when the event can be opened: not while it is a draft, but when it is published.
+      const published = e.status !== "DRAFT" && (!before || before.status === "DRAFT");
+      if (e.directorId && e.status !== "DRAFT" && (directorChanged || published)) await notifyDirectorAssigned(e.directorId, e, user.id, tx);
+      return e;
     });
-    // Team group chats are named after the edition.
-    if (before && before.title !== e.title) await syncEditionChats(db, e.id);
-    const directorChanged = e.directorId !== (before?.directorId ?? null);
-    if (e.directorId && directorChanged) await notifyDirectorAssigned(e.directorId, e, user.id);
     await audit(user.id, id ? "update" : "create", "Event", e.id, { title: e.title, status: e.status, price: e.price, ...(directorChanged ? { directorId: e.directorId } : {}) });
     revalidatePath("/dashboard/events");
     revalidatePath(`/dashboard/events/${e.id}`);

@@ -86,6 +86,8 @@ export async function setUserActive(userId: string, active: boolean) {
     const keys = await targetRoleKeys(d.userId);
     assertCanTouchPrivileged(actor, keys);
     if (!d.active && keys.includes("super_admin")) await assertAnotherSuperAdmin(d.userId);
+    // An old parent / kid account can't come back as such: give it an account role first.
+    if (d.active && !keys.some((k) => !isRetiredRole(k))) throw new ActionError("errors.validation");
     await db.user.update({ where: { id: d.userId }, data: { isActive: d.active } });
     if (!d.active) await db.session.deleteMany({ where: { userId: d.userId } });
     await audit(actor.id, d.active ? "activate" : "deactivate", "User", d.userId);

@@ -31,3 +31,12 @@ WHERE "isActive" = true
 
 DELETE FROM "Session"
 WHERE "userId" IN (SELECT "id" FROM "User" WHERE "isActive" = false);
+
+-- 3. Accounts that keep another role lose the parent / kid role and its permissions. Accounts left with
+--    only parent / kid keep them for the record; they are inactive and can't be reactivated as such.
+DELETE FROM "UserRole"
+WHERE "roleId" IN (SELECT "id" FROM "Role" WHERE "key" IN ('parent', 'kid'))
+  AND EXISTS (
+    SELECT 1 FROM "UserRole" o JOIN "Role" r ON r."id" = o."roleId"
+    WHERE o."userId" = "UserRole"."userId" AND r."key" NOT IN ('parent', 'kid', 'monitor')
+  );

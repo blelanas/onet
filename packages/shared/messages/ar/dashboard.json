@@ -235,7 +235,7 @@
     "noTeamsHint": "سيضيفك مسؤولو الدورة إلى مجموعة.",
     "leader": "مسؤول(ة)",
     "director": "مدير",
-    "directedTeams": "{count} فريق",
+    "directedTeams": "{count, plural, =0 {لا فرق} one {فريق واحد} two {فريقان} few {# فرق} many {# فريقًا} other {# فريق}}",
     "teamMembers": "{count} منشّط",
     "teamKids": "{count} طفل",
     "openChat": "محادثة المجموعة",

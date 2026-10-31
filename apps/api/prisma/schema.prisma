@@ -32,7 +32,7 @@ model User {
   // Self sign-up (public /signup). Accounts created by staff and approved sign-ups are ACTIVE.
   // A PENDING account can sign in but holds no role until approved; a REJECTED one cannot sign in.
   status        String    @default("ACTIVE") // ACTIVE | PENDING | REJECTED
-  requestedRole String? // role asked through an invitation (monitor | member)
+  requestedRole String? // role asked through sign-up or an invitation: member (older rows: monitor, migrated by 0005)
   invitationId  String? // Invitation used to sign up (plain id, no FK: see migration 0002)
   approvedById  String? // User who approved / rejected the sign-up
   approvedAt    DateTime?

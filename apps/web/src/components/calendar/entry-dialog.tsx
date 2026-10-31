@@ -48,7 +48,7 @@ function EntryForm({ entry, defaultDay, onDone }: { entry?: EntryView; defaultDa
           {entry && <input type="hidden" name="id" value={entry.id} />}
           <Input name="title" label={tc("fields.title")} defaultValue={entry?.title} required maxLength={140} wrapperClassName="sm:col-span-2" />
           <Select name="type" label={t("type")} defaultValue={entry?.type ?? "MEETING"} options={CALENDAR_ENTRY_TYPES.map((v) => ({ value: v, label: tc(`enums.calendarType.${v}`) }))} />
-          <Select name="audience" label={t("audience")} defaultValue={entry?.audience ?? "ALL"} options={ENTRY_AUDIENCES.map((v) => ({ value: v, label: tc(`enums.audience.${v}`) }))} />
+          <Select name="audience" label={t("audience")} defaultValue={entry?.audience ?? "ALL"} options={(entry?.audience && !(ENTRY_AUDIENCES as readonly string[]).includes(entry.audience) ? [...ENTRY_AUDIENCES, entry.audience] : [...ENTRY_AUDIENCES]).map((v) => ({ value: v, label: tc(`enums.audience.${v}`) }))} />
           <Checkbox name="allDay" label={t("allDay")} checked={allDay} onChange={(e) => setAllDay(e.target.checked)} className="sm:col-span-2" />
           {allDay ? (
             <>

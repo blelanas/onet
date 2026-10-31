@@ -297,7 +297,7 @@ function MemberProfile({ id, data }: { id: string; data: Data }) {
                 {m.user ? (
                   <div className="space-y-2 text-sm">
                     <p className="flex items-center gap-2 text-ink-2">
-                      <KeyRound className="size-4 text-leaf" /> {t("profile.hasAccount", { email: m.user.email })}
+                      <KeyRound className={m.user.isActive ? "size-4 text-leaf" : "size-4 text-muted"} /> {t(m.user.isActive ? "profile.hasAccount" : "profile.accountDisabled", { email: m.user.email })}
                     </p>
                     <div className="flex flex-wrap gap-1">
                       {m.user.roles.map((r) => (

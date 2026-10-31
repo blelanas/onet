@@ -112,7 +112,9 @@ authRouter.post(
     let identity;
     try {
       identity = await verifyGoogleCredential(parsed.data.credential, clientId);
-    } catch {
+    } catch (err) {
+      // Visible in the server logs: a wrong GOOGLE_CLIENT_ID or a key-fetch failure looks like a bad token.
+      console.error("[auth] Google credential rejected:", err instanceof Error ? err.message : err);
       return fail("errors.googleInvalid", "invalid_token", { throttle: true });
     }
     const email = identity.email.trim().toLowerCase();

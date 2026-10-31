@@ -83,7 +83,7 @@
     "capacityFull": "No places left",
     "deadlinePassed": "The registration deadline has passed",
     "alreadyRegistered": "Already registered",
-    "directorIneligible": "This member can't direct the event (membership not active or account disabled)",
+    "directorIneligible": "This person can't direct the event: only an active member (animator) can",
     "inUse": "Not possible: this item is used elsewhere",
     "amountTooHigh": "Amount exceeds the remaining balance",
     "accountRejected": "Your sign-up request was declined by the association. Contact it to find out more.",

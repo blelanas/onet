@@ -6,7 +6,7 @@ import type { CurrentUser } from "@api/lib/auth/session";
 import { AuthError, requirePermission } from "@api/lib/auth/guards";
 import { param } from "@api/lib/http";
 import { isStaffish } from "@api/modules/registrations/queries";
-import { ACTIVE_KID_REG, canManageEditions, myTeams, onEditionWhere } from "./access";
+import { ACTIVE_KID_REG, canManageEditions, myDirectedEditions, myTeams, onEditionWhere } from "./access";
 import { TEAM_ELIGIBLE } from "./teams";
 
 /** Calendar year of an instant in Tunisian time. */
@@ -94,7 +94,9 @@ export async function seriesPage(req: Request) {
     },
   });
   if (!s || (!s.isActive && !manage)) throw new AuthError("NOT_FOUND");
-  const mine = new Set((await myTeams(user)).map((t) => t.eventId));
+  // "Mine": editions where I am on a team or that I direct.
+  const [teams, directed] = await Promise.all([myTeams(user), myDirectedEditions(user)]);
+  const mine = new Set([...teams.map((t) => t.eventId), ...directed]);
   const now = new Date();
   const { editions, ...series } = s;
   const rows = editions.map(({ _count, ...e }) => ({
