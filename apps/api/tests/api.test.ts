@@ -106,6 +106,9 @@ describe("permission enforcement on the API", () => {
       const byRole = (await call("GET", "/settings/users?role=member", { token })).body!.rows as { roles: { role: { key: string } }[] }[];
       expect(byRole.length).toBeGreaterThan(0);
       expect(byRole.every((r) => r.roles.some((x) => x.role.key === "member"))).toBe(true);
+      // Filtering by a retired role is ignored (it would list accounts without any visible badge).
+      const total = async (path: string) => (await call("GET", path, { token })).body!.total;
+      expect(await total("/settings/users?role=parent")).toBe(await total("/settings/users"));
 
       // Re-submitting the retired role along with an account role keeps only the account role.
       const r = await call("POST", `/settings/users/${u.id}/roles`, { token, body: { roles: ["member", "parent"] } });
